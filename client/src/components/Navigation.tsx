@@ -18,7 +18,8 @@ import {
   Mail, 
   User,
   LogOut,
-  Settings
+  Settings,
+  BarChart3
 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 
@@ -41,6 +42,7 @@ export default function Navigation() {
     { href: "/leads", label: "Leads", icon: Users },
     { href: "/conversations", label: "Conversations", icon: MessageSquare },
     { href: "/sequences", label: "Sequences", icon: Mail },
+    { href: "/analytics", label: "Analytics", icon: BarChart3 },
   ];
 
   if (!isAuthenticated) return null;

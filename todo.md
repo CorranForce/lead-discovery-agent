@@ -208,3 +208,13 @@
 - [x] Add CSV export button to Leads page
 - [x] Implement CSV generation with all lead fields
 - [x] Add download functionality for CSV file
+
+## Email Analytics Dashboard
+
+- [x] Create Analytics page with email performance metrics
+- [x] Add overview statistics cards (total sent, open rate, response rate, conversion rate)
+- [ ] Build email performance chart showing trends over time
+- [x] Add template performance comparison table
+- [x] Implement sequence performance breakdown
+- [x] Add filters by date range, template, and sequence
+- [ ] Create visual charts using recharts library

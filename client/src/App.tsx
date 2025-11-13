@@ -12,6 +12,7 @@ import Conversations from "./pages/Conversations";
 import ConversationDetail from "./pages/ConversationDetail";
 import Account from "./pages/Account";
 import Sequences from "./pages/Sequences";
+import Analytics from "./pages/Analytics";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -24,6 +25,7 @@ function Router() {
       <Route path={"/conversations"} component={Conversations} />
       <Route path="/conversation/:id" component={ConversationDetail} />
       <Route path={"/sequences"} component={Sequences} />
+      <Route path={"/analytics"} component={Analytics} />
       <Route path={"/account"} component={Account} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
