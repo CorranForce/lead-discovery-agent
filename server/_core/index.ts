@@ -35,6 +35,13 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
+  
+  // Click tracking endpoint (public, no auth required)
+  app.get("/api/track/click", async (req, res) => {
+    const { handleClickTracking } = await import("../clickTracker");
+    await handleClickTracking(req, res);
+  });
+  
   // tRPC API
   app.use(
     "/api/trpc",

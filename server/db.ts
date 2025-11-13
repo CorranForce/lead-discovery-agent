@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, leads, InsertLead, searchHistory, InsertSearchHistory, enrichmentData, InsertEnrichmentData, conversations, InsertConversation, messages, InsertMessage, conversationTemplates, InsertConversationTemplate, emailTemplates, InsertEmailTemplate, sentEmails, InsertSentEmail, emailSequences, InsertEmailSequence, sequenceSteps, InsertSequenceStep, sequenceEnrollments, InsertSequenceEnrollment } from "../drizzle/schema";
+import { InsertUser, users, leads, InsertLead, searchHistory, InsertSearchHistory, enrichmentData, InsertEnrichmentData, conversations, InsertConversation, messages, InsertMessage, conversationTemplates, InsertConversationTemplate, emailTemplates, InsertEmailTemplate, sentEmails, InsertSentEmail, emailSequences, InsertEmailSequence, sequenceSteps, InsertSequenceStep, sequenceEnrollments, InsertSequenceEnrollment, emailClicks, InsertEmailClick } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -359,4 +359,52 @@ export async function getLeadEnrollments(leadId: number) {
   
   return await db.select().from(sequenceEnrollments)
     .where(eq(sequenceEnrollments.leadId, leadId));
+}
+
+// Email Click Tracking functions
+export async function createEmailClick(click: InsertEmailClick) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.insert(emailClicks).values(click);
+}
+
+export async function getEmailClicks(sentEmailId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const clicks = await db.select().from(emailClicks).where(eq(emailClicks.sentEmailId, sentEmailId));
+  return clicks;
+}
+
+export async function getLeadEmailClicks(leadId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const clicks = await db.select().from(emailClicks).where(eq(emailClicks.leadId, leadId));
+  return clicks;
+}
+
+export async function getAllEmailClicks(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  // Join with sentEmails to filter by userId
+  const clicks = await db
+    .select({
+      id: emailClicks.id,
+      sentEmailId: emailClicks.sentEmailId,
+      leadId: emailClicks.leadId,
+      originalUrl: emailClicks.originalUrl,
+      clickedAt: emailClicks.clickedAt,
+      ipAddress: emailClicks.ipAddress,
+      userAgent: emailClicks.userAgent,
+      recipientEmail: sentEmails.recipientEmail,
+      subject: sentEmails.subject,
+    })
+    .from(emailClicks)
+    .leftJoin(sentEmails, eq(emailClicks.sentEmailId, sentEmails.id))
+    .where(eq(sentEmails.userId, userId));
+  
+  return clicks;
 }

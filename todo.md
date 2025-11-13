@@ -218,3 +218,14 @@
 - [x] Implement sequence performance breakdown
 - [x] Add filters by date range, template, and sequence
 - [ ] Create visual charts using recharts library
+
+## Email Click Tracking
+
+- [x] Create email_clicks table to log click events
+- [x] Add link wrapping functionality to track URLs in emails
+- [x] Create public click tracking endpoint that logs clicks and redirects
+- [x] Update email send function to wrap all links with tracking URLs
+- [x] Build click analytics view showing which links were clicked
+- [x] Add lead-level click tracking to see engagement by lead
+- [x] Display click-through rate (CTR) in analytics dashboard
+- [x] Show most clicked links across all campaigns

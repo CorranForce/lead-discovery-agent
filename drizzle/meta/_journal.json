@@ -50,6 +50,13 @@
       "when": 1763048395784,
       "tag": "0006_slim_tomorrow_man",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1763051835795,
+      "tag": "0007_light_lester",
+      "breakpoints": true
     }
   ]
 }

@@ -17,6 +17,7 @@ export default function Analytics() {
   const { data: sentEmails, isLoading: emailsLoading } = trpc.email.history.useQuery({});
   const { data: templates } = trpc.email.listTemplates.useQuery();
   const { data: sequences } = trpc.sequences.list.useQuery();
+  const { data: clickData } = trpc.clicks.list.useQuery();
 
   // Calculate analytics metrics
   const calculateMetrics = () => {
@@ -32,8 +33,10 @@ export default function Analytics() {
     }
 
     const totalSent = sentEmails.length;
+    const totalClicks = clickData?.length || 0;
     const opened = sentEmails.filter((e: any) => e.status === 'sent' || e.status === 'delivered').length;
     const responded = sentEmails.filter((e: any) => e.status === 'delivered').length;
+    const clickThroughRate = totalSent > 0 ? ((totalClicks / totalSent) * 100).toFixed(1) : '0.0';
     
     // Template performance
     const templateMap = new Map();
@@ -58,6 +61,8 @@ export default function Analytics() {
 
     return {
       totalSent,
+      totalClicks,
+      clickThroughRate,
       openRate: totalSent > 0 ? ((opened / totalSent) * 100).toFixed(1) : '0.0',
       responseRate: totalSent > 0 ? ((responded / totalSent) * 100).toFixed(1) : '0.0',
       conversionRate: totalSent > 0 ? ((responded / totalSent) * 100).toFixed(1) : '0.0',

@@ -479,19 +479,38 @@ Be professional, empathetic, and focused on building trust.`;
         const execAsync = promisify(exec);
         
         try {
+          // First, save the email to get the sentEmailId
+          const sentEmailResult = await createSentEmail({
+            userId: ctx.user.id,
+            leadId: input.leadId,
+            conversationId: input.conversationId,
+            templateId: input.templateId,
+            recipientEmail: input.to,
+            subject: input.subject,
+            body: input.body,
+            status: "sent",
+          });
+          
+          // Get the inserted email ID (type assertion for MySQL result)
+          const sentEmailId = (sentEmailResult as any).insertId || 0;
+          
+          // Wrap links with tracking URLs
+          const { wrapLinksWithTracking } = await import("./linkTracker");
+          const trackedBody = wrapLinksWithTracking(input.body, sentEmailId, input.leadId);
+          
           // Prepare email data for Gmail MCP (correct format)
           const emailData = {
             messages: [
               {
                 to: [input.to],
                 subject: input.subject,
-                content: input.body,
+                content: trackedBody,
               }
             ]
           };
           
           // Call Gmail MCP to send email
-          const mcpCommand = `manus-mcp-cli tool call gmail_send_messages --server gmail --input '${JSON.stringify(emailData).replace(/'/g, "'\\''")}' 2>&1`;
+          const mcpCommand = `manus-mcp-cli tool call gmail_send_messages --server gmail --input '${JSON.stringify(emailData).replace(/'/g, "'\\'")}' 2>&1`;
           const { stdout } = await execAsync(mcpCommand);
           
           let gmailMessageId = null;
@@ -509,18 +528,18 @@ Be professional, empathetic, and focused on building trust.`;
             // If we can't parse the response, that's okay
           }
           
-          // Track sent email in database
-          await createSentEmail({
-            userId: ctx.user.id,
-            leadId: input.leadId,
-            conversationId: input.conversationId,
-            templateId: input.templateId,
-            recipientEmail: input.to,
-            subject: input.subject,
-            body: input.body,
-            status: "sent",
-            gmailMessageId,
-          });
+          // Update with Gmail message ID if available
+          if (gmailMessageId && sentEmailId) {
+            const { getDb } = await import("./db");
+            const db = await getDb();
+            if (db) {
+              const { sentEmails } = await import("../drizzle/schema");
+              const { eq } = await import("drizzle-orm");
+              await db.update(sentEmails)
+                .set({ gmailMessageId })
+                .where(eq(sentEmails.id, sentEmailId));
+            }
+          }
           
           return { success: true, messageId: gmailMessageId };
         } catch (error: any) {
@@ -683,6 +702,31 @@ Be professional, empathetic, and focused on building trust.`;
           .where(eq(emailSequences.id, input.sequenceId));
         
         return { success: true };
+      }),
+  }),
+
+  // Click tracking analytics
+  clicks: router({
+    // Get all clicks for user's emails
+    list: protectedProcedure.query(async ({ ctx }) => {
+      const { getAllEmailClicks } = await import("./db");
+      return await getAllEmailClicks(ctx.user.id);
+    }),
+    
+    // Get clicks for a specific email
+    byEmail: protectedProcedure
+      .input(z.object({ sentEmailId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const { getEmailClicks } = await import("./db");
+        return await getEmailClicks(input.sentEmailId);
+      }),
+    
+    // Get clicks for a specific lead
+    byLead: protectedProcedure
+      .input(z.object({ leadId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const { getLeadEmailClicks } = await import("./db");
+        return await getLeadEmailClicks(input.leadId);
       }),
   }),
 });
