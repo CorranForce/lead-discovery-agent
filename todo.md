@@ -229,3 +229,17 @@
 - [x] Add lead-level click tracking to see engagement by lead
 - [x] Display click-through rate (CTR) in analytics dashboard
 - [x] Show most clicked links across all campaigns
+
+## AI Lead Scoring Algorithm
+
+- [x] Add score field to leads table
+- [x] Create AI-powered scoring function that evaluates multiple factors
+- [x] Implement scoring based on company size (larger = higher score)
+- [x] Implement scoring based on industry fit and relevance
+- [x] Implement scoring based on contact completeness (email, phone, LinkedIn)
+- [x] Implement scoring based on engagement signals (email opens, clicks)
+- [x] Add automatic score calculation when lead is created or updated
+- [x] Add manual score recalculation endpoint
+- [x] Display score badges on lead cards (High/Medium/Low priority)
+- [ ] Add score-based sorting and filtering in Leads page
+- [ ] Show score breakdown/explanation in lead details

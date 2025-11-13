@@ -124,9 +124,24 @@ export const appRouter = router({
       }))
       .mutation(async ({ ctx, input }) => {
         const { createLead } = await import("./db");
+        const { calculateLeadScore } = await import("./leadScoring");
+        
+        // Calculate initial lead score
+        const tempLead = {
+          ...input,
+          userId: ctx.user.id,
+          status: "new" as const,
+          score: 0,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        } as any;
+        
+        const scoringResult = calculateLeadScore(tempLead, 0, 0);
+        
         return await createLead({
           ...input,
           userId: ctx.user.id,
+          score: scoringResult.score,
         });
       }),
     
@@ -167,6 +182,35 @@ export const appRouter = router({
       .mutation(async ({ ctx, input }) => {
         const { deleteLead } = await import("./db");
         return await deleteLead(input.id, ctx.user.id);
+      }),
+    
+    recalculateScore: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const { getLeadById, updateLead } = await import("./db");
+        const { calculateLeadScore } = await import("./leadScoring");
+        const { getLeadEmailClicks } = await import("./db");
+        
+        // Get the lead
+        const lead = await getLeadById(input.id, ctx.user.id);
+        if (!lead) {
+          throw new Error("Lead not found");
+        }
+        
+        // Get engagement data
+        const clicks = await getLeadEmailClicks(input.id);
+        const emailClicks = clicks.length;
+        
+        // TODO: Get email opens count when available
+        const emailOpens = 0;
+        
+        // Calculate new score
+        const scoringResult = calculateLeadScore(lead, emailOpens, emailClicks);
+        
+        // Update lead with new score
+        await updateLead(input.id, ctx.user.id, { score: scoringResult.score });
+        
+        return scoringResult;
       }),
     
     discover: protectedProcedure

@@ -225,8 +225,17 @@ export default function Leads() {
                         {lead.status}
                       </Badge>
                       {(lead.score ?? 0) > 0 && (
-                        <Badge variant="secondary">
-                          Score: {lead.score}/100
+                        <Badge 
+                          className={
+                            (lead.score ?? 0) >= 70 
+                              ? "bg-green-500/10 text-green-500 border-green-500/20" 
+                              : (lead.score ?? 0) >= 40 
+                              ? "bg-yellow-500/10 text-yellow-500 border-yellow-500/20"
+                              : "bg-red-500/10 text-red-500 border-red-500/20"
+                          }
+                          variant="outline"
+                        >
+                          {(lead.score ?? 0) >= 70 ? "🔥 High" : (lead.score ?? 0) >= 40 ? "⚡ Medium" : "📊 Low"} Priority ({lead.score}/100)
                         </Badge>
                       )}
                     </div>
