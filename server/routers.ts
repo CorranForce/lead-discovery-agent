@@ -179,7 +179,7 @@ export const appRouter = router({
       .mutation(async ({ ctx, input }) => {
         const { invokeLLM } = await import("./_core/llm");
         const { createSearchHistory } = await import("./db");
-        const { searchPeople, convertApolloPersonToLead } = await import("./apollo");
+        const { searchOrganizations, convertApolloOrgToLead } = await import("./apollo");
         
         // Check if user wants real data from Apollo.io
         const useRealData = ctx.user.useRealData === 1;
@@ -187,7 +187,7 @@ export const appRouter = router({
         if (useRealData) {
           // Use Apollo.io API for real data
           try {
-            const apolloResult = await searchPeople({
+            const apolloResult = await searchOrganizations({
               query: input.query,
               industry: input.industry,
               companySize: input.companySize,
@@ -195,7 +195,7 @@ export const appRouter = router({
               perPage: 5,
             });
             
-            const leads = apolloResult.people.map(convertApolloPersonToLead);
+            const leads = apolloResult.organizations.map(convertApolloOrgToLead);
             
             // Save search history
             await createSearchHistory({

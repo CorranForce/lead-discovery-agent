@@ -15,29 +15,23 @@ interface ApolloPersonSearchParams {
   perPage?: number;
 }
 
-interface ApolloPerson {
+interface ApolloOrganization {
   id: string;
-  first_name: string;
-  last_name: string;
   name: string;
-  title: string;
-  email?: string;
+  website_url?: string;
+  primary_domain?: string;
+  industry?: string;
+  estimated_num_employees?: number;
+  city?: string;
+  state?: string;
+  country?: string;
+  short_description?: string;
   linkedin_url?: string;
-  organization: {
-    id: string;
-    name: string;
-    website_url?: string;
-    primary_domain?: string;
-    industry?: string;
-    estimated_num_employees?: number;
-    city?: string;
-    state?: string;
-    country?: string;
-  };
+  phone?: string;
 }
 
 interface ApolloSearchResponse {
-  people: ApolloPerson[];
+  organizations: ApolloOrganization[];
   pagination: {
     page: number;
     per_page: number;
@@ -47,9 +41,9 @@ interface ApolloSearchResponse {
 }
 
 /**
- * Search for people using Apollo.io API
+ * Search for organizations using Apollo.io API
  */
-export async function searchPeople(params: ApolloPersonSearchParams): Promise<ApolloSearchResponse> {
+export async function searchOrganizations(params: ApolloPersonSearchParams): Promise<ApolloSearchResponse> {
   if (!APOLLO_API_KEY) {
     throw new Error("APOLLO_API_KEY is not configured");
   }
@@ -91,7 +85,7 @@ export async function searchPeople(params: ApolloPersonSearchParams): Promise<Ap
   }
 
   try {
-    const response = await fetch(`${APOLLO_API_BASE}/mixed_people/search`, {
+    const response = await fetch(`${APOLLO_API_BASE}/organizations/search`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -115,11 +109,9 @@ export async function searchPeople(params: ApolloPersonSearchParams): Promise<Ap
 }
 
 /**
- * Convert Apollo person data to our lead format
+ * Convert Apollo organization data to our lead format
  */
-export function convertApolloPersonToLead(person: ApolloPerson) {
-  const org = person.organization;
-  
+export function convertApolloOrgToLead(org: ApolloOrganization) {
   return {
     companyName: org.name,
     website: org.website_url || org.primary_domain || "",
@@ -128,12 +120,12 @@ export function convertApolloPersonToLead(person: ApolloPerson) {
       ? `${org.estimated_num_employees} employees` 
       : "Unknown",
     location: [org.city, org.state, org.country].filter(Boolean).join(", "),
-    description: `${org.name} is a company in the ${org.industry || "business"} industry.`,
-    contactName: person.name || `${person.first_name} ${person.last_name}`,
-    contactTitle: person.title || "Unknown",
-    contactEmail: person.email || "",
-    contactLinkedin: person.linkedin_url || "",
-    contactPhone: "",
+    description: org.short_description || `${org.name} is a company in the ${org.industry || "business"} industry.`,
+    contactName: "",
+    contactTitle: "",
+    contactEmail: "",
+    contactLinkedin: org.linkedin_url || "",
+    contactPhone: org.phone || "",
     status: "new" as const,
     source: "apollo" as const,
     score: null,
