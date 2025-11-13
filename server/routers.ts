@@ -54,6 +54,7 @@ export const appRouter = router({
       .input(z.object({
         emailNotifications: z.number().min(0).max(1).optional(),
         timezone: z.string().optional(),
+        useRealData: z.number().min(0).max(1).optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         const { getDb } = await import("./db");
@@ -178,6 +179,40 @@ export const appRouter = router({
       .mutation(async ({ ctx, input }) => {
         const { invokeLLM } = await import("./_core/llm");
         const { createSearchHistory } = await import("./db");
+        const { searchPeople, convertApolloPersonToLead } = await import("./apollo");
+        
+        // Check if user wants real data from Apollo.io
+        const useRealData = ctx.user.useRealData === 1;
+        
+        if (useRealData) {
+          // Use Apollo.io API for real data
+          try {
+            const apolloResult = await searchPeople({
+              query: input.query,
+              industry: input.industry,
+              companySize: input.companySize,
+              location: input.location,
+              perPage: 5,
+            });
+            
+            const leads = apolloResult.people.map(convertApolloPersonToLead);
+            
+            // Save search history
+            await createSearchHistory({
+              userId: ctx.user.id,
+              query: input.query,
+              filters: JSON.stringify({ industry: input.industry, companySize: input.companySize, location: input.location }),
+              resultsCount: leads.length,
+            });
+            
+            return leads;
+          } catch (error) {
+            console.error("[Apollo API] Error:", error);
+            throw new Error("Failed to fetch real lead data from Apollo.io. Please check your API key and try again.");
+          }
+        }
+        
+        // Fall back to AI-generated template data
         
         // Build the AI prompt for lead discovery
         const systemPrompt = `You are an expert lead generation assistant. Your task is to generate realistic potential leads based on the user's search criteria. 

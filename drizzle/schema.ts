@@ -27,6 +27,7 @@ export const users = mysqlTable("users", {
   // Preferences
   emailNotifications: int("emailNotifications").default(1), // 1 = enabled, 0 = disabled
   timezone: varchar("timezone", { length: 100 }).default("UTC"),
+  useRealData: int("useRealData").default(0).notNull(), // 0 = test/template data, 1 = real Apollo.io data
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),

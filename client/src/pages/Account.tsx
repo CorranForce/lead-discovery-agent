@@ -23,6 +23,7 @@ export default function Account() {
   const [website, setWebsite] = useState("");
   const [location, setLocation] = useState("");
   const [emailNotifications, setEmailNotifications] = useState(true);
+  const [useRealData, setUseRealData] = useState(false);
 
   // Update form when profile loads
   useState(() => {
@@ -35,6 +36,7 @@ export default function Account() {
       setWebsite(profile.website || "");
       setLocation(profile.location || "");
       setEmailNotifications(profile.emailNotifications === 1);
+      setUseRealData(profile.useRealData === 1);
     }
   });
 
@@ -73,6 +75,7 @@ export default function Account() {
   const handleSavePreferences = () => {
     updatePreferencesMutation.mutate({
       emailNotifications: emailNotifications ? 1 : 0,
+      useRealData: useRealData ? 1 : 0,
     });
   };
 
@@ -249,6 +252,28 @@ export default function Account() {
                   onCheckedChange={setEmailNotifications}
                 />
               </div>
+              
+              <div className="flex items-center justify-between pt-4 border-t">
+                <div className="space-y-0.5">
+                  <Label htmlFor="use-real-data">Use Real Lead Data</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Enable Apollo.io integration for real company data (requires API key)
+                  </p>
+                </div>
+                <Switch
+                  id="use-real-data"
+                  checked={useRealData}
+                  onCheckedChange={setUseRealData}
+                />
+              </div>
+              
+              {useRealData && (
+                <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                  <p className="text-sm text-blue-700 dark:text-blue-400">
+                    <strong>ℹ️ Real Data Mode:</strong> Lead discovery will use Apollo.io's database of 210M+ contacts. API calls consume credits from your Apollo plan.
+                  </p>
+                </div>
+              )}
 
               <div className="flex justify-end pt-4 border-t">
                 <Button

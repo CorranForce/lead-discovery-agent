@@ -177,3 +177,25 @@
 - [x] Update UI labels to clarify this is a template generator
 - [x] Remove clickable links for fictional websites
 - [x] Add guidance for users to verify and research real companies
+
+## Apollo.io Integration
+
+### Account Settings
+- [x] Add "Use Real Data" toggle switch in Account settings
+- [x] Store user preference in database (useRealData boolean field)
+- [x] Update account page UI to show toggle with explanation
+
+### Apollo.io API Integration
+- [x] Research Apollo.io API documentation and endpoints
+- [x] Add APOLLO_API_KEY to secrets management
+- [x] Create Apollo.io API client in server
+- [x] Implement people search endpoint integration
+- [ ] Implement organization search endpoint integration
+- [x] Map Apollo.io response to our lead schema
+- [x] Handle API rate limits and errors gracefully
+
+### Lead Discovery Logic
+- [x] Update discover mutation to check useRealData preference
+- [x] If useRealData is false, use AI-generated templates (current behavior)
+- [x] If useRealData is true, call Apollo.io API for real company data
+- [x] Update UI to show data source indicator (Test vs Real)

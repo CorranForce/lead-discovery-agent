@@ -43,6 +43,13 @@
       "when": 1763046206653,
       "tag": "0005_loving_veda",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1763048395784,
+      "tag": "0006_slim_tomorrow_man",
+      "breakpoints": true
     }
   ]
 }

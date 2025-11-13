@@ -15,10 +15,13 @@ import {
 } from "@/components/ui/select";
 
 export default function Discover() {
+  const { data: profile } = trpc.account.getProfile.useQuery();
   const [query, setQuery] = useState("");
   const [industry, setIndustry] = useState("");
   const [companySize, setCompanySize] = useState("");
   const [location, setLocation] = useState("");
+  
+  const useRealData = profile?.useRealData === 1;
   const [discoveredLeads, setDiscoveredLeads] = useState<any[]>([]);
 
   const discoverMutation = trpc.leads.discover.useMutation({
@@ -78,13 +81,22 @@ export default function Discover() {
             Generate example lead profiles to guide your prospecting research
           </p>
         </div>
-        <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
-          <p className="text-sm text-yellow-700 dark:text-yellow-400">
-            <strong>⚠️ Important:</strong> Generated leads are AI-created examples for demonstration purposes. 
-            Company names, websites, and contact information are fictional templates. 
-            Please conduct your own research to find and verify real companies matching your criteria.
-          </p>
-        </div>
+        {useRealData ? (
+          <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
+            <p className="text-sm text-green-700 dark:text-green-400">
+              <strong>✅ Real Data Mode:</strong> Lead discovery is using Apollo.io's database of 210M+ verified contacts and companies. 
+              Results are real businesses with actual contact information.
+            </p>
+          </div>
+        ) : (
+          <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+            <p className="text-sm text-yellow-700 dark:text-yellow-400">
+              <strong>⚠️ Template Mode:</strong> Generated leads are AI-created examples for demonstration purposes. 
+              Company names, websites, and contact information are fictional templates. 
+              Enable "Use Real Data" in Account Settings to access Apollo.io's verified business database.
+            </p>
+          </div>
+        )}
       </div>
 
       <Card>
@@ -219,10 +231,22 @@ export default function Discover() {
                       <h4 className="font-semibold text-sm">Company Info</h4>
                       <div className="space-y-1 text-sm">
                         {lead.website && (
-                          <div className="flex items-center gap-2 text-muted-foreground">
-                            <Globe className="h-3 w-3" />
-                            <span>{lead.website} <span className="text-xs italic">(example)</span></span>
-                          </div>
+                          useRealData ? (
+                            <a
+                              href={lead.website.startsWith('http') ? lead.website : `https://${lead.website}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 text-primary hover:underline"
+                            >
+                              <Globe className="h-3 w-3" />
+                              {lead.website}
+                            </a>
+                          ) : (
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                              <Globe className="h-3 w-3" />
+                              <span>{lead.website} <span className="text-xs italic">(example)</span></span>
+                            </div>
+                          )
                         )}
                       </div>
                     </div>
@@ -233,16 +257,38 @@ export default function Discover() {
                         <p className="font-medium">{lead.contactName}</p>
                         <p className="text-muted-foreground">{lead.contactTitle}</p>
                         {lead.contactEmail && (
-                          <div className="flex items-center gap-2 text-muted-foreground">
-                            <Mail className="h-3 w-3" />
-                            <span>{lead.contactEmail} <span className="text-xs italic">(example)</span></span>
-                          </div>
+                          useRealData ? (
+                            <a
+                              href={`mailto:${lead.contactEmail}`}
+                              className="flex items-center gap-2 text-primary hover:underline"
+                            >
+                              <Mail className="h-3 w-3" />
+                              {lead.contactEmail}
+                            </a>
+                          ) : (
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                              <Mail className="h-3 w-3" />
+                              <span>{lead.contactEmail} <span className="text-xs italic">(example)</span></span>
+                            </div>
+                          )
                         )}
                         {lead.contactLinkedin && (
-                          <div className="flex items-center gap-2 text-muted-foreground">
-                            <Linkedin className="h-3 w-3" />
-                            <span>{lead.contactLinkedin} <span className="text-xs italic">(example)</span></span>
-                          </div>
+                          useRealData && lead.contactLinkedin.startsWith('http') ? (
+                            <a
+                              href={lead.contactLinkedin}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 text-primary hover:underline"
+                            >
+                              <Linkedin className="h-3 w-3" />
+                              LinkedIn Profile
+                            </a>
+                          ) : (
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                              <Linkedin className="h-3 w-3" />
+                              <span>{lead.contactLinkedin} <span className="text-xs italic">(example)</span></span>
+                            </div>
+                          )
                         )}
                       </div>
                     </div>
