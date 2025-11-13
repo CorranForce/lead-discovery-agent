@@ -4,7 +4,7 @@ import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Building2, MapPin, Users, Globe, Mail, Linkedin, Trash2, ExternalLink, Send } from "lucide-react";
+import { Loader2, Building2, MapPin, Users, Globe, Mail, Linkedin, Trash2, ExternalLink, Send, Download } from "lucide-react";
 import { EmailDialog } from "@/components/EmailDialog";
 import { toast } from "sonner";
 import {
@@ -87,6 +87,72 @@ export default function Leads() {
     filterStatus === "all" || lead.status === filterStatus
   ) || [];
 
+  const exportToCSV = () => {
+    if (!leads || leads.length === 0) {
+      toast.error("No leads to export");
+      return;
+    }
+
+    // Define CSV headers
+    const headers = [
+      "Company Name",
+      "Website",
+      "Industry",
+      "Company Size",
+      "Location",
+      "Description",
+      "Contact Name",
+      "Contact Title",
+      "Contact Email",
+      "Contact LinkedIn",
+      "Contact Phone",
+      "Status",
+      "Score",
+      "Notes",
+      "Tags",
+      "Created At"
+    ];
+
+    // Convert leads to CSV rows
+    const rows = filteredLeads.map(lead => [
+      lead.companyName,
+      lead.website || "",
+      lead.industry || "",
+      lead.companySize || "",
+      lead.location || "",
+      lead.description?.replace(/\n/g, " ").replace(/"/g, '""') || "",
+      lead.contactName || "",
+      lead.contactTitle || "",
+      lead.contactEmail || "",
+      lead.contactLinkedin || "",
+      lead.contactPhone || "",
+      lead.status,
+      lead.score?.toString() || "",
+      lead.notes?.replace(/\n/g, " ").replace(/"/g, '""') || "",
+      lead.tags || "",
+      new Date(lead.createdAt).toLocaleDateString()
+    ]);
+
+    // Create CSV content
+    const csvContent = [
+      headers.map(h => `"${h}"`).join(","),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(","))
+    ].join("\n");
+
+    // Create blob and download
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `leads_export_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast.success(`Exported ${filteredLeads.length} leads to CSV`);
+  };
+
   if (isLoading) {
     return (
       <div className="container py-8 flex items-center justify-center min-h-[400px]">
@@ -108,6 +174,15 @@ export default function Leads() {
         </div>
         
         <div className="flex items-center gap-4">
+          <Button
+            onClick={exportToCSV}
+            variant="outline"
+            disabled={!leads || leads.length === 0}
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Export to CSV
+          </Button>
+          
           <Select value={filterStatus} onValueChange={setFilterStatus}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Filter by status" />

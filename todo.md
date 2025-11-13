@@ -205,3 +205,6 @@
 - [x] Add state management to Account Settings save button to remain disabled until changes are made
 - [x] Fix Apollo.io API authentication error when fetching real lead data
 - [x] Set "Any" as default selected option for Industry and Company Size dropdowns
+- [x] Add CSV export button to Leads page
+- [x] Implement CSV generation with all lead fields
+- [x] Add download functionality for CSV file
