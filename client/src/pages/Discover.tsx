@@ -18,8 +18,8 @@ import {
 export default function Discover() {
   const { data: profile } = trpc.account.getProfile.useQuery();
   const [query, setQuery] = useState("");
-  const [industry, setIndustry] = useState("");
-  const [companySize, setCompanySize] = useState("");
+  const [industry, setIndustry] = useState("any");
+  const [companySize, setCompanySize] = useState("any");
   const [location, setLocation] = useState("");
   
   const useRealData = profile?.useRealData === 1;
