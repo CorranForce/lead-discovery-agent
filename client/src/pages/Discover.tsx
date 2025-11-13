@@ -71,11 +71,20 @@ export default function Discover() {
 
   return (
     <div className="container py-8 space-y-8">
-      <div className="space-y-2">
-        <h1 className="text-4xl font-bold tracking-tight">AI Lead Discovery</h1>
-        <p className="text-muted-foreground text-lg">
-          Use AI to discover and qualify potential leads for your business
-        </p>
+      <div className="space-y-4">
+        <div>
+          <h1 className="text-4xl font-bold tracking-tight">AI Lead Template Generator</h1>
+          <p className="text-muted-foreground text-lg">
+            Generate example lead profiles to guide your prospecting research
+          </p>
+        </div>
+        <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+          <p className="text-sm text-yellow-700 dark:text-yellow-400">
+            <strong>⚠️ Important:</strong> Generated leads are AI-created examples for demonstration purposes. 
+            Company names, websites, and contact information are fictional templates. 
+            Please conduct your own research to find and verify real companies matching your criteria.
+          </p>
+        </div>
       </div>
 
       <Card>
@@ -155,12 +164,12 @@ export default function Discover() {
             {discoverMutation.isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Discovering Leads...
+                Generating Templates...
               </>
             ) : (
               <>
                 <Search className="mr-2 h-4 w-4" />
-                Discover Leads
+                Generate Lead Templates
               </>
             )}
           </Button>
@@ -210,15 +219,10 @@ export default function Discover() {
                       <h4 className="font-semibold text-sm">Company Info</h4>
                       <div className="space-y-1 text-sm">
                         {lead.website && (
-                          <a
-                            href={lead.website}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2 text-primary hover:underline"
-                          >
+                          <div className="flex items-center gap-2 text-muted-foreground">
                             <Globe className="h-3 w-3" />
-                            {lead.website}
-                          </a>
+                            <span>{lead.website} <span className="text-xs italic">(example)</span></span>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -229,31 +233,16 @@ export default function Discover() {
                         <p className="font-medium">{lead.contactName}</p>
                         <p className="text-muted-foreground">{lead.contactTitle}</p>
                         {lead.contactEmail && (
-                          <a
-                            href={`mailto:${lead.contactEmail}`}
-                            className="flex items-center gap-2 text-primary hover:underline"
-                          >
+                          <div className="flex items-center gap-2 text-muted-foreground">
                             <Mail className="h-3 w-3" />
-                            {lead.contactEmail}
-                          </a>
+                            <span>{lead.contactEmail} <span className="text-xs italic">(example)</span></span>
+                          </div>
                         )}
                         {lead.contactLinkedin && (
-                          lead.contactLinkedin.startsWith('http') ? (
-                            <a
-                              href={lead.contactLinkedin}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-2 text-primary hover:underline"
-                            >
-                              <Linkedin className="h-3 w-3" />
-                              LinkedIn Profile
-                            </a>
-                          ) : (
-                            <span className="flex items-center gap-2 text-muted-foreground">
-                              <Linkedin className="h-3 w-3" />
-                              {lead.contactLinkedin}
-                            </span>
-                          )
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <Linkedin className="h-3 w-3" />
+                            <span>{lead.contactLinkedin} <span className="text-xs italic">(example)</span></span>
+                          </div>
                         )}
                       </div>
                     </div>

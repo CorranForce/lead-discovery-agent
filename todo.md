@@ -171,3 +171,9 @@
 
 - [x] Fix discover leads button error
 - [x] Fix LinkedIn profile links returning 404 errors
+- [x] Fix company website links returning 404 errors
+- [x] Verify all generated URLs are valid and accessible
+- [x] Add disclaimer that generated leads are AI templates for demonstration
+- [x] Update UI labels to clarify this is a template generator
+- [x] Remove clickable links for fictional websites
+- [x] Add guidance for users to verify and research real companies
