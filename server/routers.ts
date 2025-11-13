@@ -336,6 +336,111 @@ Be professional, empathetic, and focused on building trust.`;
       return await getUserTemplates(ctx.user.id);
     }),
   }),
+  
+  // Email functionality
+  email: router({
+    // List email templates
+    listTemplates: protectedProcedure.query(async ({ ctx }) => {
+      const { getPublicEmailTemplates, getUserEmailTemplates } = await import("./db");
+      const publicTemplates = await getPublicEmailTemplates();
+      const userTemplates = await getUserEmailTemplates(ctx.user.id);
+      return [...publicTemplates, ...userTemplates];
+    }),
+    
+    // Send email using Gmail MCP
+    send: protectedProcedure
+      .input(z.object({
+        to: z.string().email(),
+        subject: z.string().min(1),
+        body: z.string().min(1),
+        leadId: z.number().optional(),
+        conversationId: z.number().optional(),
+        templateId: z.number().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { createSentEmail } = await import("./db");
+        const { exec } = await import("child_process");
+        const { promisify } = await import("util");
+        const execAsync = promisify(exec);
+        
+        try {
+          // Prepare email data for Gmail MCP (correct format)
+          const emailData = {
+            messages: [
+              {
+                to: [input.to],
+                subject: input.subject,
+                content: input.body,
+              }
+            ]
+          };
+          
+          // Call Gmail MCP to send email
+          const mcpCommand = `manus-mcp-cli tool call gmail_send_messages --server gmail --input '${JSON.stringify(emailData).replace(/'/g, "'\\''")}' 2>&1`;
+          const { stdout } = await execAsync(mcpCommand);
+          
+          let gmailMessageId = null;
+          try {
+            // Parse the MCP response
+            const lines = stdout.split('\n');
+            const contentLine = lines.find(line => line.includes('"content"'));
+            if (contentLine) {
+              const match = contentLine.match(/"id":\s*"([^"]+)"/);
+              if (match) {
+                gmailMessageId = match[1];
+              }
+            }
+          } catch (e) {
+            // If we can't parse the response, that's okay
+          }
+          
+          // Track sent email in database
+          await createSentEmail({
+            userId: ctx.user.id,
+            leadId: input.leadId,
+            conversationId: input.conversationId,
+            templateId: input.templateId,
+            recipientEmail: input.to,
+            subject: input.subject,
+            body: input.body,
+            status: "sent",
+            gmailMessageId,
+          });
+          
+          return { success: true, messageId: gmailMessageId };
+        } catch (error: any) {
+          // Track failed email
+          await createSentEmail({
+            userId: ctx.user.id,
+            leadId: input.leadId,
+            conversationId: input.conversationId,
+            templateId: input.templateId,
+            recipientEmail: input.to,
+            subject: input.subject,
+            body: input.body,
+            status: "failed",
+          });
+          
+          throw new Error(`Failed to send email: ${error.message}`);
+        }
+      }),
+    
+    // Get sent email history
+    history: protectedProcedure
+      .input(z.object({ 
+        leadId: z.number().optional(),
+        limit: z.number().optional(),
+      }))
+      .query(async ({ ctx, input }) => {
+        const { getUserSentEmails, getLeadSentEmails } = await import("./db");
+        
+        if (input.leadId) {
+          return await getLeadSentEmails(input.leadId);
+        }
+        
+        return await getUserSentEmails(ctx.user.id, input.limit);
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

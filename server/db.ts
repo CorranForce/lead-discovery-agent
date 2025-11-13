@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, leads, InsertLead, searchHistory, InsertSearchHistory, enrichmentData, InsertEnrichmentData, conversations, InsertConversation, messages, InsertMessage, conversationTemplates, InsertConversationTemplate } from "../drizzle/schema";
+import { InsertUser, users, leads, InsertLead, searchHistory, InsertSearchHistory, enrichmentData, InsertEnrichmentData, conversations, InsertConversation, messages, InsertMessage, conversationTemplates, InsertConversationTemplate, emailTemplates, InsertEmailTemplate, sentEmails, InsertSentEmail } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -271,4 +271,57 @@ export async function getUserTemplates(userId: number) {
   return await db.select().from(conversationTemplates)
     .where(eq(conversationTemplates.userId, userId))
     .orderBy(conversationTemplates.createdAt);
+}
+
+// Email template management
+export async function getPublicEmailTemplates() {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select().from(emailTemplates)
+    .where(eq(emailTemplates.isPublic, 1))
+    .orderBy(emailTemplates.createdAt);
+}
+
+export async function getUserEmailTemplates(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select().from(emailTemplates)
+    .where(eq(emailTemplates.userId, userId))
+    .orderBy(emailTemplates.createdAt);
+}
+
+export async function createEmailTemplate(template: InsertEmailTemplate) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  return await db.insert(emailTemplates).values(template);
+}
+
+// Sent email tracking
+export async function createSentEmail(email: InsertSentEmail) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  return await db.insert(sentEmails).values(email);
+}
+
+export async function getUserSentEmails(userId: number, limit: number = 50) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select().from(sentEmails)
+    .where(eq(sentEmails.userId, userId))
+    .orderBy(sentEmails.sentAt)
+    .limit(limit);
+}
+
+export async function getLeadSentEmails(leadId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select().from(sentEmails)
+    .where(eq(sentEmails.leadId, leadId))
+    .orderBy(sentEmails.sentAt);
 }

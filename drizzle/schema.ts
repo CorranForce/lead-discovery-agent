@@ -137,3 +137,43 @@ export const conversationTemplates = mysqlTable("conversationTemplates", {
 
 export type ConversationTemplate = typeof conversationTemplates.$inferSelect;
 export type InsertConversationTemplate = typeof conversationTemplates.$inferInsert;
+
+/**
+ * Email templates - pre-built email templates for outreach
+ */
+export const emailTemplates = mysqlTable("emailTemplates", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId"), // NULL for system templates, user ID for custom templates
+  name: varchar("name", { length: 255 }).notNull(),
+  subject: varchar("subject", { length: 500 }).notNull(),
+  body: text("body").notNull(),
+  category: varchar("category", { length: 100 }), // e.g., "cold_outreach", "follow_up", "thank_you"
+  variables: text("variables"), // JSON array of available variables like {{firstName}}, {{companyName}}
+  isPublic: int("isPublic").default(0), // 0 = private, 1 = public
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type EmailTemplate = typeof emailTemplates.$inferSelect;
+export type InsertEmailTemplate = typeof emailTemplates.$inferInsert;
+
+/**
+ * Sent emails - tracking emails sent from the platform
+ */
+export const sentEmails = mysqlTable("sentEmails", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  leadId: int("leadId"), // Optional link to lead
+  conversationId: int("conversationId"), // Optional link to conversation
+  templateId: int("templateId"), // Optional link to template used
+  recipientEmail: varchar("recipientEmail", { length: 320 }).notNull(),
+  recipientName: varchar("recipientName", { length: 255 }),
+  subject: varchar("subject", { length: 500 }).notNull(),
+  body: text("body").notNull(),
+  status: mysqlEnum("status", ["sent", "failed", "bounced"]).default("sent").notNull(),
+  gmailMessageId: varchar("gmailMessageId", { length: 255 }), // Gmail message ID for tracking
+  sentAt: timestamp("sentAt").defaultNow().notNull(),
+});
+
+export type SentEmail = typeof sentEmails.$inferSelect;
+export type InsertSentEmail = typeof sentEmails.$inferInsert;

@@ -3,7 +3,8 @@ import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Building2, MapPin, Users, Globe, Mail, Linkedin, Trash2, ExternalLink } from "lucide-react";
+import { Loader2, Building2, MapPin, Users, Globe, Mail, Linkedin, Trash2, ExternalLink, Send } from "lucide-react";
+import { EmailDialog } from "@/components/EmailDialog";
 import { toast } from "sonner";
 import {
   Select,
@@ -35,6 +36,8 @@ export default function Leads() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [leadToDelete, setLeadToDelete] = useState<number | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [emailDialogOpen, setEmailDialogOpen] = useState(false);
+  const [emailLead, setEmailLead] = useState<{ email: string; name: string; id: number } | null>(null);
 
   const utils = trpc.useUtils();
   const { data: leads, isLoading } = trpc.leads.list.useQuery();
@@ -186,6 +189,23 @@ export default function Leads() {
                         <SelectItem value="converted">Converted</SelectItem>
                       </SelectContent>
                     </Select>
+                    {lead.contactEmail && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setEmailLead({
+                            email: lead.contactEmail!,
+                            name: lead.contactName || lead.companyName,
+                            id: lead.id,
+                          });
+                          setEmailDialogOpen(true);
+                        }}
+                      >
+                        <Send className="h-4 w-4 mr-1" />
+                        Email
+                      </Button>
+                    )}
                     <Button
                       variant="ghost"
                       size="icon"
@@ -288,6 +308,16 @@ export default function Leads() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {emailLead && (
+        <EmailDialog
+          open={emailDialogOpen}
+          onOpenChange={setEmailDialogOpen}
+          defaultTo={emailLead.email}
+          defaultSubject={`Follow-up: ${emailLead.name}`}
+          leadId={emailLead.id}
+        />
+      )}
     </div>
   );
 }

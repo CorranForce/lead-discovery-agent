@@ -82,3 +82,24 @@
 - [x] Conversation list/inbox view
 - [ ] Template library UI
 - [ ] Analytics dashboard for conversations
+
+## Email Integration Features
+
+### Database Schema
+- [x] Create email_templates table for storing email templates
+- [x] Create sent_emails table for tracking sent emails
+- [x] Add email tracking fields to leads and conversations
+
+### Email Functionality
+- [x] Gmail MCP integration for sending emails
+- [x] Email template system with variables
+- [x] Send email from lead detail
+- [ ] Send email from conversation
+- [x] Email history tracking
+- [ ] Email open/click tracking (if available)
+
+### User Interface
+- [x] Email compose dialog/modal
+- [x] Email template selector
+- [ ] Email history view
+- [x] Email sent confirmation
