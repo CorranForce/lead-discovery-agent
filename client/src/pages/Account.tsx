@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
@@ -25,9 +25,10 @@ export default function Account() {
   const [location, setLocation] = useState("");
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [useRealData, setUseRealData] = useState(false);
+  const [preferencesChanged, setPreferencesChanged] = useState(false);
 
   // Update form when profile loads
-  useState(() => {
+  useEffect(() => {
     if (profile) {
       setName(profile.name || "");
       setBio(profile.bio || "");
@@ -38,8 +39,9 @@ export default function Account() {
       setLocation(profile.location || "");
       setEmailNotifications(profile.emailNotifications === 1);
       setUseRealData(profile.useRealData === 1);
+      setPreferencesChanged(false);
     }
-  });
+  }, [profile]);
 
   const updateProfileMutation = trpc.account.updateProfile.useMutation({
     onSuccess: () => {
@@ -54,6 +56,7 @@ export default function Account() {
   const updatePreferencesMutation = trpc.account.updatePreferences.useMutation({
     onSuccess: () => {
       utils.account.getProfile.invalidate();
+      setPreferencesChanged(false);
       toast.success("Preferences updated successfully!");
     },
     onError: (error) => {
@@ -252,7 +255,10 @@ export default function Account() {
                 <Switch
                   id="email-notifications"
                   checked={emailNotifications}
-                  onCheckedChange={setEmailNotifications}
+                  onCheckedChange={(checked) => {
+                    setEmailNotifications(checked);
+                    setPreferencesChanged(true);
+                  }}
                 />
               </div>
               
@@ -266,7 +272,10 @@ export default function Account() {
                 <Switch
                   id="use-real-data"
                   checked={useRealData}
-                  onCheckedChange={setUseRealData}
+                  onCheckedChange={(checked) => {
+                    setUseRealData(checked);
+                    setPreferencesChanged(true);
+                  }}
                 />
               </div>
               
@@ -281,7 +290,7 @@ export default function Account() {
               <div className="flex justify-end pt-4 border-t">
                 <Button
                   onClick={handleSavePreferences}
-                  disabled={updatePreferencesMutation.isPending}
+                  disabled={updatePreferencesMutation.isPending || !preferencesChanged}
                 >
                   {updatePreferencesMutation.isPending ? (
                     <>

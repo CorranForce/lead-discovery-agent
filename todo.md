@@ -202,3 +202,4 @@
 - [x] Add navigation menu to Dashboard and other pages to access Account settings
 - [x] Ensure Account page is accessible from all authenticated pages
 - [x] Fix nested anchor tag error on Discover page
+- [x] Add state management to Account Settings save button to remain disabled until changes are made
