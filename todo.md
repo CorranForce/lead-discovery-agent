@@ -170,3 +170,4 @@
 ## Bug Fixes
 
 - [x] Fix discover leads button error
+- [x] Fix LinkedIn profile links returning 404 errors

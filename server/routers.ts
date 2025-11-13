@@ -192,7 +192,7 @@ For each lead, provide:
 - Contact person name (decision maker like CEO, CTO, VP Sales)
 - Contact title
 - Estimated email (use common patterns like firstname.lastname@company.com)
-- LinkedIn profile URL pattern
+- LinkedIn profile URL (use realistic format: https://www.linkedin.com/in/firstname-lastname or leave as placeholder text 'LinkedIn Profile' if uncertain)
 
 Return exactly 5 leads in valid JSON format as an array of objects.`;
         

@@ -238,15 +238,22 @@ export default function Discover() {
                           </a>
                         )}
                         {lead.contactLinkedin && (
-                          <a
-                            href={lead.contactLinkedin}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2 text-primary hover:underline"
-                          >
-                            <Linkedin className="h-3 w-3" />
-                            LinkedIn Profile
-                          </a>
+                          lead.contactLinkedin.startsWith('http') ? (
+                            <a
+                              href={lead.contactLinkedin}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 text-primary hover:underline"
+                            >
+                              <Linkedin className="h-3 w-3" />
+                              LinkedIn Profile
+                            </a>
+                          ) : (
+                            <span className="flex items-center gap-2 text-muted-foreground">
+                              <Linkedin className="h-3 w-3" />
+                              {lead.contactLinkedin}
+                            </span>
+                          )
                         )}
                       </div>
                     </div>
