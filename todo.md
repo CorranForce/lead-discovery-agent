@@ -141,3 +141,28 @@
 - [x] Responsive grid layout
 - [x] Quick navigation to all features
 - [x] Real-time data updates
+
+## Email Automation & Sequences
+
+### Database Schema
+- [x] Create email_sequences table for sequence definitions
+- [x] Create sequence_steps table for individual emails in sequence
+- [x] Create sequence_enrollments table to track leads in sequences
+- [x] Add trigger conditions and delay settings
+
+### Automation Features
+- [x] Email sequence builder with step management
+- [x] Trigger-based enrollment (status change, manual, time-based)
+- [x] Delay configuration between steps (days/hours)
+- [x] Template selection for each step
+- [ ] Automatic email sending based on schedule
+- [x] Pause/resume sequences
+- [ ] Unenroll leads from sequences
+
+### User Interface
+- [x] Sequences management page
+- [ ] Sequence builder/editor
+- [x] Step configuration forms
+- [ ] Enrollment management
+- [ ] Sequence analytics and reporting
+- [ ] Enroll lead in sequence from lead page

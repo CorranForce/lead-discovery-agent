@@ -36,6 +36,13 @@
       "when": 1763045657017,
       "tag": "0004_new_scourge",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1763046206653,
+      "tag": "0005_loving_veda",
+      "breakpoints": true
     }
   ]
 }

@@ -187,3 +187,50 @@ export const sentEmails = mysqlTable("sentEmails", {
 
 export type SentEmail = typeof sentEmails.$inferSelect;
 export type InsertSentEmail = typeof sentEmails.$inferInsert;
+
+// Email Sequences for automation
+export const emailSequences = mysqlTable("emailSequences", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  isActive: int("isActive").default(1), // 1 = active, 0 = paused
+  triggerType: mysqlEnum("triggerType", ["manual", "status_change", "time_based"]).default("manual"),
+  triggerCondition: text("triggerCondition"), // JSON: {status: "new"} or {days_after_creation: 1}
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type EmailSequence = typeof emailSequences.$inferSelect;
+export type InsertEmailSequence = typeof emailSequences.$inferInsert;
+
+export const sequenceSteps = mysqlTable("sequenceSteps", {
+  id: int("id").autoincrement().primaryKey(),
+  sequenceId: int("sequenceId").notNull(),
+  stepOrder: int("stepOrder").notNull(), // 1, 2, 3, etc.
+  templateId: int("templateId"), // Reference to emailTemplates
+  subject: varchar("subject", { length: 500 }),
+  body: text("body"),
+  delayDays: int("delayDays").default(0), // Days to wait before sending
+  delayHours: int("delayHours").default(0), // Additional hours
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type SequenceStep = typeof sequenceSteps.$inferSelect;
+export type InsertSequenceStep = typeof sequenceSteps.$inferInsert;
+
+export const sequenceEnrollments = mysqlTable("sequenceEnrollments", {
+  id: int("id").autoincrement().primaryKey(),
+  sequenceId: int("sequenceId").notNull(),
+  leadId: int("leadId").notNull(),
+  currentStep: int("currentStep").default(0), // 0 = not started, 1+ = step number
+  status: mysqlEnum("status", ["active", "completed", "paused", "failed"]).default("active"),
+  enrolledAt: timestamp("enrolledAt").defaultNow().notNull(),
+  lastEmailSentAt: timestamp("lastEmailSentAt"),
+  nextEmailScheduledAt: timestamp("nextEmailScheduledAt"),
+  completedAt: timestamp("completedAt"),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type SequenceEnrollment = typeof sequenceEnrollments.$inferSelect;
+export type InsertSequenceEnrollment = typeof sequenceEnrollments.$inferInsert;

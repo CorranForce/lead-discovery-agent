@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, leads, InsertLead, searchHistory, InsertSearchHistory, enrichmentData, InsertEnrichmentData, conversations, InsertConversation, messages, InsertMessage, conversationTemplates, InsertConversationTemplate, emailTemplates, InsertEmailTemplate, sentEmails, InsertSentEmail } from "../drizzle/schema";
+import { InsertUser, users, leads, InsertLead, searchHistory, InsertSearchHistory, enrichmentData, InsertEnrichmentData, conversations, InsertConversation, messages, InsertMessage, conversationTemplates, InsertConversationTemplate, emailTemplates, InsertEmailTemplate, sentEmails, InsertSentEmail, emailSequences, InsertEmailSequence, sequenceSteps, InsertSequenceStep, sequenceEnrollments, InsertSequenceEnrollment } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -324,4 +324,39 @@ export async function getLeadSentEmails(leadId: number) {
   return await db.select().from(sentEmails)
     .where(eq(sentEmails.leadId, leadId))
     .orderBy(sentEmails.sentAt);
+}
+
+// Email Sequence helpers
+export async function getSequencesByUser(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select().from(emailSequences)
+    .where(eq(emailSequences.userId, userId))
+    .orderBy(emailSequences.createdAt);
+}
+
+export async function getSequenceSteps(sequenceId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select().from(sequenceSteps)
+    .where(eq(sequenceSteps.sequenceId, sequenceId))
+    .orderBy(sequenceSteps.stepOrder);
+}
+
+export async function getSequenceEnrollments(sequenceId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select().from(sequenceEnrollments)
+    .where(eq(sequenceEnrollments.sequenceId, sequenceId));
+}
+
+export async function getLeadEnrollments(leadId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select().from(sequenceEnrollments)
+    .where(eq(sequenceEnrollments.leadId, leadId));
 }

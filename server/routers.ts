@@ -521,6 +521,135 @@ Be professional, empathetic, and focused on building trust.`;
         return await getUserSentEmails(ctx.user.id, input.limit);
       }),
   }),
+
+  // Email Sequences
+  sequences: router({
+    list: protectedProcedure.query(async ({ ctx }) => {
+      const { getSequencesByUser } = await import("./db");
+      return await getSequencesByUser(ctx.user.id);
+    }),
+
+    create: protectedProcedure
+      .input(z.object({
+        name: z.string(),
+        description: z.string().optional(),
+        triggerType: z.enum(["manual", "status_change", "time_based"]),
+        triggerCondition: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { getDb } = await import("./db");
+        const { emailSequences } = await import("../drizzle/schema");
+        
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+        
+        const [sequence] = await db.insert(emailSequences).values({
+          userId: ctx.user.id,
+          name: input.name,
+          description: input.description || null,
+          triggerType: input.triggerType,
+          triggerCondition: input.triggerCondition || null,
+        }).$returningId();
+        
+        return sequence;
+      }),
+
+    getSteps: protectedProcedure
+      .input(z.object({ sequenceId: z.number() }))
+      .query(async ({ input }) => {
+        const { getSequenceSteps } = await import("./db");
+        return await getSequenceSteps(input.sequenceId);
+      }),
+
+    addStep: protectedProcedure
+      .input(z.object({
+        sequenceId: z.number(),
+        stepOrder: z.number(),
+        templateId: z.number().optional(),
+        subject: z.string(),
+        body: z.string(),
+        delayDays: z.number().default(0),
+        delayHours: z.number().default(0),
+      }))
+      .mutation(async ({ input }) => {
+        const { getDb } = await import("./db");
+        const { sequenceSteps } = await import("../drizzle/schema");
+        
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+        
+        await db.insert(sequenceSteps).values({
+          sequenceId: input.sequenceId,
+          stepOrder: input.stepOrder,
+          templateId: input.templateId || null,
+          subject: input.subject,
+          body: input.body,
+          delayDays: input.delayDays,
+          delayHours: input.delayHours,
+        });
+        
+        return { success: true };
+      }),
+
+    enrollLead: protectedProcedure
+      .input(z.object({
+        sequenceId: z.number(),
+        leadId: z.number(),
+      }))
+      .mutation(async ({ input }) => {
+        const { getDb, getSequenceSteps } = await import("./db");
+        const { sequenceEnrollments } = await import("../drizzle/schema");
+        
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+        
+        // Get first step to calculate next email time
+        const steps = await getSequenceSteps(input.sequenceId);
+        const firstStep = steps[0];
+        
+        const now = new Date();
+        const nextEmailTime = firstStep 
+          ? new Date(now.getTime() + ((firstStep.delayDays || 0) * 24 * 60 * 60 * 1000) + ((firstStep.delayHours || 0) * 60 * 60 * 1000))
+          : now;
+        
+        await db.insert(sequenceEnrollments).values({
+          sequenceId: input.sequenceId,
+          leadId: input.leadId,
+          currentStep: 0,
+          status: "active",
+          nextEmailScheduledAt: nextEmailTime,
+        });
+        
+        return { success: true };
+      }),
+
+    getEnrollments: protectedProcedure
+      .input(z.object({ sequenceId: z.number() }))
+      .query(async ({ input }) => {
+        const { getSequenceEnrollments } = await import("./db");
+        return await getSequenceEnrollments(input.sequenceId);
+      }),
+
+    toggleActive: protectedProcedure
+      .input(z.object({
+        sequenceId: z.number(),
+        isActive: z.boolean(),
+      }))
+      .mutation(async ({ input }) => {
+        const { getDb } = await import("./db");
+        const { emailSequences } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+        
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+        
+        await db.update(emailSequences)
+          .set({ isActive: input.isActive ? 1 : 0 })
+          .where(eq(emailSequences.id, input.sequenceId));
+        
+        return { success: true };
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;
