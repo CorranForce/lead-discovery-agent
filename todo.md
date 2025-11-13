@@ -166,3 +166,7 @@
 - [ ] Enrollment management
 - [ ] Sequence analytics and reporting
 - [ ] Enroll lead in sequence from lead page
+
+## Bug Fixes
+
+- [x] Fix discover leads button error

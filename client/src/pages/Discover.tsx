@@ -48,8 +48,8 @@ export default function Discover() {
 
     discoverMutation.mutate({
       query,
-      industry: industry || undefined,
-      companySize: companySize || undefined,
+      industry: industry && industry !== 'any' ? industry : undefined,
+      companySize: companySize && companySize !== 'any' ? companySize : undefined,
       location: location || undefined,
     });
   };
@@ -105,7 +105,7 @@ export default function Discover() {
                   <SelectValue placeholder="Select industry" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Any Industry</SelectItem>
+                  <SelectItem value="any">Any Industry</SelectItem>
                   <SelectItem value="Technology">Technology</SelectItem>
                   <SelectItem value="Healthcare">Healthcare</SelectItem>
                   <SelectItem value="Finance">Finance</SelectItem>
@@ -125,7 +125,7 @@ export default function Discover() {
                   <SelectValue placeholder="Select size" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Any Size</SelectItem>
+                  <SelectItem value="any">Any Size</SelectItem>
                   <SelectItem value="1-10">1-10 employees</SelectItem>
                   <SelectItem value="11-50">11-50 employees</SelectItem>
                   <SelectItem value="51-200">51-200 employees</SelectItem>
