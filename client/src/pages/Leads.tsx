@@ -4,7 +4,8 @@ import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Building2, MapPin, Users, Globe, Mail, Linkedin, Trash2, ExternalLink, Send, Download } from "lucide-react";
+import { Loader2, Building2, MapPin, Users, Globe, Mail, Linkedin, Trash2, ExternalLink, Send, Download, Eye } from "lucide-react";
+import { Link } from "wouter";
 import { EmailDialog } from "@/components/EmailDialog";
 import { toast } from "sonner";
 import {
@@ -220,7 +221,11 @@ export default function Leads() {
                 <div className="flex items-start justify-between">
                   <div className="space-y-1 flex-1">
                     <div className="flex items-center gap-3">
-                      <CardTitle className="text-xl">{lead.companyName}</CardTitle>
+                      <Link href={`/leads/${lead.id}`}>
+                        <CardTitle className="text-xl hover:text-primary cursor-pointer transition-colors">
+                          {lead.companyName}
+                        </CardTitle>
+                      </Link>
                       <Badge className={statusColors[lead.status]} variant="outline">
                         {lead.status}
                       </Badge>

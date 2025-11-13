@@ -243,3 +243,16 @@
 - [x] Display score badges on lead cards (High/Medium/Low priority)
 - [ ] Add score-based sorting and filtering in Leads page
 - [ ] Show score breakdown/explanation in lead details
+
+## Lead Detail Page
+
+- [x] Create LeadDetail page component
+- [x] Display complete lead information (company, contact, status)
+- [x] Show lead score with visual breakdown and explanation
+- [x] Display engagement history (emails sent, opened, clicked)
+- [x] Show email interaction timeline
+- [x] Display click tracking data for this lead
+- [ ] Show linked conversations
+- [x] Add quick actions (send email, start conversation, update status)
+- [x] Add route for /leads/:id
+- [x] Make lead cards clickable to navigate to detail page

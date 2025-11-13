@@ -8,6 +8,7 @@ import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import Discover from "./pages/Discover";
 import Leads from "./pages/Leads";
+import LeadDetail from "./pages/LeadDetail";
 import Conversations from "./pages/Conversations";
 import ConversationDetail from "./pages/ConversationDetail";
 import Account from "./pages/Account";
@@ -22,6 +23,7 @@ function Router() {
       <Route path={"/dashboard"} component={Dashboard} />
       <Route path={"/discover"} component={Discover} />
       <Route path={"/leads"} component={Leads} />
+      <Route path="/leads/:id" component={LeadDetail} />
       <Route path={"/conversations"} component={Conversations} />
       <Route path="/conversation/:id" component={ConversationDetail} />
       <Route path={"/sequences"} component={Sequences} />
