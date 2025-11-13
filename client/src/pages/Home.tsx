@@ -26,6 +26,9 @@ export default function Home() {
                 <Link href="/leads">
                   <Button variant="ghost">My Leads</Button>
                 </Link>
+                <Link href="/conversations">
+                  <Button variant="ghost">Conversations</Button>
+                </Link>
                 <span className="text-sm text-muted-foreground">
                   {user?.name || user?.email}
                 </span>

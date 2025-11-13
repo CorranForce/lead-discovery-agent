@@ -46,3 +46,39 @@
 - [ ] Automated lead scoring updates
 - [ ] Team collaboration features
 - [ ] Custom fields for leads
+
+## Sales Conversation Agent Features
+
+### Database Schema
+- [x] Create conversations table for storing sales conversations
+- [x] Create messages table for conversation history
+- [x] Create conversation_templates table for sales scripts
+- [ ] Create objections table for tracking common objections and responses
+
+### AI Conversation Features
+- [x] Real-time AI conversation assistant
+- [x] Objection handling suggestions
+- [ ] Sentiment analysis of conversations
+- [ ] Conversation flow recommendations
+- [x] Auto-response suggestions based on context
+
+### Conversation Management
+- [ ] Start new conversation from a lead
+- [x] Conversation history view
+- [x] Message threading and organization
+- [x] Conversation status tracking (active, closed, follow-up needed)
+- [x] Notes and annotations on conversations
+
+### Sales Tools
+- [ ] Pre-built sales scripts and templates
+- [ ] Objection handling library
+- [ ] Closing techniques suggestions
+- [ ] Follow-up reminders
+- [ ] Conversation analytics and insights
+
+### User Interface
+- [x] Chat-style conversation interface
+- [x] AI assistant sidebar with suggestions
+- [x] Conversation list/inbox view
+- [ ] Template library UI
+- [ ] Analytics dashboard for conversations

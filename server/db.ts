@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, leads, InsertLead, searchHistory, InsertSearchHistory, enrichmentData, InsertEnrichmentData } from "../drizzle/schema";
+import { InsertUser, users, leads, InsertLead, searchHistory, InsertSearchHistory, enrichmentData, InsertEnrichmentData, conversations, InsertConversation, messages, InsertMessage, conversationTemplates, InsertConversationTemplate } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -177,4 +177,98 @@ export async function getLeadEnrichmentData(leadId: number) {
   return await db.select().from(enrichmentData)
     .where(eq(enrichmentData.leadId, leadId))
     .orderBy(enrichmentData.createdAt);
+}
+
+// Conversation management queries
+export async function createConversation(conversation: InsertConversation) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(conversations).values(conversation);
+  return result;
+}
+
+export async function getUserConversations(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select().from(conversations)
+    .where(eq(conversations.userId, userId))
+    .orderBy(conversations.updatedAt);
+}
+
+export async function getConversationById(id: number, userId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select().from(conversations)
+    .where(eq(conversations.id, id))
+    .limit(1);
+  
+  // Verify ownership
+  if (result.length > 0 && result[0].userId === userId) {
+    return result[0];
+  }
+  return undefined;
+}
+
+export async function updateConversation(id: number, userId: number, updates: Partial<InsertConversation>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const conversation = await getConversationById(id, userId);
+  if (!conversation) throw new Error("Conversation not found or access denied");
+  
+  return await db.update(conversations)
+    .set(updates)
+    .where(eq(conversations.id, id));
+}
+
+export async function deleteConversation(id: number, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const conversation = await getConversationById(id, userId);
+  if (!conversation) throw new Error("Conversation not found or access denied");
+  
+  // Delete all messages first
+  await db.delete(messages).where(eq(messages.conversationId, id));
+  
+  return await db.delete(conversations).where(eq(conversations.id, id));
+}
+
+// Message management queries
+export async function createMessage(message: InsertMessage) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  return await db.insert(messages).values(message);
+}
+
+export async function getConversationMessages(conversationId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select().from(messages)
+    .where(eq(messages.conversationId, conversationId))
+    .orderBy(messages.createdAt);
+}
+
+// Template management queries
+export async function getPublicTemplates() {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select().from(conversationTemplates)
+    .where(eq(conversationTemplates.isPublic, 1))
+    .orderBy(conversationTemplates.createdAt);
+}
+
+export async function getUserTemplates(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select().from(conversationTemplates)
+    .where(eq(conversationTemplates.userId, userId))
+    .orderBy(conversationTemplates.createdAt);
 }

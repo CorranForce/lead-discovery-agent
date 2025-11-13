@@ -85,3 +85,55 @@ export const enrichmentData = mysqlTable("enrichmentData", {
 
 export type EnrichmentData = typeof enrichmentData.$inferSelect;
 export type InsertEnrichmentData = typeof enrichmentData.$inferInsert;
+
+/**
+ * Conversations table - stores sales conversations with leads
+ */
+export const conversations = mysqlTable("conversations", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(), // Foreign key to users table
+  leadId: int("leadId"), // Optional foreign key to leads table
+  title: varchar("title", { length: 255 }).notNull(),
+  status: mysqlEnum("status", ["active", "closed", "follow_up_needed", "won", "lost"]).default("active").notNull(),
+  sentiment: varchar("sentiment", { length: 50 }), // positive, neutral, negative
+  summary: text("summary"), // AI-generated summary
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Conversation = typeof conversations.$inferSelect;
+export type InsertConversation = typeof conversations.$inferInsert;
+
+/**
+ * Messages table - stores individual messages in conversations
+ */
+export const messages = mysqlTable("messages", {
+  id: int("id").autoincrement().primaryKey(),
+  conversationId: int("conversationId").notNull(), // Foreign key to conversations table
+  role: mysqlEnum("role", ["user", "lead", "ai_suggestion"]).notNull(),
+  content: text("content").notNull(),
+  metadata: text("metadata"), // JSON for additional data like sentiment, suggestions
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Message = typeof messages.$inferSelect;
+export type InsertMessage = typeof messages.$inferInsert;
+
+/**
+ * Conversation templates - pre-built sales scripts and templates
+ */
+export const conversationTemplates = mysqlTable("conversationTemplates", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId"), // NULL for system templates, user ID for custom templates
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  category: varchar("category", { length: 100 }), // e.g., "cold_outreach", "follow_up", "closing"
+  content: text("content").notNull(), // The template content
+  isPublic: int("isPublic").default(0), // 0 = private, 1 = public
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ConversationTemplate = typeof conversationTemplates.$inferSelect;
+export type InsertConversationTemplate = typeof conversationTemplates.$inferInsert;

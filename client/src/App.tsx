@@ -7,6 +7,8 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import Discover from "./pages/Discover";
 import Leads from "./pages/Leads";
+import Conversations from "./pages/Conversations";
+import ConversationDetail from "./pages/ConversationDetail";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -15,6 +17,8 @@ function Router() {
       <Route path={"/"} component={Home} />
       <Route path={"/discover"} component={Discover} />
       <Route path={"/leads"} component={Leads} />
+      <Route path={"/conversations"} component={Conversations} />
+      <Route path="/conversation/:id" component={ConversationDetail} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
