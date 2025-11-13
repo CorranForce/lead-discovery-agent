@@ -50,10 +50,10 @@ export default function Navigation() {
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-8">
           <Link href="/dashboard">
-            <a className="flex items-center gap-2 font-semibold text-lg hover:opacity-80 transition-opacity">
+            <span className="flex items-center gap-2 font-semibold text-lg hover:opacity-80 transition-opacity cursor-pointer">
               {APP_LOGO && <img src={APP_LOGO} alt={APP_TITLE} className="h-8 w-8" />}
               <span>{APP_TITLE}</span>
-            </a>
+            </span>
           </Link>
 
           <div className="hidden md:flex items-center gap-1">
@@ -62,16 +62,14 @@ export default function Navigation() {
               const isActive = location === item.href;
               return (
                 <Link key={item.href} href={item.href}>
-                  <a>
-                    <Button
-                      variant={isActive ? "secondary" : "ghost"}
-                      size="sm"
-                      className="gap-2"
-                    >
-                      <Icon className="h-4 w-4" />
-                      {item.label}
-                    </Button>
-                  </a>
+                  <Button
+                    variant={isActive ? "secondary" : "ghost"}
+                    size="sm"
+                    className="gap-2"
+                  >
+                    <Icon className="h-4 w-4" />
+                    {item.label}
+                  </Button>
                 </Link>
               );
             })}
@@ -95,12 +93,10 @@ export default function Navigation() {
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <Link href="/account">
-                <a>
-                  <DropdownMenuItem>
-                    <Settings className="mr-2 h-4 w-4" />
-                    Account Settings
-                  </DropdownMenuItem>
-                </a>
+                <DropdownMenuItem>
+                  <Settings className="mr-2 h-4 w-4" />
+                  Account Settings
+                </DropdownMenuItem>
               </Link>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout} className="text-red-600">

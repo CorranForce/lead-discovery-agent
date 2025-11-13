@@ -201,3 +201,4 @@
 - [x] Update UI to show data source indicator (Test vs Real)
 - [x] Add navigation menu to Dashboard and other pages to access Account settings
 - [x] Ensure Account page is accessible from all authenticated pages
+- [x] Fix nested anchor tag error on Discover page
