@@ -3,10 +3,19 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Search, Database, Zap, TrendingUp, ArrowRight, Sparkles } from "lucide-react";
 import { APP_TITLE, getLoginUrl } from "@/const";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
+import { useEffect } from "react";
 
 export default function Home() {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, loading } = useAuth();
+  const [, setLocation] = useLocation();
+
+  // Redirect authenticated users to dashboard
+  useEffect(() => {
+    if (!loading && isAuthenticated) {
+      setLocation("/dashboard");
+    }
+  }, [loading, isAuthenticated, setLocation]);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -20,6 +29,9 @@ export default function Home() {
           <nav className="flex items-center gap-4">
             {isAuthenticated ? (
               <>
+                <Link href="/dashboard">
+                  <Button variant="ghost">Dashboard</Button>
+                </Link>
                 <Link href="/discover">
                   <Button variant="ghost">Discover</Button>
                 </Link>
