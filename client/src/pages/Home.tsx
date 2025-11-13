@@ -29,6 +29,9 @@ export default function Home() {
                 <Link href="/conversations">
                   <Button variant="ghost">Conversations</Button>
                 </Link>
+                <Link href="/account">
+                  <Button variant="ghost">Account</Button>
+                </Link>
                 <span className="text-sm text-muted-foreground">
                   {user?.name || user?.email}
                 </span>

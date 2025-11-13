@@ -103,3 +103,25 @@
 - [x] Email template selector
 - [ ] Email history view
 - [x] Email sent confirmation
+
+## Account Management Features
+
+### Database Schema
+- [x] Add user preferences table for settings
+- [x] Add user profile fields (bio, company, phone, etc.)
+- [ ] Add activity log table for tracking user actions
+
+### Account Features
+- [x] User profile page with editable information
+- [x] Account settings page
+- [ ] Change password functionality
+- [x] Email preferences and notifications
+- [ ] Activity history/audit log
+- [x] Account statistics dashboard
+
+### User Interface
+- [x] Account/Profile page
+- [x] Settings page with tabs
+- [x] Profile edit form
+- [ ] Activity timeline
+- [x] Statistics cards

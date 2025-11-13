@@ -17,6 +17,86 @@ export const appRouter = router({
       } as const;
     }),
   }),
+  
+  // Account management
+  account: router({
+    getProfile: protectedProcedure.query(async ({ ctx }) => {
+      const { getUserByOpenId } = await import("./db");
+      return await getUserByOpenId(ctx.user.openId);
+    }),
+    
+    updateProfile: protectedProcedure
+      .input(z.object({
+        name: z.string().optional(),
+        bio: z.string().optional(),
+        company: z.string().optional(),
+        jobTitle: z.string().optional(),
+        phone: z.string().optional(),
+        website: z.string().optional(),
+        location: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { getDb } = await import("./db");
+        const { users } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+        
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+        
+        await db.update(users)
+          .set(input)
+          .where(eq(users.openId, ctx.user.openId));
+        
+        return { success: true };
+      }),
+    
+    updatePreferences: protectedProcedure
+      .input(z.object({
+        emailNotifications: z.number().min(0).max(1).optional(),
+        timezone: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { getDb } = await import("./db");
+        const { users } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+        
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+        
+        await db.update(users)
+          .set(input)
+          .where(eq(users.openId, ctx.user.openId));
+        
+        return { success: true };
+      }),
+    
+    getStats: protectedProcedure.query(async ({ ctx }) => {
+      const { getDb } = await import("./db");
+      const { leads, conversations, sentEmails } = await import("../drizzle/schema");
+      const { eq, count } = await import("drizzle-orm");
+      
+      const db = await getDb();
+      if (!db) return { totalLeads: 0, totalConversations: 0, totalEmails: 0 };
+      
+      const [leadsCount] = await db.select({ count: count() })
+        .from(leads)
+        .where(eq(leads.userId, ctx.user.id));
+      
+      const [conversationsCount] = await db.select({ count: count() })
+        .from(conversations)
+        .where(eq(conversations.userId, ctx.user.id));
+      
+      const [emailsCount] = await db.select({ count: count() })
+        .from(sentEmails)
+        .where(eq(sentEmails.userId, ctx.user.id));
+      
+      return {
+        totalLeads: leadsCount.count,
+        totalConversations: conversationsCount.count,
+        totalEmails: emailsCount.count,
+      };
+    }),
+  }),
 
   // Lead discovery and management
   leads: router({

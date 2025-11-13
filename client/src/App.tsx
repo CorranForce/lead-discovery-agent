@@ -9,6 +9,7 @@ import Discover from "./pages/Discover";
 import Leads from "./pages/Leads";
 import Conversations from "./pages/Conversations";
 import ConversationDetail from "./pages/ConversationDetail";
+import Account from "./pages/Account";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -19,6 +20,7 @@ function Router() {
       <Route path={"/leads"} component={Leads} />
       <Route path={"/conversations"} component={Conversations} />
       <Route path="/conversation/:id" component={ConversationDetail} />
+      <Route path={"/account"} component={Account} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

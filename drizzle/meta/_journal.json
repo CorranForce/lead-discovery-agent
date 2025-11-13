@@ -29,6 +29,13 @@
       "when": 1763045330747,
       "tag": "0003_fantastic_mephisto",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1763045657017,
+      "tag": "0004_new_scourge",
+      "breakpoints": true
     }
   ]
 }
