@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { InsertUser, users, leads, InsertLead, searchHistory, InsertSearchHistory, enrichmentData, InsertEnrichmentData } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -89,4 +89,92 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+// Lead management queries
+export async function createLead(lead: InsertLead) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(leads).values(lead);
+  return result;
+}
+
+export async function getUserLeads(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select().from(leads).where(eq(leads.userId, userId)).orderBy(leads.createdAt);
+}
+
+export async function getLeadById(id: number, userId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select().from(leads)
+    .where(eq(leads.id, id))
+    .limit(1);
+  
+  // Verify ownership
+  if (result.length > 0 && result[0].userId === userId) {
+    return result[0];
+  }
+  return undefined;
+}
+
+export async function updateLead(id: number, userId: number, updates: Partial<InsertLead>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Verify ownership before updating
+  const lead = await getLeadById(id, userId);
+  if (!lead) throw new Error("Lead not found or access denied");
+  
+  return await db.update(leads)
+    .set(updates)
+    .where(eq(leads.id, id));
+}
+
+export async function deleteLead(id: number, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Verify ownership before deleting
+  const lead = await getLeadById(id, userId);
+  if (!lead) throw new Error("Lead not found or access denied");
+  
+  return await db.delete(leads).where(eq(leads.id, id));
+}
+
+// Search history queries
+export async function createSearchHistory(search: InsertSearchHistory) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  return await db.insert(searchHistory).values(search);
+}
+
+export async function getUserSearchHistory(userId: number, limit: number = 10) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select().from(searchHistory)
+    .where(eq(searchHistory.userId, userId))
+    .orderBy(searchHistory.createdAt)
+    .limit(limit);
+}
+
+// Enrichment data queries
+export async function createEnrichmentData(data: InsertEnrichmentData) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  return await db.insert(enrichmentData).values(data);
+}
+
+export async function getLeadEnrichmentData(leadId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select().from(enrichmentData)
+    .where(eq(enrichmentData.leadId, leadId))
+    .orderBy(enrichmentData.createdAt);
+}
