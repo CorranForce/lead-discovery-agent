@@ -199,3 +199,5 @@
 - [x] If useRealData is false, use AI-generated templates (current behavior)
 - [x] If useRealData is true, call Apollo.io API for real company data
 - [x] Update UI to show data source indicator (Test vs Real)
+- [x] Add navigation menu to Dashboard and other pages to access Account settings
+- [x] Ensure Account page is accessible from all authenticated pages

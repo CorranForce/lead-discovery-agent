@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
+import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -73,7 +74,9 @@ export default function Discover() {
   };
 
   return (
-    <div className="container py-8 space-y-8">
+    <>
+      <Navigation />
+      <div className="container py-8 space-y-8">
       <div className="space-y-4">
         <div>
           <h1 className="text-4xl font-bold tracking-tight">AI Lead Template Generator</h1>
@@ -300,5 +303,6 @@ export default function Discover() {
         </div>
       )}
     </div>
+    </>
   );
 }

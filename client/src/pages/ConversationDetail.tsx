@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRoute } from "wouter";
 import { trpc } from "@/lib/trpc";
+import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -110,6 +111,8 @@ export default function ConversationDetail() {
   }
 
   return (
+    <>
+      <Navigation />
     <div className="container py-8 space-y-6">
       <div className="flex items-center gap-4">
         <Link href="/conversations">
@@ -285,5 +288,6 @@ export default function ConversationDetail() {
         </div>
       </div>
     </div>
+    </>
   );
 }

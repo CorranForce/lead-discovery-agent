@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
+import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -129,6 +130,8 @@ export default function Conversations() {
   }
 
   return (
+    <>
+      <Navigation />
     <div className="container py-8 space-y-8">
       <div className="flex items-center justify-between">
         <div className="space-y-2">
@@ -315,5 +318,6 @@ export default function Conversations() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
+    </>
   );
 }

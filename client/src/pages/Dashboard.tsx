@@ -1,5 +1,6 @@
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
+import Navigation from "@/components/Navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Building2, MessageSquare, Mail, Plus, TrendingUp, Users, ArrowRight } from "lucide-react";
@@ -22,7 +23,9 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="container py-8 space-y-8">
+    <>
+      <Navigation />
+      <div className="container py-8 space-y-8">
       {/* Welcome Section */}
       <div className="space-y-2">
         <h1 className="text-4xl font-bold tracking-tight">
@@ -254,5 +257,6 @@ export default function Dashboard() {
         </CardContent>
       </Card>
     </div>
+    </>
   );
 }
