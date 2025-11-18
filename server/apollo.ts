@@ -1,12 +1,13 @@
 /**
  * Apollo.io API Client
- * Provides functions to search for people and organizations using Apollo's B2B database
+ * Provides functions to search for organizations using Apollo's B2B database
+ * Note: Using /organizations/search endpoint which works with free API keys
  */
 
 const APOLLO_API_KEY = process.env.APOLLO_API_KEY;
 const APOLLO_API_BASE = "https://api.apollo.io/api/v1";
 
-interface ApolloPersonSearchParams {
+interface ApolloOrganizationSearchParams {
   query?: string;
   industry?: string;
   companySize?: string;
@@ -25,12 +26,12 @@ interface ApolloOrganization {
   city?: string;
   state?: string;
   country?: string;
-  short_description?: string;
   linkedin_url?: string;
   phone?: string;
+  short_description?: string;
 }
 
-interface ApolloSearchResponse {
+interface ApolloOrganizationSearchResponse {
   organizations: ApolloOrganization[];
   pagination: {
     page: number;
@@ -42,8 +43,9 @@ interface ApolloSearchResponse {
 
 /**
  * Search for organizations using Apollo.io API
+ * This endpoint works with free API keys
  */
-export async function searchOrganizations(params: ApolloPersonSearchParams): Promise<ApolloSearchResponse> {
+export async function searchOrganizations(params: ApolloOrganizationSearchParams): Promise<ApolloOrganizationSearchResponse> {
   if (!APOLLO_API_KEY) {
     throw new Error("APOLLO_API_KEY is not configured");
   }
@@ -55,12 +57,15 @@ export async function searchOrganizations(params: ApolloPersonSearchParams): Pro
 
   // Map our parameters to Apollo's format
   if (params.query) {
-    requestBody.q_keywords = params.query;
+    requestBody.q_organization_keyword_tags = [params.query];
   }
 
   if (params.industry) {
     // Apollo uses specific industry codes, but we'll try keyword matching
-    requestBody.q_organization_keyword_tags = [params.industry];
+    if (!requestBody.q_organization_keyword_tags) {
+      requestBody.q_organization_keyword_tags = [];
+    }
+    requestBody.q_organization_keyword_tags.push(params.industry);
   }
 
   if (params.companySize) {
@@ -113,13 +118,13 @@ export async function searchOrganizations(params: ApolloPersonSearchParams): Pro
  */
 export function convertApolloOrgToLead(org: ApolloOrganization) {
   return {
-    companyName: org.name,
+    companyName: org.name || "Unknown Company",
     website: org.website_url || org.primary_domain || "",
     industry: org.industry || "Unknown",
     companySize: org.estimated_num_employees 
       ? `${org.estimated_num_employees} employees` 
       : "Unknown",
-    location: [org.city, org.state, org.country].filter(Boolean).join(", "),
+    location: [org.city, org.state, org.country].filter(Boolean).join(", ") || "Unknown",
     description: org.short_description || `${org.name} is a company in the ${org.industry || "business"} industry.`,
     contactName: "",
     contactTitle: "",

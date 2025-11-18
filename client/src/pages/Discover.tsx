@@ -85,11 +85,20 @@ export default function Discover() {
           </p>
         </div>
         {useRealData ? (
-          <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
-            <p className="text-sm text-green-700 dark:text-green-400">
-              <strong>✅ Real Data Mode:</strong> Lead discovery is using Apollo.io's database of 210M+ verified contacts and companies. 
-              Results are real businesses with actual contact information.
-            </p>
+          <div className="space-y-3">
+            <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
+              <p className="text-sm text-green-700 dark:text-green-400">
+                <strong>✅ Real Data Mode:</strong> Lead discovery is using Apollo.io's database of 210M+ verified contacts and companies. 
+                Results are real businesses with verified company information.
+              </p>
+            </div>
+            <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+              <p className="text-sm text-blue-700 dark:text-blue-400">
+                <strong>ℹ️ Free API Tier:</strong> Your current Apollo API key provides company-level data (company name, website, industry, size, location). 
+                Individual contact information (decision maker names, job titles, direct emails, phone numbers) requires a paid Apollo plan. 
+                <a href="https://www.apollo.io/pricing" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-600 dark:hover:text-blue-300">Upgrade your plan</a> to access individual contacts.
+              </p>
+            </div>
           </div>
         ) : (
           <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">

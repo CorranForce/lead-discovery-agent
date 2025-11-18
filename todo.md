@@ -256,3 +256,14 @@
 - [x] Add quick actions (send email, start conversation, update status)
 - [x] Add route for /leads/:id
 - [x] Make lead cards clickable to navigate to detail page
+- [ ] Update Apollo.io integration to use /people/search endpoint instead of /organizations/search (requires paid plan)
+- [ ] Return individual contacts with names, job titles, emails, and phone numbers (requires paid plan)
+- [ ] Update lead data structure to properly display person-level information
+- [x] Revert Apollo.io integration back to /organizations/search endpoint (works with free API key)
+- [x] Update apollo.ts to use searchOrganizations and convertApolloOrgToLead functions
+- [x] Update routers.ts to call organization search functions instead of people search
+- [x] Update UI messaging to clarify that results are companies (not individual contacts)
+- [x] Test the updated integration with real Apollo.io free API key
+- [x] Add informational note to Discover page explaining Apollo API free vs paid tier differences
+- [x] Clarify that free API returns company-level data only
+- [x] Explain that individual contact data (names, titles, emails, phones) requires paid Apollo plan
