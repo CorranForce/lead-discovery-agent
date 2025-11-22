@@ -267,3 +267,11 @@
 - [x] Add informational note to Discover page explaining Apollo API free vs paid tier differences
 - [x] Clarify that free API returns company-level data only
 - [x] Explain that individual contact data (names, titles, emails, phones) requires paid Apollo plan
+- [x] Debug Apollo.io search returning 0 results for "SaaS companies that need automation"
+- [x] Check API request parameters being sent to Apollo
+- [x] Review Apollo.io API documentation for correct parameter format
+- [x] Test with different search queries to identify the issue
+- [x] Fix parameter mapping in apollo.ts
+- [x] Change from q_organization_keyword_tags (invalid) to q_organization_name (correct parameter)
+- [x] Add keyword extraction function to remove filler words from natural language queries
+- [x] Test keyword extraction with "SaaS companies that need automation" - returns 5 relevant results

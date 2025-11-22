@@ -42,6 +42,37 @@ interface ApolloOrganizationSearchResponse {
 }
 
 /**
+ * Extract meaningful search keywords from natural language queries
+ * Apollo's q_organization_name does company name matching, not semantic search
+ */
+function extractSearchKeywords(query: string): string {
+  // Remove common filler words and phrases
+  const fillerWords = [
+    'companies', 'company', 'businesses', 'business', 'organizations', 'organization',
+    'that', 'need', 'needs', 'want', 'wants', 'looking for', 'interested in',
+    'in the', 'with', 'who', 'which', 'are', 'is', 'have', 'has'
+  ];
+  
+  let keywords = query.toLowerCase();
+  
+  // Remove filler words
+  fillerWords.forEach(word => {
+    const regex = new RegExp(`\\b${word}\\b`, 'gi');
+    keywords = keywords.replace(regex, '');
+  });
+  
+  // Clean up extra spaces
+  keywords = keywords.replace(/\s+/g, ' ').trim();
+  
+  // If we removed everything, return the original query
+  if (!keywords) {
+    return query;
+  }
+  
+  return keywords;
+}
+
+/**
  * Search for organizations using Apollo.io API
  * This endpoint works with free API keys
  */
@@ -57,15 +88,23 @@ export async function searchOrganizations(params: ApolloOrganizationSearchParams
 
   // Map our parameters to Apollo's format
   if (params.query) {
-    requestBody.q_organization_keyword_tags = [params.query];
+    // Extract keywords from natural language query
+    // Apollo's q_organization_name does name matching, not semantic search
+    // So we need to extract industry/business keywords
+    const keywords = extractSearchKeywords(params.query);
+    if (keywords) {
+      requestBody.q_organization_name = keywords;
+    }
   }
 
   if (params.industry) {
-    // Apollo uses specific industry codes, but we'll try keyword matching
-    if (!requestBody.q_organization_keyword_tags) {
-      requestBody.q_organization_keyword_tags = [];
+    // For industry, we can add it to the organization name search
+    // or use organization_industry_tag_ids if we have the specific IDs
+    if (requestBody.q_organization_name) {
+      requestBody.q_organization_name = `${requestBody.q_organization_name} ${params.industry}`;
+    } else {
+      requestBody.q_organization_name = params.industry;
     }
-    requestBody.q_organization_keyword_tags.push(params.industry);
   }
 
   if (params.companySize) {
