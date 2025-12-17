@@ -275,3 +275,17 @@
 - [x] Change from q_organization_keyword_tags (invalid) to q_organization_name (correct parameter)
 - [x] Add keyword extraction function to remove filler words from natural language queries
 - [x] Test keyword extraction with "SaaS companies that need automation" - returns 5 relevant results
+
+## Search History & Favorites Feature
+- [x] Add isFavorite field to searchHistory table schema
+- [x] Create database migration for search history (pnpm db:push)
+- [x] Add server-side query helpers for search history CRUD (getUserSearchHistory, getUserFavoriteSearches, toggleSearchFavorite, deleteSearchHistory, clearUserSearchHistory)
+- [x] Create tRPC endpoints: list, favorites, toggleFavorite, delete, clear
+- [x] Build SearchHistory UI component with favorites toggle and tabs
+- [x] Integrate search history into Discover page sidebar with 2-column layout
+- [x] Add quick re-run functionality for previous searches
+- [x] Update search history saving to include filter fields (industry, companySize, location)
+- [x] Test favorites toggle functionality - working perfectly
+- [x] Test rerun search functionality - populates form correctly
+- [x] Test delete and clear history functionality - UI working
+- [x] Test search history feature end-to-end - all features working

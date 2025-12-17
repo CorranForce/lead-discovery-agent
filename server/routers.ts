@@ -245,6 +245,9 @@ export const appRouter = router({
             await createSearchHistory({
               userId: ctx.user.id,
               query: input.query,
+              industry: input.industry || null,
+              companySize: input.companySize || null,
+              location: input.location || null,
               filters: JSON.stringify({ industry: input.industry, companySize: input.companySize, location: input.location }),
               resultsCount: leads.length,
             });
@@ -332,6 +335,9 @@ Return exactly 5 leads in valid JSON format as an array of objects.`;
         await createSearchHistory({
           userId: ctx.user.id,
           query: input.query,
+          industry: input.industry || null,
+          companySize: input.companySize || null,
+          location: input.location || null,
           filters: JSON.stringify({ industry: input.industry, companySize: input.companySize, location: input.location }),
           resultsCount: result.leads?.length || 0,
         });
@@ -346,6 +352,39 @@ Return exactly 5 leads in valid JSON format as an array of objects.`;
       .query(async ({ ctx, input }) => {
         const { getUserSearchHistory } = await import("./db");
         return await getUserSearchHistory(ctx.user.id, input.limit);
+      }),
+    
+    // Get only favorite searches
+    favorites: protectedProcedure.query(async ({ ctx }) => {
+      const { getUserFavoriteSearches } = await import("./db");
+      return await getUserFavoriteSearches(ctx.user.id);
+    }),
+    
+    // Toggle favorite status
+    toggleFavorite: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const { toggleSearchFavorite } = await import("./db");
+        const isFavorite = await toggleSearchFavorite(input.id, ctx.user.id);
+        return { isFavorite };
+      }),
+    
+    // Delete a single search history entry
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const { deleteSearchHistory } = await import("./db");
+        await deleteSearchHistory(input.id, ctx.user.id);
+        return { success: true };
+      }),
+    
+    // Clear all search history (optionally keep favorites)
+    clear: protectedProcedure
+      .input(z.object({ keepFavorites: z.boolean().default(true) }))
+      .mutation(async ({ ctx, input }) => {
+        const { clearUserSearchHistory } = await import("./db");
+        await clearUserSearchHistory(ctx.user.id, input.keepFavorites);
+        return { success: true };
       }),
   }),
   

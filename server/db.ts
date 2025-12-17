@@ -149,17 +149,89 @@ export async function createSearchHistory(search: InsertSearchHistory) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
-  return await db.insert(searchHistory).values(search);
+  const result = await db.insert(searchHistory).values(search);
+  return result;
 }
 
-export async function getUserSearchHistory(userId: number, limit: number = 10) {
+export async function getUserSearchHistory(userId: number, limit: number = 50) {
   const db = await getDb();
   if (!db) return [];
   
+  const { desc } = await import("drizzle-orm");
   return await db.select().from(searchHistory)
     .where(eq(searchHistory.userId, userId))
-    .orderBy(searchHistory.createdAt)
+    .orderBy(desc(searchHistory.createdAt))
     .limit(limit);
+}
+
+export async function getUserFavoriteSearches(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const { desc, and } = await import("drizzle-orm");
+  return await db.select().from(searchHistory)
+    .where(and(
+      eq(searchHistory.userId, userId),
+      eq(searchHistory.isFavorite, 1)
+    ))
+    .orderBy(desc(searchHistory.createdAt));
+}
+
+export async function toggleSearchFavorite(id: number, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Get current state
+  const result = await db.select().from(searchHistory)
+    .where(eq(searchHistory.id, id))
+    .limit(1);
+  
+  if (result.length === 0 || result[0].userId !== userId) {
+    throw new Error("Search not found or access denied");
+  }
+  
+  const newFavoriteState = result[0].isFavorite === 1 ? 0 : 1;
+  
+  await db.update(searchHistory)
+    .set({ isFavorite: newFavoriteState })
+    .where(eq(searchHistory.id, id));
+  
+  return newFavoriteState === 1;
+}
+
+export async function deleteSearchHistory(id: number, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Verify ownership
+  const result = await db.select().from(searchHistory)
+    .where(eq(searchHistory.id, id))
+    .limit(1);
+  
+  if (result.length === 0 || result[0].userId !== userId) {
+    throw new Error("Search not found or access denied");
+  }
+  
+  await db.delete(searchHistory).where(eq(searchHistory.id, id));
+  return true;
+}
+
+export async function clearUserSearchHistory(userId: number, keepFavorites: boolean = true) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  if (keepFavorites) {
+    const { and } = await import("drizzle-orm");
+    await db.delete(searchHistory).where(
+      and(
+        eq(searchHistory.userId, userId),
+        eq(searchHistory.isFavorite, 0)
+      )
+    );
+  } else {
+    await db.delete(searchHistory).where(eq(searchHistory.userId, userId));
+  }
+  return true;
 }
 
 // Enrichment data queries

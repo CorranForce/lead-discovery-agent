@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
 import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Search, Building2, MapPin, Users, Globe, Mail, Linkedin, Plus } from "lucide-react";
 import { toast } from "sonner";
+import SearchHistory from "@/components/SearchHistory";
 import {
   Select,
   SelectContent,
@@ -44,7 +45,7 @@ export default function Discover() {
     },
   });
 
-  const handleDiscover = () => {
+  const handleDiscover = useCallback(() => {
     if (!query.trim()) {
       toast.error("Please enter a search query");
       return;
@@ -56,7 +57,23 @@ export default function Discover() {
       companySize: companySize && companySize !== 'any' ? companySize : undefined,
       location: location || undefined,
     });
-  };
+  }, [query, industry, companySize, location, discoverMutation]);
+
+  // Handler for re-running searches from history
+  const handleRerunSearch = useCallback((searchQuery: string, searchIndustry?: string, searchCompanySize?: string, searchLocation?: string) => {
+    setQuery(searchQuery);
+    setIndustry(searchIndustry || "any");
+    setCompanySize(searchCompanySize || "any");
+    setLocation(searchLocation || "");
+    
+    // Trigger the search with the new values
+    discoverMutation.mutate({
+      query: searchQuery,
+      industry: searchIndustry && searchIndustry !== 'any' ? searchIndustry : undefined,
+      companySize: searchCompanySize && searchCompanySize !== 'any' ? searchCompanySize : undefined,
+      location: searchLocation || undefined,
+    });
+  }, [discoverMutation]);
 
   const handleSaveLead = (lead: any) => {
     createLeadMutation.mutate({
@@ -111,6 +128,17 @@ export default function Discover() {
         )}
       </div>
 
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Search History Sidebar */}
+        <div className="lg:col-span-1 order-2 lg:order-1">
+          <SearchHistory 
+            onRerunSearch={handleRerunSearch} 
+            isSearching={discoverMutation.isPending} 
+          />
+        </div>
+
+        {/* Main Search Form */}
+        <div className="lg:col-span-2 order-1 lg:order-2">
       <Card>
         <CardHeader>
           <CardTitle>Search Criteria</CardTitle>
@@ -199,6 +227,8 @@ export default function Discover() {
           </Button>
         </CardContent>
       </Card>
+        </div>
+      </div>
 
       {discoveredLeads.length > 0 && (
         <div className="space-y-4">

@@ -71,8 +71,12 @@ export const searchHistory = mysqlTable("searchHistory", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId").notNull(),
   query: text("query").notNull(), // Natural language search query
-  filters: text("filters"), // JSON object with applied filters
+  industry: varchar("industry", { length: 255 }), // Selected industry filter
+  companySize: varchar("companySize", { length: 100 }), // Selected company size filter
+  location: varchar("location", { length: 255 }), // Location filter
+  filters: text("filters"), // JSON object with all applied filters
   resultsCount: int("resultsCount").default(0),
+  isFavorite: int("isFavorite").default(0).notNull(), // 0 = not favorite, 1 = favorite
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 

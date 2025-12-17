@@ -57,6 +57,13 @@
       "when": 1763051835795,
       "tag": "0007_light_lester",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "5",
+      "when": 1765811335773,
+      "tag": "0008_many_red_shift",
+      "breakpoints": true
     }
   ]
 }
