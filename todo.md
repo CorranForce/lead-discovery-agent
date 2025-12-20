@@ -289,3 +289,14 @@
 - [x] Test rerun search functionality - populates form correctly
 - [x] Test delete and clear history functionality - UI working
 - [x] Test search history feature end-to-end - all features working
+
+## Lead Scoring Algorithm Enhancements
+- [x] Review current lead scoring implementation in server/leadScoring.ts
+- [x] Add score-based sorting to Leads page (High to Low, Low to High, Name A-Z, Most Recent)
+- [x] Add score filter to Leads page (All Scores, High Priority 70+, Medium 40-69, Low <40)
+- [x] Enhance score badge visualization with color coding (green for high, yellow for medium, red for low)
+- [x] Add emoji indicators to score badges (🔥 High, ⚡ Medium, 📊 Low)
+- [x] Add score breakdown tooltip showing factor contributions
+- [x] Test sorting by score functionality - verified Enterprise Medical (92) appears before TechHealth (85)
+- [x] Test filtering by score priority - High Priority filter correctly shows only scores ≥70
+- [x] Verify score calculations are accurate - all test leads showing correct scores

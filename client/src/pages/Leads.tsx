@@ -4,7 +4,8 @@ import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Building2, MapPin, Users, Globe, Mail, Linkedin, Trash2, ExternalLink, Send, Download, Eye } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Loader2, Building2, MapPin, Users, Globe, Mail, Linkedin, Trash2, ExternalLink, Send, Download, Eye, Info } from "lucide-react";
 import { Link } from "wouter";
 import { EmailDialog } from "@/components/EmailDialog";
 import { toast } from "sonner";
@@ -38,6 +39,8 @@ export default function Leads() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [leadToDelete, setLeadToDelete] = useState<number | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [filterScore, setFilterScore] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<string>("recent");
   const [emailDialogOpen, setEmailDialogOpen] = useState(false);
   const [emailLead, setEmailLead] = useState<{ email: string; name: string; id: number } | null>(null);
 
@@ -84,9 +87,36 @@ export default function Leads() {
     }
   };
 
-  const filteredLeads = leads?.filter(lead => 
-    filterStatus === "all" || lead.status === filterStatus
-  ) || [];
+  // Filter and sort leads
+  let filteredLeads = leads?.filter(lead => {
+    // Filter by status
+    const statusMatch = filterStatus === "all" || lead.status === filterStatus;
+    
+    // Filter by score priority
+    let scoreMatch = true;
+    if (filterScore === "high") {
+      scoreMatch = (lead.score ?? 0) >= 70;
+    } else if (filterScore === "medium") {
+      scoreMatch = (lead.score ?? 0) >= 40 && (lead.score ?? 0) < 70;
+    } else if (filterScore === "low") {
+      scoreMatch = (lead.score ?? 0) < 40;
+    }
+    
+    return statusMatch && scoreMatch;
+  }) || [];
+  
+  // Sort leads
+  filteredLeads = [...filteredLeads].sort((a, b) => {
+    if (sortBy === "score-high") {
+      return (b.score ?? 0) - (a.score ?? 0);
+    } else if (sortBy === "score-low") {
+      return (a.score ?? 0) - (b.score ?? 0);
+    } else if (sortBy === "name") {
+      return a.companyName.localeCompare(b.companyName);
+    } else { // recent (default)
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    }
+  });
 
   const exportToCSV = () => {
     if (!leads || leads.length === 0) {
@@ -174,22 +204,46 @@ export default function Leads() {
           </p>
         </div>
         
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <Button
             onClick={exportToCSV}
             variant="outline"
             disabled={!leads || leads.length === 0}
           >
             <Download className="h-4 w-4 mr-2" />
-            Export to CSV
+            Export CSV
           </Button>
           
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="w-[160px]">
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="recent">Most Recent</SelectItem>
+              <SelectItem value="score-high">Score: High to Low</SelectItem>
+              <SelectItem value="score-low">Score: Low to High</SelectItem>
+              <SelectItem value="name">Name: A-Z</SelectItem>
+            </SelectContent>
+          </Select>
+          
+          <Select value={filterScore} onValueChange={setFilterScore}>
+            <SelectTrigger className="w-[160px]">
+              <SelectValue placeholder="Filter by score" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Scores</SelectItem>
+              <SelectItem value="high">High Priority (70+)</SelectItem>
+              <SelectItem value="medium">Medium (40-69)</SelectItem>
+              <SelectItem value="low">Low (&lt;40)</SelectItem>
+            </SelectContent>
+          </Select>
+          
           <Select value={filterStatus} onValueChange={setFilterStatus}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-[150px]">
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Leads</SelectItem>
+              <SelectItem value="all">All Status</SelectItem>
               <SelectItem value="new">New</SelectItem>
               <SelectItem value="contacted">Contacted</SelectItem>
               <SelectItem value="qualified">Qualified</SelectItem>
@@ -230,18 +284,47 @@ export default function Leads() {
                         {lead.status}
                       </Badge>
                       {(lead.score ?? 0) > 0 && (
-                        <Badge 
-                          className={
-                            (lead.score ?? 0) >= 70 
-                              ? "bg-green-500/10 text-green-500 border-green-500/20" 
-                              : (lead.score ?? 0) >= 40 
-                              ? "bg-yellow-500/10 text-yellow-500 border-yellow-500/20"
-                              : "bg-red-500/10 text-red-500 border-red-500/20"
-                          }
-                          variant="outline"
-                        >
-                          {(lead.score ?? 0) >= 70 ? "🔥 High" : (lead.score ?? 0) >= 40 ? "⚡ Medium" : "📊 Low"} Priority ({lead.score}/100)
-                        </Badge>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Badge 
+                              className={
+                                (lead.score ?? 0) >= 70 
+                                  ? "bg-green-500/10 text-green-500 border-green-500/20 cursor-help" 
+                                  : (lead.score ?? 0) >= 40 
+                                  ? "bg-yellow-500/10 text-yellow-500 border-yellow-500/20 cursor-help"
+                                  : "bg-red-500/10 text-red-500 border-red-500/20 cursor-help"
+                              }
+                              variant="outline"
+                            >
+                              {(lead.score ?? 0) >= 70 ? "🔥 High" : (lead.score ?? 0) >= 40 ? "⚡ Medium" : "📊 Low"} Priority ({lead.score}/100)
+                              <Info className="h-3 w-3 ml-1 inline" />
+                            </Badge>
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-xs">
+                            <div className="space-y-2">
+                              <p className="font-semibold text-sm">Score Breakdown:</p>
+                              <div className="text-xs space-y-1">
+                                <div className="flex justify-between">
+                                  <span>Company Size:</span>
+                                  <span className="font-medium">{lead.companySize || "Unknown"}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>Industry Fit:</span>
+                                  <span className="font-medium">{lead.industry || "Unknown"}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>Contact Info:</span>
+                                  <span className="font-medium">
+                                    {[lead.contactEmail, lead.contactPhone, lead.contactLinkedin].filter(Boolean).length}/3 fields
+                                  </span>
+                                </div>
+                              </div>
+                              <p className="text-xs text-muted-foreground pt-1 border-t">
+                                Click lead name to see full score details
+                              </p>
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
                       )}
                     </div>
                     <CardDescription className="flex items-center gap-4 text-sm">
