@@ -300,3 +300,16 @@
 - [x] Test sorting by score functionality - verified Enterprise Medical (92) appears before TechHealth (85)
 - [x] Test filtering by score priority - High Priority filter correctly shows only scores ≥70
 - [x] Verify score calculations are accurate - all test leads showing correct scores
+
+
+## Automated Lead Score Recalculation
+- [x] Create recalculateLeadScore helper function in server/leadScoring.ts
+- [x] Add updateLeadScore database helper in server/db.ts
+- [x] Trigger score recalculation when email link is clicked (in clickTracker.ts)
+- [x] Trigger score recalculation when lead status changes (in routers.ts)
+- [x] Trigger score recalculation when contact information is updated (in routers.ts)
+- [x] Write comprehensive unit tests for score calculation (15 tests, all passing)
+- [x] Test score updates after click event - working correctly
+- [x] Test score updates after status change - TechHealth Solutions score updated from 85→50
+- [x] Verify score changes are reflected in UI immediately - confirmed
+- [x] Verify server logs show score update messages - confirmed "[Score Update] Lead 30001 score updated to 50 after update"

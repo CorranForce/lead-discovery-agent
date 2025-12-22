@@ -144,6 +144,15 @@ export async function deleteLead(id: number, userId: number) {
   return await db.delete(leads).where(eq(leads.id, id));
 }
 
+export async function updateLeadScore(id: number, score: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  return await db.update(leads)
+    .set({ score, updatedAt: new Date() })
+    .where(eq(leads.id, id));
+}
+
 // Search history queries
 export async function createSearchHistory(search: InsertSearchHistory) {
   const db = await getDb();

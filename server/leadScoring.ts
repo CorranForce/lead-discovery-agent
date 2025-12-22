@@ -245,3 +245,15 @@ function generateExplanation(
 
   return explanation.trim();
 }
+
+/**
+ * Recalculate lead score with fresh engagement data
+ * This function should be called whenever engagement changes
+ */
+export async function recalculateLeadScore(
+  lead: Lead,
+  getEngagementData: () => Promise<{ opens: number; clicks: number }>
+): Promise<ScoringResult> {
+  const { opens, clicks } = await getEngagementData();
+  return calculateLeadScore(lead, opens, clicks);
+}

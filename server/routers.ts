@@ -173,8 +173,35 @@ export const appRouter = router({
       }))
       .mutation(async ({ ctx, input }) => {
         const { id, ...updates } = input;
-        const { updateLead } = await import("./db");
-        return await updateLead(id, ctx.user.id, updates);
+        const { updateLead, getLeadById, getLeadEmailClicks, updateLeadScore } = await import("./db");
+        const { calculateLeadScore } = await import("./leadScoring");
+        
+        // Update the lead
+        const result = await updateLead(id, ctx.user.id, updates);
+        
+        // Automatically recalculate score if status or contact info changed
+        const shouldRecalculateScore = updates.status || updates.contactEmail || 
+          updates.contactPhone || updates.contactLinkedin || updates.contactName || updates.contactTitle;
+        
+        if (shouldRecalculateScore) {
+          try {
+            const lead = await getLeadById(id, ctx.user.id);
+            if (lead) {
+              const clicks = await getLeadEmailClicks(id);
+              const emailClicks = clicks.length;
+              const emailOpens = 0; // TODO: Track opens when available
+              
+              const scoringResult = calculateLeadScore(lead, emailOpens, emailClicks);
+              await updateLeadScore(id, scoringResult.score);
+              console.log(`[Score Update] Lead ${id} score updated to ${scoringResult.score} after update`);
+            }
+          } catch (error) {
+            console.error(`[Score Update] Failed to update score for lead ${id}:`, error);
+            // Don't fail the mutation if score update fails
+          }
+        }
+        
+        return result;
       }),
     
     delete: protectedProcedure
