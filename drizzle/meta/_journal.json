@@ -64,6 +64,13 @@
       "when": 1765811335773,
       "tag": "0008_many_red_shift",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "5",
+      "when": 1766506492147,
+      "tag": "0009_acoustic_kronos",
+      "breakpoints": true
     }
   ]
 }

@@ -210,6 +210,22 @@ export const emailClicks = mysqlTable("emailClicks", {
 export type EmailClick = typeof emailClicks.$inferSelect;
 export type InsertEmailClick = typeof emailClicks.$inferInsert;
 
+/**
+ * Email open tracking table
+ * Tracks when emails are opened by recipients via tracking pixel
+ */
+export const emailOpens = mysqlTable("emailOpens", {
+  id: int("id").autoincrement().primaryKey(),
+  sentEmailId: int("sentEmailId").notNull(),
+  leadId: int("leadId"),
+  openedAt: timestamp("openedAt").defaultNow().notNull(),
+  ipAddress: varchar("ipAddress", { length: 45 }),
+  userAgent: text("userAgent"),
+});
+
+export type EmailOpen = typeof emailOpens.$inferSelect;
+export type InsertEmailOpen = typeof emailOpens.$inferInsert;
+
 // Email Sequences for automation
 export const emailSequences = mysqlTable("emailSequences", {
   id: int("id").autoincrement().primaryKey(),

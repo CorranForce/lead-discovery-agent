@@ -313,3 +313,25 @@
 - [x] Test score updates after status change - TechHealth Solutions score updated from 85→50
 - [x] Verify score changes are reflected in UI immediately - confirmed
 - [x] Verify server logs show score update messages - confirmed "[Score Update] Lead 30001 score updated to 50 after update"
+
+
+## Email Open Tracking (Pixel-Based)
+- [x] Create emailOpens table in database schema
+- [x] Add fields: id, sentEmailId, leadId, ipAddress, userAgent, openedAt
+- [x] Push database schema changes with pnpm db:push
+- [x] Create public endpoint /api/track/open for tracking pixel requests
+- [x] Generate 1x1 transparent PNG tracking pixel (base64 encoded)
+- [x] Embed tracking pixel in email HTML with unique URL per sent email
+- [x] Log email open events to database when pixel is loaded
+- [x] Create database helper functions for email opens (createEmailOpen, getEmailOpens, getLeadEmailOpens, getAllEmailOpens)
+- [x] Update score calculation to use real email opens count instead of hardcoded 0
+- [x] Update clickTracker.ts to fetch and use email opens in score calculation
+- [x] Update routers.ts leads.update to fetch and use email opens in score calculation
+- [x] Update openTracker.ts to trigger automatic score recalculation after email open
+- [x] Create openTracker.ts with tracking pixel handler and URL generation functions
+- [x] Register /api/track/open endpoint in server/_core/index.ts
+- [x] Update email sending in routers.ts to automatically embed tracking pixels
+- [x] Write comprehensive unit tests for email open tracking (12 tests, all passing)
+- [x] Test tracking pixel URL generation with various parameters
+- [x] Test tracking pixel embedding in different HTML formats
+- [x] Verify tracking pixel is invisible (1x1 transparent PNG)

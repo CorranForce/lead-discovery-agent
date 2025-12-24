@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, leads, InsertLead, searchHistory, InsertSearchHistory, enrichmentData, InsertEnrichmentData, conversations, InsertConversation, messages, InsertMessage, conversationTemplates, InsertConversationTemplate, emailTemplates, InsertEmailTemplate, sentEmails, InsertSentEmail, emailSequences, InsertEmailSequence, sequenceSteps, InsertSequenceStep, sequenceEnrollments, InsertSequenceEnrollment, emailClicks, InsertEmailClick } from "../drizzle/schema";
+import { InsertUser, users, leads, InsertLead, searchHistory, InsertSearchHistory, enrichmentData, InsertEnrichmentData, conversations, InsertConversation, messages, InsertMessage, conversationTemplates, InsertConversationTemplate, emailTemplates, InsertEmailTemplate, sentEmails, InsertSentEmail, emailSequences, InsertEmailSequence, sequenceSteps, InsertSequenceStep, sequenceEnrollments, InsertSequenceEnrollment, emailClicks, InsertEmailClick, emailOpens, InsertEmailOpen } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -488,4 +488,51 @@ export async function getAllEmailClicks(userId: number) {
     .where(eq(sentEmails.userId, userId));
   
   return clicks;
+}
+
+// Email Open Tracking functions
+export async function createEmailOpen(open: InsertEmailOpen) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.insert(emailOpens).values(open);
+}
+
+export async function getEmailOpens(sentEmailId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const opens = await db.select().from(emailOpens).where(eq(emailOpens.sentEmailId, sentEmailId));
+  return opens;
+}
+
+export async function getLeadEmailOpens(leadId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const opens = await db.select().from(emailOpens).where(eq(emailOpens.leadId, leadId));
+  return opens;
+}
+
+export async function getAllEmailOpens(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  // Join with sentEmails to filter by userId
+  const opens = await db
+    .select({
+      id: emailOpens.id,
+      sentEmailId: emailOpens.sentEmailId,
+      leadId: emailOpens.leadId,
+      openedAt: emailOpens.openedAt,
+      ipAddress: emailOpens.ipAddress,
+      userAgent: emailOpens.userAgent,
+      recipientEmail: sentEmails.recipientEmail,
+      subject: sentEmails.subject,
+    })
+    .from(emailOpens)
+    .leftJoin(sentEmails, eq(emailOpens.sentEmailId, sentEmails.id))
+    .where(eq(sentEmails.userId, userId));
+  
+  return opens;
 }

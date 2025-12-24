@@ -4,7 +4,7 @@
  */
 
 import { Request, Response } from "express";
-import { createEmailClick, getLeadById, getLeadEmailClicks, updateLeadScore } from "./db";
+import { createEmailClick, getLeadById, getLeadEmailClicks, getLeadEmailOpens, updateLeadScore } from "./db";
 import { calculateLeadScore } from "./leadScoring";
 
 export async function handleClickTracking(req: Request, res: Response) {
@@ -34,8 +34,9 @@ export async function handleClickTracking(req: Request, res: Response) {
         const lead = await getLeadById(leadId, 0); // Pass 0 for userId since this is public endpoint
         if (lead) {
           const clicks = await getLeadEmailClicks(leadId);
+          const opens = await getLeadEmailOpens(leadId);
           const emailClicks = clicks.length;
-          const emailOpens = 0; // TODO: Track opens when available
+          const emailOpens = opens.length;
           
           const scoringResult = calculateLeadScore(lead, emailOpens, emailClicks);
           await updateLeadScore(leadId, scoringResult.score);

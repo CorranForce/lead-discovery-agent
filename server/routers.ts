@@ -173,7 +173,7 @@ export const appRouter = router({
       }))
       .mutation(async ({ ctx, input }) => {
         const { id, ...updates } = input;
-        const { updateLead, getLeadById, getLeadEmailClicks, updateLeadScore } = await import("./db");
+        const { updateLead, getLeadById, getLeadEmailClicks, getLeadEmailOpens, updateLeadScore } = await import("./db");
         const { calculateLeadScore } = await import("./leadScoring");
         
         // Update the lead
@@ -188,8 +188,9 @@ export const appRouter = router({
             const lead = await getLeadById(id, ctx.user.id);
             if (lead) {
               const clicks = await getLeadEmailClicks(id);
+              const opens = await getLeadEmailOpens(id);
               const emailClicks = clicks.length;
-              const emailOpens = 0; // TODO: Track opens when available
+              const emailOpens = opens.length;
               
               const scoringResult = calculateLeadScore(lead, emailOpens, emailClicks);
               await updateLeadScore(id, scoringResult.score);
@@ -606,7 +607,16 @@ Be professional, empathetic, and focused on building trust.`;
           
           // Wrap links with tracking URLs
           const { wrapLinksWithTracking } = await import("./linkTracker");
-          const trackedBody = wrapLinksWithTracking(input.body, sentEmailId, input.leadId);
+          let trackedBody = wrapLinksWithTracking(input.body, sentEmailId, input.leadId);
+          
+          // Embed tracking pixel for open tracking
+          const { embedTrackingPixel, generateTrackingPixelUrl } = await import("./openTracker");
+          const trackingPixelUrl = generateTrackingPixelUrl(
+            process.env.VITE_FRONTEND_FORGE_API_URL || "http://localhost:3000",
+            sentEmailId,
+            input.leadId
+          );
+          trackedBody = embedTrackingPixel(trackedBody, trackingPixelUrl);
           
           // Prepare email data for Gmail MCP (correct format)
           const emailData = {

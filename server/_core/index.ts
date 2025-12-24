@@ -42,6 +42,12 @@ async function startServer() {
     await handleClickTracking(req, res);
   });
   
+  // Open tracking endpoint (public, no auth required)
+  app.get("/api/track/open", async (req, res) => {
+    const { handleOpenTracking } = await import("../openTracker");
+    await handleOpenTracking(req, res);
+  });
+  
   // tRPC API
   app.use(
     "/api/trpc",
