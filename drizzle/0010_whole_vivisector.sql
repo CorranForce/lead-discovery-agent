@@ -1,0 +1,1 @@
+ALTER TABLE `sentEmails` ADD `sequenceId` int;

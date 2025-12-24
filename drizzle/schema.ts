@@ -181,6 +181,7 @@ export const sentEmails = mysqlTable("sentEmails", {
   leadId: int("leadId"), // Optional link to lead
   conversationId: int("conversationId"), // Optional link to conversation
   templateId: int("templateId"), // Optional link to template used
+  sequenceId: int("sequenceId"), // Optional link to email sequence
   recipientEmail: varchar("recipientEmail", { length: 320 }).notNull(),
   recipientName: varchar("recipientName", { length: 255 }),
   subject: varchar("subject", { length: 500 }).notNull(),

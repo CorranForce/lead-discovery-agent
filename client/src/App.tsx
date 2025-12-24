@@ -14,6 +14,7 @@ import ConversationDetail from "./pages/ConversationDetail";
 import Account from "./pages/Account";
 import Sequences from "./pages/Sequences";
 import Analytics from "./pages/Analytics";
+import EmailEngagement from "./pages/EmailEngagement";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -28,6 +29,7 @@ function Router() {
       <Route path="/conversation/:id" component={ConversationDetail} />
       <Route path={"/sequences"} component={Sequences} />
       <Route path={"/analytics"} component={Analytics} />
+      <Route path={"/email-engagement"} component={EmailEngagement} />
       <Route path={"/account"} component={Account} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}

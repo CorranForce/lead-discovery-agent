@@ -694,6 +694,241 @@ Be professional, empathetic, and focused on building trust.`;
         
         return await getUserSentEmails(ctx.user.id, input.limit);
       }),
+    
+    // Get engagement overview statistics
+    engagementOverview: protectedProcedure
+      .input(z.object({
+        dateRange: z.enum(['7d', '30d', '90d', 'all']).optional(),
+        templateId: z.number().optional(),
+        sequenceId: z.number().optional(),
+      }))
+      .query(async ({ ctx, input }) => {
+        const { getDb } = await import("./db");
+        const { sentEmails, emailOpens, emailClicks } = await import("../drizzle/schema");
+        const { eq, and, gte, sql } = await import("drizzle-orm");
+        
+        const db = await getDb();
+        if (!db) return { totalSent: 0, totalOpens: 0, totalClicks: 0, openRate: 0, clickRate: 0 };
+        
+        // Calculate date threshold
+        let dateThreshold: Date | null = null;
+        if (input.dateRange && input.dateRange !== 'all') {
+          const days = parseInt(input.dateRange);
+          dateThreshold = new Date();
+          dateThreshold.setDate(dateThreshold.getDate() - days);
+        }
+        
+        // Build where conditions
+        const conditions = [eq(sentEmails.userId, ctx.user.id)];
+        if (dateThreshold) {
+          conditions.push(gte(sentEmails.sentAt, dateThreshold));
+        }
+        if (input.templateId) {
+          conditions.push(eq(sentEmails.templateId, input.templateId));
+        }
+        if (input.sequenceId) {
+          conditions.push(eq(sentEmails.sequenceId, input.sequenceId));
+        }
+        
+        // Get total sent emails
+        const [sentResult] = await db
+          .select({ count: sql<number>`count(*)` })
+          .from(sentEmails)
+          .where(and(...conditions));
+        
+        const totalSent = Number(sentResult?.count || 0);
+        
+        // Get unique opens count
+        const [opensResult] = await db
+          .select({ count: sql<number>`count(distinct ${emailOpens.sentEmailId})` })
+          .from(emailOpens)
+          .leftJoin(sentEmails, eq(emailOpens.sentEmailId, sentEmails.id))
+          .where(and(...conditions));
+        
+        const totalOpens = Number(opensResult?.count || 0);
+        
+        // Get unique clicks count
+        const [clicksResult] = await db
+          .select({ count: sql<number>`count(distinct ${emailClicks.sentEmailId})` })
+          .from(emailClicks)
+          .leftJoin(sentEmails, eq(emailClicks.sentEmailId, sentEmails.id))
+          .where(and(...conditions));
+        
+        const totalClicks = Number(clicksResult?.count || 0);
+        
+        const openRate = totalSent > 0 ? (totalOpens / totalSent) * 100 : 0;
+        const clickRate = totalSent > 0 ? (totalClicks / totalSent) * 100 : 0;
+        
+        return {
+          totalSent,
+          totalOpens,
+          totalClicks,
+          openRate: Math.round(openRate * 10) / 10,
+          clickRate: Math.round(clickRate * 10) / 10,
+        };
+      }),
+    
+    // Get engagement trends over time
+    engagementTrends: protectedProcedure
+      .input(z.object({
+        dateRange: z.enum(['7d', '30d', '90d']).default('30d'),
+      }))
+      .query(async ({ ctx, input }) => {
+        const { getDb } = await import("./db");
+        const { sentEmails, emailOpens, emailClicks } = await import("../drizzle/schema");
+        const { eq, and, gte, sql } = await import("drizzle-orm");
+        
+        const db = await getDb();
+        if (!db) return [];
+        
+        const days = parseInt(input.dateRange);
+        const dateThreshold = new Date();
+        dateThreshold.setDate(dateThreshold.getDate() - days);
+        
+        // Get daily aggregates
+        const trends = await db
+          .select({
+            date: sql<string>`DATE(${sentEmails.sentAt})`,
+            sent: sql<number>`count(*)`,
+            opens: sql<number>`count(distinct ${emailOpens.sentEmailId})`,
+            clicks: sql<number>`count(distinct ${emailClicks.sentEmailId})`,
+          })
+          .from(sentEmails)
+          .leftJoin(emailOpens, eq(sentEmails.id, emailOpens.sentEmailId))
+          .leftJoin(emailClicks, eq(sentEmails.id, emailClicks.sentEmailId))
+          .where(and(
+            eq(sentEmails.userId, ctx.user.id),
+            gte(sentEmails.sentAt, dateThreshold)
+          ))
+          .groupBy(sql`DATE(${sentEmails.sentAt})`);
+        
+        return trends.map(t => ({
+          date: t.date,
+          sent: Number(t.sent),
+          opens: Number(t.opens),
+          clicks: Number(t.clicks),
+        }));
+      }),
+    
+    // Get template performance comparison
+    templatePerformance: protectedProcedure
+      .input(z.object({
+        dateRange: z.enum(['7d', '30d', '90d', 'all']).optional(),
+      }))
+      .query(async ({ ctx, input }) => {
+        const { getDb } = await import("./db");
+        const { sentEmails, emailOpens, emailClicks, emailTemplates } = await import("../drizzle/schema");
+        const { eq, and, gte, sql, isNotNull } = await import("drizzle-orm");
+        
+        const db = await getDb();
+        if (!db) return [];
+        
+        // Calculate date threshold
+        let dateThreshold: Date | null = null;
+        if (input.dateRange && input.dateRange !== 'all') {
+          const days = parseInt(input.dateRange);
+          dateThreshold = new Date();
+          dateThreshold.setDate(dateThreshold.getDate() - days);
+        }
+        
+        const conditions = [
+          eq(sentEmails.userId, ctx.user.id),
+          isNotNull(sentEmails.templateId)
+        ];
+        if (dateThreshold) {
+          conditions.push(gte(sentEmails.sentAt, dateThreshold));
+        }
+        
+        const performance = await db
+          .select({
+            templateId: sentEmails.templateId,
+            templateName: emailTemplates.name,
+            sent: sql<number>`count(*)`,
+            opens: sql<number>`count(distinct ${emailOpens.sentEmailId})`,
+            clicks: sql<number>`count(distinct ${emailClicks.sentEmailId})`,
+          })
+          .from(sentEmails)
+          .leftJoin(emailTemplates, eq(sentEmails.templateId, emailTemplates.id))
+          .leftJoin(emailOpens, eq(sentEmails.id, emailOpens.sentEmailId))
+          .leftJoin(emailClicks, eq(sentEmails.id, emailClicks.sentEmailId))
+          .where(and(...conditions))
+          .groupBy(sentEmails.templateId, emailTemplates.name);
+        
+        return performance.map(p => {
+          const sent = Number(p.sent);
+          const opens = Number(p.opens);
+          const clicks = Number(p.clicks);
+          return {
+            templateId: p.templateId,
+            templateName: p.templateName || 'Unnamed Template',
+            sent,
+            opens,
+            clicks,
+            openRate: sent > 0 ? Math.round((opens / sent) * 1000) / 10 : 0,
+            clickRate: sent > 0 ? Math.round((clicks / sent) * 1000) / 10 : 0,
+          };
+        });
+      }),
+    
+    // Get sequence performance breakdown
+    sequencePerformance: protectedProcedure
+      .input(z.object({
+        dateRange: z.enum(['7d', '30d', '90d', 'all']).optional(),
+      }))
+      .query(async ({ ctx, input }) => {
+        const { getDb } = await import("./db");
+        const { sentEmails, emailOpens, emailClicks, emailSequences } = await import("../drizzle/schema");
+        const { eq, and, gte, sql, isNotNull } = await import("drizzle-orm");
+        
+        const db = await getDb();
+        if (!db) return [];
+        
+        // Calculate date threshold
+        let dateThreshold: Date | null = null;
+        if (input.dateRange && input.dateRange !== 'all') {
+          const days = parseInt(input.dateRange);
+          dateThreshold = new Date();
+          dateThreshold.setDate(dateThreshold.getDate() - days);
+        }
+        
+        const conditions = [
+          eq(sentEmails.userId, ctx.user.id),
+          isNotNull(sentEmails.sequenceId)
+        ];
+        if (dateThreshold) {
+          conditions.push(gte(sentEmails.sentAt, dateThreshold));
+        }
+        
+        const performance = await db
+          .select({
+            sequenceId: sentEmails.sequenceId,
+            sequenceName: emailSequences.name,
+            sent: sql<number>`count(*)`,
+            opens: sql<number>`count(distinct ${emailOpens.sentEmailId})`,
+            clicks: sql<number>`count(distinct ${emailClicks.sentEmailId})`,
+          })
+          .from(sentEmails)
+          .leftJoin(emailSequences, eq(sentEmails.sequenceId, emailSequences.id))
+          .leftJoin(emailOpens, eq(sentEmails.id, emailOpens.sentEmailId))
+          .leftJoin(emailClicks, eq(sentEmails.id, emailClicks.sentEmailId))
+          .where(and(...conditions))
+          .groupBy(sentEmails.sequenceId, emailSequences.name);
+        
+        return performance.map(p => {
+          const sent = Number(p.sent);
+          const opens = Number(p.opens);
+          const clicks = Number(p.clicks);
+          return {
+            sequenceId: p.sequenceId,
+            sequenceName: p.sequenceName || 'Unnamed Sequence',
+            sent,
+            opens,
+            clicks,
+            openRate: sent > 0 ? Math.round((opens / sent) * 1000) / 10 : 0,
+            clickRate: sent > 0 ? Math.round((clicks / sent) * 1000) / 10 : 0,
+          };
+        });
+      }),
   }),
 
   // Email Sequences

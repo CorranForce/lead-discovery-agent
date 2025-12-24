@@ -71,6 +71,13 @@
       "when": 1766506492147,
       "tag": "0009_acoustic_kronos",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1766596403162,
+      "tag": "0010_whole_vivisector",
+      "breakpoints": true
     }
   ]
 }
