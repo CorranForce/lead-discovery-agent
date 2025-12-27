@@ -357,3 +357,28 @@
 - [x] Write comprehensive unit tests for analytics calculations (19 tests, all passing)
 - [x] Test dashboard UI - all components rendering correctly
 - [x] Verify all calculations are accurate (open rate, CTR, engagement score, edge cases)
+
+
+## Automated Re-engagement Workflows
+- [x] Add reengagementWorkflows table to database schema
+- [x] Add reengagementExecutions table to database schema
+- [x] Push database schema changes (pnpm db:push) - tables already exist
+- [x] Create reengagement.ts with inactive lead detection logic
+- [x] Implement detectInactiveLeads function (check for no opens/clicks in X days)
+- [x] Implement isLeadInActiveSequence function (check if already enrolled)
+- [x] Implement enrollInactiveLeads function (auto-enroll in sequence)
+- [x] Implement executeReengagementWorkflow function (run workflow)
+- [x] Implement executeAllUserWorkflows function (run all active workflows)
+- [x] Add re-engagement workflow database helpers to db.ts (getUserReengagementWorkflows, createReengagementWorkflow, updateReengagementWorkflow, deleteReengagementWorkflow, getWorkflowExecutions)
+- [x] Create reengagement router endpoints (list, create, update, delete, detectInactive, execute, executeAll, getExecutions)
+- [x] Create Reengagement.tsx page with workflow management UI
+- [x] Add workflow creation dialog with configuration options (name, description, inactivity threshold, sequence selection)
+- [x] Add workflow list with active/pause toggle buttons
+- [x] Add manual execution button for each workflow ("Run Now")
+- [x] Add workflow deletion functionality with confirmation
+- [x] Add Reengagement route to App.tsx (/reengagement)
+- [x] Add Re-engagement link to Navigation component (with RefreshCcw icon)
+- [x] Write comprehensive unit tests for re-engagement logic (23 tests, all passing)
+- [x] Test inactive lead detection with various scenarios (opens, clicks, no activity)
+- [x] Test workflow execution end-to-end (success, errors, edge cases)
+- [x] Verify leads are automatically enrolled in sequences (with skip logic for already enrolled)

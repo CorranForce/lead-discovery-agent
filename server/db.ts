@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, leads, InsertLead, searchHistory, InsertSearchHistory, enrichmentData, InsertEnrichmentData, conversations, InsertConversation, messages, InsertMessage, conversationTemplates, InsertConversationTemplate, emailTemplates, InsertEmailTemplate, sentEmails, InsertSentEmail, emailSequences, InsertEmailSequence, sequenceSteps, InsertSequenceStep, sequenceEnrollments, InsertSequenceEnrollment, emailClicks, InsertEmailClick, emailOpens, InsertEmailOpen } from "../drizzle/schema";
+import { InsertUser, users, leads, InsertLead, searchHistory, InsertSearchHistory, enrichmentData, InsertEnrichmentData, conversations, InsertConversation, messages, InsertMessage, conversationTemplates, InsertConversationTemplate, emailTemplates, InsertEmailTemplate, sentEmails, InsertSentEmail, emailSequences, InsertEmailSequence, sequenceSteps, InsertSequenceStep, sequenceEnrollments, InsertSequenceEnrollment, emailClicks, InsertEmailClick, emailOpens, InsertEmailOpen, reengagementWorkflows, InsertReengagementWorkflow, reengagementExecutions } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -535,4 +535,61 @@ export async function getAllEmailOpens(userId: number) {
     .where(eq(sentEmails.userId, userId));
   
   return opens;
+}
+
+
+// Re-engagement Workflow functions
+export async function getUserReengagementWorkflows(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const workflows = await db
+    .select()
+    .from(reengagementWorkflows)
+    .where(eq(reengagementWorkflows.userId, userId))
+    .orderBy(desc(reengagementWorkflows.createdAt));
+  
+  return workflows;
+}
+
+export async function createReengagementWorkflow(workflow: InsertReengagementWorkflow) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(reengagementWorkflows).values(workflow);
+  return result;
+}
+
+export async function updateReengagementWorkflow(
+  workflowId: number,
+  updates: Partial<InsertReengagementWorkflow>
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db
+    .update(reengagementWorkflows)
+    .set(updates)
+    .where(eq(reengagementWorkflows.id, workflowId));
+}
+
+export async function deleteReengagementWorkflow(workflowId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.delete(reengagementWorkflows).where(eq(reengagementWorkflows.id, workflowId));
+}
+
+export async function getWorkflowExecutions(workflowId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const executions = await db
+    .select()
+    .from(reengagementExecutions)
+    .where(eq(reengagementExecutions.workflowId, workflowId))
+    .orderBy(desc(reengagementExecutions.executedAt))
+    .limit(10);
+  
+  return executions;
 }

@@ -20,7 +20,8 @@ import {
   LogOut,
   Settings,
   BarChart3,
-  TrendingUp
+  TrendingUp,
+  RefreshCcw
 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 
@@ -44,6 +45,7 @@ export default function Navigation() {
     { href: "/conversations", label: "Conversations", icon: MessageSquare },
     { href: "/sequences", label: "Sequences", icon: Mail },
     { href: "/email-engagement", label: "Email Engagement", icon: TrendingUp },
+    { href: "/reengagement", label: "Re-engagement", icon: RefreshCcw },
     { href: "/analytics", label: "Analytics", icon: BarChart3 },
   ];
 

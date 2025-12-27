@@ -1084,6 +1084,87 @@ Be professional, empathetic, and focused on building trust.`;
         return await getLeadEmailClicks(input.leadId);
       }),
   }),
+
+  // Re-engagement workflows
+  reengagement: router({
+    list: protectedProcedure
+      .query(async ({ ctx }) => {
+        const { getUserReengagementWorkflows } = await import("./db");
+        return await getUserReengagementWorkflows(ctx.user.id);
+      }),
+
+    create: protectedProcedure
+      .input(z.object({
+        name: z.string(),
+        description: z.string().optional(),
+        inactivityDays: z.number().min(1),
+        sequenceId: z.number().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { createReengagementWorkflow } = await import("./db");
+        await createReengagementWorkflow({
+          userId: ctx.user.id,
+          name: input.name,
+          description: input.description,
+          inactivityDays: input.inactivityDays,
+          sequenceId: input.sequenceId,
+          isActive: 1,
+        });
+        return { success: true };
+      }),
+
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        name: z.string().optional(),
+        description: z.string().optional(),
+        inactivityDays: z.number().min(1).optional(),
+        sequenceId: z.number().optional(),
+        isActive: z.number().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { updateReengagementWorkflow } = await import("./db");
+        const { id, ...updates } = input;
+        await updateReengagementWorkflow(id, updates);
+        return { success: true };
+      }),
+
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const { deleteReengagementWorkflow } = await import("./db");
+        await deleteReengagementWorkflow(input.id);
+        return { success: true };
+      }),
+
+    detectInactive: protectedProcedure
+      .input(z.object({ inactivityDays: z.number().min(1) }))
+      .query(async ({ ctx, input }) => {
+        const { detectInactiveLeads } = await import("./reengagement");
+        const inactiveLeadIds = await detectInactiveLeads(ctx.user.id, input.inactivityDays);
+        return { inactiveLeadIds, count: inactiveLeadIds.length };
+      }),
+
+    execute: protectedProcedure
+      .input(z.object({ workflowId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const { executeReengagementWorkflow } = await import("./reengagement");
+        return await executeReengagementWorkflow(input.workflowId);
+      }),
+
+    executeAll: protectedProcedure
+      .mutation(async ({ ctx }) => {
+        const { executeAllUserWorkflows } = await import("./reengagement");
+        return await executeAllUserWorkflows(ctx.user.id);
+      }),
+
+    getExecutions: protectedProcedure
+      .input(z.object({ workflowId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const { getWorkflowExecutions } = await import("./db");
+        return await getWorkflowExecutions(input.workflowId);
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

@@ -273,3 +273,38 @@ export const sequenceEnrollments = mysqlTable("sequenceEnrollments", {
 
 export type SequenceEnrollment = typeof sequenceEnrollments.$inferSelect;
 export type InsertSequenceEnrollment = typeof sequenceEnrollments.$inferInsert;
+
+/**
+ * Re-engagement workflows - automated workflows to detect and re-engage inactive leads
+ */
+export const reengagementWorkflows = mysqlTable("reengagementWorkflows", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  inactivityDays: int("inactivityDays").notNull(), // Number of days of inactivity before re-engagement
+  sequenceId: int("sequenceId"), // Optional: specific sequence to enroll inactive leads into
+  isActive: int("isActive").default(1).notNull(), // 1 = active, 0 = paused
+  lastRunAt: timestamp("lastRunAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ReengagementWorkflow = typeof reengagementWorkflows.$inferSelect;
+export type InsertReengagementWorkflow = typeof reengagementWorkflows.$inferInsert;
+
+/**
+ * Re-engagement executions - log of workflow execution history
+ */
+export const reengagementExecutions = mysqlTable("reengagementExecutions", {
+  id: int("id").autoincrement().primaryKey(),
+  workflowId: int("workflowId").notNull(),
+  leadsDetected: int("leadsDetected").notNull(), // Number of inactive leads detected
+  leadsEnrolled: int("leadsEnrolled").notNull(), // Number of leads actually enrolled
+  executedAt: timestamp("executedAt").defaultNow().notNull(),
+  status: mysqlEnum("status", ["success", "failed", "partial"]).default("success").notNull(),
+  errorMessage: text("errorMessage"),
+});
+
+export type ReengagementExecution = typeof reengagementExecutions.$inferSelect;
+export type InsertReengagementExecution = typeof reengagementExecutions.$inferInsert;
