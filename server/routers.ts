@@ -212,6 +212,13 @@ export const appRouter = router({
         return await deleteLead(input.id, ctx.user.id);
       }),
     
+    engagementTimeline: protectedProcedure
+      .input(z.object({ leadId: z.number() }))
+      .query(async ({ input }) => {
+        const { getLeadEngagementTimeline } = await import("./engagementTimeline");
+        return await getLeadEngagementTimeline(input.leadId);
+      }),
+    
     recalculateScore: protectedProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ ctx, input }) => {
@@ -1163,6 +1170,32 @@ Be professional, empathetic, and focused on building trust.`;
       .query(async ({ ctx, input }) => {
         const { getWorkflowExecutions } = await import("./db");
         return await getWorkflowExecutions(input.workflowId);
+      }),
+    
+    // Execute workflows on schedule (manual trigger)
+    executeScheduled: protectedProcedure
+      .mutation(async ({ ctx }) => {
+        const { executeScheduledWorkflows } = await import("./scheduler");
+        return await executeScheduledWorkflows(ctx.user.id);
+      }),
+    
+    // Schedule workflows for a user with custom cron expression
+    scheduleWorkflows: protectedProcedure
+      .input(z.object({ 
+        cronExpression: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { scheduleUserWorkflows } = await import("./scheduler");
+        scheduleUserWorkflows(ctx.user.id, input.cronExpression);
+        return { success: true, message: `Workflows scheduled with cron: ${input.cronExpression}` };
+      }),
+    
+    // Remove scheduled workflows for a user
+    unscheduleWorkflows: protectedProcedure
+      .mutation(async ({ ctx }) => {
+        const { unscheduleUserWorkflows } = await import("./scheduler");
+        unscheduleUserWorkflows(ctx.user.id);
+        return { success: true, message: 'Workflows unscheduled' };
       }),
   }),
 });

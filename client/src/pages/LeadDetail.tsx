@@ -39,6 +39,7 @@ export default function LeadDetail() {
   const { data: lead, isLoading } = trpc.leads.get.useQuery({ id: leadId });
   const { data: emailClicks } = trpc.clicks.byLead.useQuery({ leadId });
   const { data: sentEmails } = trpc.email.history.useQuery({});
+  const { data: timeline } = trpc.leads.engagementTimeline.useQuery({ leadId });
   
   const updateLeadMutation = trpc.leads.update.useMutation({
     onSuccess: () => {
@@ -401,48 +402,77 @@ export default function LeadDetail() {
           <TabsContent value="activity" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Activity Timeline</CardTitle>
-                <CardDescription>All interactions and updates</CardDescription>
+                <CardTitle>Engagement Timeline</CardTitle>
+                <CardDescription>Complete history of all interactions with this lead</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {leadEmails.map((email) => (
-                    <div key={email.id} className="flex gap-4 pb-4 border-b last:border-0">
+                {timeline && timeline.length > 0 ? (
+                  <div className="space-y-4">
+                    {timeline.map((event) => {
+                      const eventIcon = {
+                        email_sent: <Send className="h-5 w-5 text-blue-500" />,
+                        email_opened: <Eye className="h-5 w-5 text-green-500" />,
+                        email_clicked: <MousePointerClick className="h-5 w-5 text-purple-500" />,
+                        status_changed: <TrendingUp className="h-5 w-5 text-orange-500" />,
+                      }[event.type];
+
+                      const eventColor = {
+                        email_sent: "bg-blue-500/10",
+                        email_opened: "bg-green-500/10",
+                        email_clicked: "bg-purple-500/10",
+                        status_changed: "bg-orange-500/10",
+                      }[event.type];
+
+                      return (
+                        <div key={event.id} className="flex gap-4 pb-4 border-b last:border-0">
+                          <div className="flex-shrink-0">
+                            <div className={`w-10 h-10 rounded-full ${eventColor} flex items-center justify-center`}>
+                              {eventIcon}
+                            </div>
+                          </div>
+                          <div className="flex-1">
+                            <div className="font-medium capitalize">
+                              {event.type.replace(/_/g, " ")}
+                            </div>
+                            <div className="text-sm text-muted-foreground">{event.description}</div>
+                            {event.metadata && 'url' in event.metadata && typeof event.metadata.url === 'string' && (
+                              <div className="text-xs text-muted-foreground mt-1 truncate">
+                                URL: {String(event.metadata.url)}
+                              </div>
+                            )}
+                            <div className="text-xs text-muted-foreground mt-1">
+                              {new Date(event.timestamp).toLocaleString()}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    
+                    {/* Lead Created Event */}
+                    <div className="flex gap-4 pb-4">
                       <div className="flex-shrink-0">
-                        <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
-                          <Send className="h-5 w-5 text-blue-500" />
+                        <div className="w-10 h-10 rounded-full bg-gray-500/10 flex items-center justify-center">
+                          <Building2 className="h-5 w-5 text-gray-500" />
                         </div>
                       </div>
                       <div className="flex-1">
-                        <div className="font-medium">Email Sent</div>
-                        <div className="text-sm text-muted-foreground">{email.subject}</div>
-                        <div className="text-xs text-muted-foreground mt-1">
-                          {new Date(email.sentAt).toLocaleString()}
+                        <div className="font-medium">Lead Created</div>
+                        <div className="text-sm text-muted-foreground">
+                          Added to your pipeline
                         </div>
-                      </div>
-                      <Badge variant="outline" className="self-start">
-                        {email.status}
-                      </Badge>
-                    </div>
-                  ))}
-
-                  <div className="flex gap-4 pb-4">
-                    <div className="flex-shrink-0">
-                      <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center">
-                        <Building2 className="h-5 w-5 text-green-500" />
-                      </div>
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-medium">Lead Created</div>
-                      <div className="text-sm text-muted-foreground">
-                        Added to your pipeline
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-1">
-                        {new Date(lead.createdAt).toLocaleString()}
+                        <div className="text-xs text-muted-foreground mt-1">
+                          {new Date(lead.createdAt).toLocaleString()}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Building2 className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                    <p>No engagement activity yet</p>
+                    <p className="text-sm mt-1">Send an email to start tracking engagement</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

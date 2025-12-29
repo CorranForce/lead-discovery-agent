@@ -30,6 +30,10 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 async function startServer() {
   const app = express();
   const server = createServer(app);
+  
+  // Start the scheduler for automated workflow execution
+  const { startScheduler } = await import("../scheduler");
+  startScheduler();
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
@@ -72,6 +76,17 @@ async function startServer() {
 
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);
+  });
+  
+  // Graceful shutdown
+  process.on('SIGTERM', async () => {
+    console.log('[Server] SIGTERM received, shutting down gracefully');
+    const { stopScheduler } = await import("../scheduler");
+    stopScheduler();
+    server.close(() => {
+      console.log('[Server] Server closed');
+      process.exit(0);
+    });
   });
 }
 

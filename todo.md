@@ -382,3 +382,38 @@
 - [x] Test inactive lead detection with various scenarios (opens, clicks, no activity)
 - [x] Test workflow execution end-to-end (success, errors, edge cases)
 - [x] Verify leads are automatically enrolled in sequences (with skip logic for already enrolled)
+
+
+## Lead Engagement Timeline
+- [x] Add engagement timeline section to Lead Detail page
+- [x] Fetch all lead interactions (emails sent, opened, clicked, status changes)
+- [x] Create timeline component with chronological display
+- [x] Add icons and visual indicators for different event types (Send, Eye, MousePointerClick, TrendingUp)
+- [x] Show timestamps and event details
+- [x] Create engagementTimeline.ts with getLeadEngagementTimeline function
+- [x] Add leads.engagementTimeline tRPC endpoint
+- [x] Write comprehensive unit tests (10 tests, all passing)
+- [x] Test timeline with leads that have various interaction histories
+
+## Scheduled Workflow Execution
+- [x] Create cron job system for automated workflow execution
+- [x] Add schedule configuration to re-engagement workflows (daily, weekly, custom)
+- [x] Implement background job runner that executes workflows on schedule
+- [x] Add execution logging and error handling
+- [x] Integrate scheduler with server startup (startScheduler on boot)
+- [x] Add graceful shutdown handling (stopScheduler on SIGTERM)
+- [x] Create tRPC endpoints for schedule management (executeScheduled, scheduleWorkflows, unscheduleWorkflows)
+- [x] Write comprehensive unit tests (27 tests, all passing)
+- [x] Test scheduled execution with various time intervals and cron patterns
+- [ ] Create admin interface to view scheduled jobs
+- [ ] Add email notifications for workflow execution results
+
+## Conversation-to-Lead Linking
+- [ ] Add leadId field to conversations table
+- [ ] Update conversation creation to accept optional leadId
+- [ ] Add "Start Conversation" button on Lead Detail page
+- [ ] Show linked conversations section on Lead Detail page
+- [ ] Add lead selector dropdown when creating new conversation
+- [ ] Update conversation list to show associated lead
+- [ ] Test conversation creation from lead detail
+- [ ] Verify bidirectional linking between leads and conversations
