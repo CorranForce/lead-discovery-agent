@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS scheduledJobs (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  userId INT NOT NULL,\n  jobType VARCHAR(100) DEFAULT 'reengagement' NOT NULL,\n  cronExpression VARCHAR(100) NOT NULL,\n  isActive INT DEFAULT 1 NOT NULL,\n  lastExecutedAt TIMESTAMP NULL,\n  nextExecutionAt TIMESTAMP NULL,\n  totalExecutions INT DEFAULT 0,\n  successfulExecutions INT DEFAULT 0,\n  failedExecutions INT DEFAULT 0,\n  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,\n  updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL\n)",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2Vkk6KVFrhiW4tR.d342a31b6531 --database LaKXu62qWLapokNcy8enjg --execute CREATE TABLE IF NOT EXISTS scheduledJobs (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  userId INT NOT NULL,\n  jobType VARCHAR(100) DEFAULT 'reengagement' NOT NULL,\n  cronExpression VARCHAR(100) NOT NULL,\n  isActive INT DEFAULT 1 NOT NULL,\n  lastExecutedAt TIMESTAMP NULL,\n  nextExecutionAt TIMESTAMP NULL,\n  totalExecutions INT DEFAULT 0,\n  successfulExecutions INT DEFAULT 0,\n  failedExecutions INT DEFAULT 0,\n  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,\n  updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL\n)",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 691
+}

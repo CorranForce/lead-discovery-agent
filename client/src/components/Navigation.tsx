@@ -21,7 +21,8 @@ import {
   Settings,
   BarChart3,
   TrendingUp,
-  RefreshCcw
+  RefreshCcw,
+  Shield
 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 
@@ -46,6 +47,7 @@ export default function Navigation() {
     { href: "/sequences", label: "Sequences", icon: Mail },
     { href: "/email-engagement", label: "Email Engagement", icon: TrendingUp },
     { href: "/reengagement", label: "Re-engagement", icon: RefreshCcw },
+    { href: "/admin", label: "Admin", icon: Shield },
     { href: "/analytics", label: "Analytics", icon: BarChart3 },
   ];
 

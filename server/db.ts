@@ -593,3 +593,174 @@ export async function getWorkflowExecutions(workflowId: number) {
   
   return executions;
 }
+
+
+// ============================================
+// Scheduled Jobs Functions
+// ============================================
+
+/**
+ * Get all scheduled jobs for a user
+ */
+export async function getUserScheduledJobs(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const { scheduledJobs } = await import("../drizzle/schema");
+  const { eq } = await import("drizzle-orm");
+  
+  const jobs = await db
+    .select()
+    .from(scheduledJobs)
+    .where(eq(scheduledJobs.userId, userId));
+  
+  return jobs;
+}
+
+/**
+ * Get all active scheduled jobs (for scheduler to execute)
+ */
+export async function getAllActiveScheduledJobs() {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const { scheduledJobs } = await import("../drizzle/schema");
+  const { eq } = await import("drizzle-orm");
+  
+  const jobs = await db
+    .select()
+    .from(scheduledJobs)
+    .where(eq(scheduledJobs.isActive, 1));
+  
+  return jobs;
+}
+
+/**
+ * Create a new scheduled job
+ */
+export async function createScheduledJob(job: {
+  userId: number;
+  jobType: string;
+  cronExpression: string;
+  isActive?: number;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const { scheduledJobs } = await import("../drizzle/schema");
+  
+  await db.insert(scheduledJobs).values({
+    userId: job.userId,
+    jobType: job.jobType,
+    cronExpression: job.cronExpression,
+    isActive: job.isActive ?? 1,
+  });
+}
+
+/**
+ * Update a scheduled job
+ */
+export async function updateScheduledJob(jobId: number, updates: {
+  cronExpression?: string;
+  isActive?: number;
+  lastExecutedAt?: Date;
+  nextExecutionAt?: Date;
+  totalExecutions?: number;
+  successfulExecutions?: number;
+  failedExecutions?: number;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const { scheduledJobs } = await import("../drizzle/schema");
+  const { eq } = await import("drizzle-orm");
+  
+  await db
+    .update(scheduledJobs)
+    .set(updates)
+    .where(eq(scheduledJobs.id, jobId));
+}
+
+/**
+ * Delete a scheduled job
+ */
+export async function deleteScheduledJob(jobId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const { scheduledJobs } = await import("../drizzle/schema");
+  const { eq } = await import("drizzle-orm");
+  
+  await db
+    .delete(scheduledJobs)
+    .where(eq(scheduledJobs.id, jobId));
+}
+
+/**
+ * Get job execution statistics
+ */
+export async function getJobStatistics(userId: number) {
+  const db = await getDb();
+  if (!db) return {
+    totalJobs: 0,
+    activeJobs: 0,
+    totalExecutions: 0,
+    successfulExecutions: 0,
+    failedExecutions: 0,
+    successRate: 0,
+  };
+  
+  const { scheduledJobs } = await import("../drizzle/schema");
+  const { eq, sum, count } = await import("drizzle-orm");
+  
+  const jobs = await db
+    .select()
+    .from(scheduledJobs)
+    .where(eq(scheduledJobs.userId, userId));
+  
+  const totalJobs = jobs.length;
+  const activeJobs = jobs.filter(j => j.isActive === 1).length;
+  const totalExecutions = jobs.reduce((sum, j) => sum + (j.totalExecutions || 0), 0);
+  const successfulExecutions = jobs.reduce((sum, j) => sum + (j.successfulExecutions || 0), 0);
+  const failedExecutions = jobs.reduce((sum, j) => sum + (j.failedExecutions || 0), 0);
+  const successRate = totalExecutions > 0 ? (successfulExecutions / totalExecutions) * 100 : 0;
+  
+  return {
+    totalJobs,
+    activeJobs,
+    totalExecutions,
+    successfulExecutions,
+    failedExecutions,
+    successRate: Math.round(successRate * 10) / 10,
+  };
+}
+
+/**
+ * Get execution history for all workflows (for admin dashboard)
+ */
+export async function getAllExecutionHistory(userId: number, limit: number = 50) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const { reengagementExecutions, reengagementWorkflows } = await import("../drizzle/schema");
+  const { eq, desc } = await import("drizzle-orm");
+  
+  const executions = await db
+    .select({
+      id: reengagementExecutions.id,
+      workflowId: reengagementExecutions.workflowId,
+      workflowName: reengagementWorkflows.name,
+      leadsDetected: reengagementExecutions.leadsDetected,
+      leadsEnrolled: reengagementExecutions.leadsEnrolled,
+      executedAt: reengagementExecutions.executedAt,
+      status: reengagementExecutions.status,
+      errorMessage: reengagementExecutions.errorMessage,
+    })
+    .from(reengagementExecutions)
+    .leftJoin(reengagementWorkflows, eq(reengagementExecutions.workflowId, reengagementWorkflows.id))
+    .where(eq(reengagementWorkflows.userId, userId))
+    .orderBy(desc(reengagementExecutions.executedAt))
+    .limit(limit);
+  
+  return executions;
+}

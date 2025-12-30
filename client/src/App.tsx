@@ -16,6 +16,7 @@ import Sequences from "./pages/Sequences";
 import Analytics from "./pages/Analytics";
 import EmailEngagement from "./pages/EmailEngagement";
 import Reengagement from "./pages/Reengagement";
+import AdminDashboard from "./pages/AdminDashboard";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -32,6 +33,7 @@ function Router() {
       <Route path={"/analytics"} component={Analytics} />
       <Route path={"/email-engagement"} component={EmailEngagement} />
       <Route path={"/reengagement"} component={Reengagement} />
+      <Route path={"/admin"} component={AdminDashboard} />
       <Route path={"/account"} component={Account} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}

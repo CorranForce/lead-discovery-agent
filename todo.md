@@ -417,3 +417,19 @@
 - [ ] Update conversation list to show associated lead
 - [ ] Test conversation creation from lead detail
 - [ ] Verify bidirectional linking between leads and conversations
+
+## Admin Dashboard for Scheduled Jobs
+- [x] Create scheduledJobs table to track active schedules per user
+- [x] Add fields: userId, cronExpression, isActive, createdAt, lastExecutedAt, totalExecutions, successfulExecutions, failedExecutions
+- [x] Create database helpers for job statistics (getUserScheduledJobs, getAllActiveScheduledJobs, getJobStatistics, getAllExecutionHistory)
+- [x] Add tRPC endpoints for admin job management (listScheduledJobs, getJobStats, pauseJob, resumeJob, deleteJob, createJob)
+- [x] Build AdminDashboard page component with job overview
+- [x] Create job list table showing all active schedules with cron patterns
+- [x] Display execution history timeline for each job with workflow names
+- [x] Show success rate metrics and charts (Total Jobs, Total Executions, Success Rate, Failed Executions)
+- [x] Add pause/resume/delete controls for each job with confirmation
+- [x] Add real-time execution status indicators (Active/Paused badges)
+- [x] Create execution log viewer with status badges and error messages
+- [x] Write comprehensive unit tests for admin functionality (31 tests, all passing)
+- [x] Add Admin link to navigation with Shield icon
+- [x] Add /admin route to App.tsx

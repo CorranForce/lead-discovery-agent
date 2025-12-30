@@ -1198,6 +1198,80 @@ Be professional, empathetic, and focused on building trust.`;
         return { success: true, message: 'Workflows unscheduled' };
       }),
   }),
+  
+  // Admin dashboard for scheduled jobs
+  admin: router({
+    // List all scheduled jobs for current user
+    listScheduledJobs: protectedProcedure
+      .query(async ({ ctx }) => {
+        const { getUserScheduledJobs } = await import("./db");
+        return await getUserScheduledJobs(ctx.user.id);
+      }),
+    
+    // Get job statistics and success rates
+    getJobStatistics: protectedProcedure
+      .query(async ({ ctx }) => {
+        const { getJobStatistics } = await import("./db");
+        return await getJobStatistics(ctx.user.id);
+      }),
+    
+    // Get execution history for all workflows
+    getExecutionHistory: protectedProcedure
+      .input(z.object({ limit: z.number().optional() }))
+      .query(async ({ ctx, input }) => {
+        const { getAllExecutionHistory } = await import("./db");
+        return await getAllExecutionHistory(ctx.user.id, input.limit || 50);
+      }),
+    
+    // Pause a scheduled job
+    pauseJob: protectedProcedure
+      .input(z.object({ jobId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const { updateScheduledJob } = await import("./db");
+        await updateScheduledJob(input.jobId, { isActive: 0 });
+        return { success: true, message: 'Job paused successfully' };
+      }),
+    
+    // Resume a scheduled job
+    resumeJob: protectedProcedure
+      .input(z.object({ jobId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const { updateScheduledJob } = await import("./db");
+        await updateScheduledJob(input.jobId, { isActive: 1 });
+        return { success: true, message: 'Job resumed successfully' };
+      }),
+    
+    // Delete a scheduled job
+    deleteJob: protectedProcedure
+      .input(z.object({ jobId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const { deleteScheduledJob } = await import("./db");
+        await deleteScheduledJob(input.jobId);
+        return { success: true, message: 'Job deleted successfully' };
+      }),
+    
+    // Create a new scheduled job
+    createJob: protectedProcedure
+      .input(z.object({
+        jobType: z.string(),
+        cronExpression: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { createScheduledJob } = await import("./db");
+        await createScheduledJob({
+          userId: ctx.user.id,
+          jobType: input.jobType,
+          cronExpression: input.cronExpression,
+          isActive: 1,
+        });
+        
+        // Register the job with the scheduler
+        const { scheduleUserWorkflows } = await import("./scheduler");
+        scheduleUserWorkflows(ctx.user.id, input.cronExpression);
+        
+        return { success: true, message: 'Job created and scheduled successfully' };
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

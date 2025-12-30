@@ -308,3 +308,24 @@ export const reengagementExecutions = mysqlTable("reengagementExecutions", {
 
 export type ReengagementExecution = typeof reengagementExecutions.$inferSelect;
 export type InsertReengagementExecution = typeof reengagementExecutions.$inferInsert;
+
+/**
+ * Scheduled jobs table - tracks active cron schedules for automated workflow execution
+ */
+export const scheduledJobs = mysqlTable("scheduledJobs", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(), // Foreign key to users table
+  jobType: varchar("jobType", { length: 100 }).default("reengagement").notNull(), // Type of job (reengagement, etc.)
+  cronExpression: varchar("cronExpression", { length: 100 }).notNull(), // Cron pattern for scheduling
+  isActive: int("isActive").default(1).notNull(), // 1 = active, 0 = paused
+  lastExecutedAt: timestamp("lastExecutedAt"), // Last time the job ran
+  nextExecutionAt: timestamp("nextExecutionAt"), // Next scheduled execution time
+  totalExecutions: int("totalExecutions").default(0), // Total number of times executed
+  successfulExecutions: int("successfulExecutions").default(0), // Number of successful executions
+  failedExecutions: int("failedExecutions").default(0), // Number of failed executions
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ScheduledJob = typeof scheduledJobs.$inferSelect;
+export type InsertScheduledJob = typeof scheduledJobs.$inferInsert;
