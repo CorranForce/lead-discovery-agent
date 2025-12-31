@@ -24,6 +24,10 @@ export default function Account() {
   const [website, setWebsite] = useState("");
   const [location, setLocation] = useState("");
   const [emailNotifications, setEmailNotifications] = useState(true);
+  const [notifyOnSuccess, setNotifyOnSuccess] = useState(true);
+  const [notifyOnFailure, setNotifyOnFailure] = useState(true);
+  const [notifyOnPartial, setNotifyOnPartial] = useState(true);
+  const [batchNotifications, setBatchNotifications] = useState(false);
   const [useRealData, setUseRealData] = useState(false);
   const [preferencesChanged, setPreferencesChanged] = useState(false);
 
@@ -38,6 +42,10 @@ export default function Account() {
       setWebsite(profile.website || "");
       setLocation(profile.location || "");
       setEmailNotifications(profile.emailNotifications === 1);
+      setNotifyOnSuccess(profile.notifyOnSuccess === 1);
+      setNotifyOnFailure(profile.notifyOnFailure === 1);
+      setNotifyOnPartial(profile.notifyOnPartial === 1);
+      setBatchNotifications(profile.batchNotifications === 1);
       setUseRealData(profile.useRealData === 1);
       setPreferencesChanged(false);
     }
@@ -79,6 +87,10 @@ export default function Account() {
   const handleSavePreferences = () => {
     updatePreferencesMutation.mutate({
       emailNotifications: emailNotifications ? 1 : 0,
+      notifyOnSuccess: notifyOnSuccess ? 1 : 0,
+      notifyOnFailure: notifyOnFailure ? 1 : 0,
+      notifyOnPartial: notifyOnPartial ? 1 : 0,
+      batchNotifications: batchNotifications ? 1 : 0,
       useRealData: useRealData ? 1 : 0,
     });
   };
@@ -249,7 +261,7 @@ export default function Account() {
                 <div className="space-y-0.5">
                   <Label htmlFor="email-notifications">Email Notifications</Label>
                   <p className="text-sm text-muted-foreground">
-                    Receive email notifications for important updates
+                    Receive email notifications for scheduled workflow results
                   </p>
                 </div>
                 <Switch
@@ -261,6 +273,78 @@ export default function Account() {
                   }}
                 />
               </div>
+              
+              {emailNotifications && (
+                <div className="ml-6 space-y-4 pt-2 border-l-2 border-muted pl-4">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="notify-success" className="text-sm">Success Notifications</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Get notified when workflows complete successfully
+                      </p>
+                    </div>
+                    <Switch
+                      id="notify-success"
+                      checked={notifyOnSuccess}
+                      onCheckedChange={(checked) => {
+                        setNotifyOnSuccess(checked);
+                        setPreferencesChanged(true);
+                      }}
+                    />
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="notify-failure" className="text-sm">Failure Notifications</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Get notified when workflows fail to execute
+                      </p>
+                    </div>
+                    <Switch
+                      id="notify-failure"
+                      checked={notifyOnFailure}
+                      onCheckedChange={(checked) => {
+                        setNotifyOnFailure(checked);
+                        setPreferencesChanged(true);
+                      }}
+                    />
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="notify-partial" className="text-sm">Partial Success Notifications</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Get notified when workflows complete with some issues
+                      </p>
+                    </div>
+                    <Switch
+                      id="notify-partial"
+                      checked={notifyOnPartial}
+                      onCheckedChange={(checked) => {
+                        setNotifyOnPartial(checked);
+                        setPreferencesChanged(true);
+                      }}
+                    />
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="batch-notifications" className="text-sm">Batch Notifications</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Receive one daily summary instead of individual emails
+                      </p>
+                    </div>
+                    <Switch
+                      id="batch-notifications"
+                      checked={batchNotifications}
+                      onCheckedChange={(checked) => {
+                        setBatchNotifications(checked);
+                        setPreferencesChanged(true);
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
               
               <div className="flex items-center justify-between pt-4 border-t">
                 <div className="space-y-0.5">

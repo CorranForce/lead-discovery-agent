@@ -1,5 +1,7 @@
 import * as cron from "node-cron";
 import { executeAllUserWorkflows } from "./reengagement";
+import { sendWorkflowExecutionNotification, getDefaultNotificationPreferences, type WorkflowExecutionResult } from "./emailNotifications";
+import { getUserByOpenId } from "./db";
 
 const scheduledJobs = new Map<string, cron.ScheduledTask>();
 
@@ -40,14 +42,132 @@ export function stopScheduler() {
  * Execute workflows for a specific user on schedule
  */
 export async function executeScheduledWorkflows(userId: number) {
+  const startTime = Date.now();
+  
   try {
     console.log(`[Scheduler] Executing workflows for user ${userId}`);
     const result = await executeAllUserWorkflows(userId);
+    const duration = Date.now() - startTime;
+    
     console.log(`[Scheduler] Executed ${result.totalWorkflows} workflows for user ${userId}, enrolled ${result.totalLeadsEnrolled} leads`);
+    
+    // Send email notifications for each workflow execution
+    await sendExecutionNotifications(userId, result, duration);
+    
     return result;
   } catch (error) {
     console.error(`[Scheduler] Error executing workflows for user ${userId}:`, error);
+    
+    // Send failure notification
+    await sendFailureNotification(userId, error);
+    
     throw error;
+  }
+}
+
+/**
+ * Send email notifications for workflow execution results
+ */
+async function sendExecutionNotifications(
+  userId: number,
+  result: any,
+  duration: number
+) {
+  try {
+    // Get user information
+    const { users } = await import("../drizzle/schema");
+    const { getDb } = await import("./db");
+    const { eq } = await import("drizzle-orm");
+    
+    const db = await getDb();
+    if (!db) return;
+    
+    const userResult = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+    if (userResult.length === 0) return;
+    
+    const user = userResult[0];
+    if (!user.email) return;
+    
+    // Check if user has email notifications enabled
+    if (user.emailNotifications === 0) {
+      console.log(`[Scheduler] Email notifications disabled for user ${userId}`);
+      return;
+    }
+    
+    // Get notification preferences from user settings
+    const preferences = {
+      enabled: user.emailNotifications === 1,
+      onSuccess: user.notifyOnSuccess === 1,
+      onFailure: user.notifyOnFailure === 1,
+      onPartial: user.notifyOnPartial === 1,
+      batchNotifications: user.batchNotifications === 1,
+    };
+    
+    // Send notification for each workflow execution
+    if (result.executions && result.executions.length > 0) {
+      for (const execution of result.executions) {
+        const notificationResult: WorkflowExecutionResult = {
+          workflowName: execution.workflowName || `Workflow #${execution.workflowId}`,
+          workflowId: execution.workflowId,
+          leadsDetected: execution.leadsDetected,
+          leadsEnrolled: execution.leadsEnrolled,
+          status: execution.status,
+          errorMessage: execution.errorMessage,
+          executedAt: new Date(),
+          duration: duration,
+        };
+        
+        await sendWorkflowExecutionNotification(
+          user.email,
+          user.name || "User",
+          notificationResult,
+          preferences
+        );
+      }
+    }
+  } catch (error) {
+    console.error("[Scheduler] Error sending execution notifications:", error);
+  }
+}
+
+/**
+ * Send failure notification when scheduler encounters an error
+ */
+async function sendFailureNotification(userId: number, error: any) {
+  try {
+    const { users } = await import("../drizzle/schema");
+    const { getDb } = await import("./db");
+    const { eq } = await import("drizzle-orm");
+    
+    const db = await getDb();
+    if (!db) return;
+    
+    const userResult = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+    if (userResult.length === 0) return;
+    
+    const user = userResult[0];
+    if (!user.email || user.emailNotifications === 0) return;
+    
+    const preferences = getDefaultNotificationPreferences();
+    
+    const notificationResult: WorkflowExecutionResult = {
+      workflowName: "Scheduled Workflow Execution",
+      workflowId: 0,
+      leadsDetected: 0,
+      leadsEnrolled: 0,
+      status: "failed",
+      errorMessage: error?.message || String(error),
+      executedAt: new Date(),
+    };
+    
+    await sendWorkflowExecutionNotification(
+      user.email,
+      user.name || "User",
+      notificationResult,
+      preferences
+    );
+  } catch (notificationError) {
+    console.error("[Scheduler] Error sending failure notification:", notificationError);
   }
 }
 

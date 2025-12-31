@@ -53,6 +53,10 @@ export const appRouter = router({
     updatePreferences: protectedProcedure
       .input(z.object({
         emailNotifications: z.number().min(0).max(1).optional(),
+        notifyOnSuccess: z.number().min(0).max(1).optional(),
+        notifyOnFailure: z.number().min(0).max(1).optional(),
+        notifyOnPartial: z.number().min(0).max(1).optional(),
+        batchNotifications: z.number().min(0).max(1).optional(),
         timezone: z.string().optional(),
         useRealData: z.number().min(0).max(1).optional(),
       }))

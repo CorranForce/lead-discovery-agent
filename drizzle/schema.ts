@@ -26,6 +26,10 @@ export const users = mysqlTable("users", {
   location: varchar("location", { length: 255 }),
   // Preferences
   emailNotifications: int("emailNotifications").default(1), // 1 = enabled, 0 = disabled
+  notifyOnSuccess: int("notifyOnSuccess").default(1), // Notify on successful workflow execution
+  notifyOnFailure: int("notifyOnFailure").default(1), // Notify on failed workflow execution
+  notifyOnPartial: int("notifyOnPartial").default(1), // Notify on partial success
+  batchNotifications: int("batchNotifications").default(0), // Send batch notifications instead of individual
   timezone: varchar("timezone", { length: 100 }).default("UTC"),
   useRealData: int("useRealData").default(0).notNull(), // 0 = test/template data, 1 = real Apollo.io data
   createdAt: timestamp("createdAt").defaultNow().notNull(),

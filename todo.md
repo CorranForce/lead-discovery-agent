@@ -433,3 +433,18 @@
 - [x] Write comprehensive unit tests for admin functionality (31 tests, all passing)
 - [x] Add Admin link to navigation with Shield icon
 - [x] Add /admin route to App.tsx
+
+## Email Notifications for Scheduled Workflows
+- [x] Create email notification service module (server/emailNotifications.ts)
+- [x] Design email templates for workflow execution results (success, failure, partial)
+- [x] Add notification preferences to user settings (emailNotifications, notifyOnSuccess, notifyOnFailure, notifyOnPartial, batchNotifications)
+- [x] Integrate notifications with scheduler execution flow (sendExecutionNotifications, sendFailureNotification)
+- [x] Send success notifications with execution summary (leads detected, enrolled, success rate, duration)
+- [x] Send failure notifications with error details
+- [x] Include workflow statistics (leads detected, enrolled, success rate)
+- [x] Add links to admin dashboard for detailed view in email content
+- [x] Implement notification batching for multiple executions (sendBatchWorkflowNotification)
+- [x] Add email notification settings to Account page (Settings tab with granular controls)
+- [x] Create tRPC endpoints for notification preferences (updatePreferences with new fields)
+- [x] Write comprehensive unit tests for email service (20 tests, all passing)
+- [x] Add database columns for notification preferences (notifyOnSuccess, notifyOnFailure, notifyOnPartial, batchNotifications)
