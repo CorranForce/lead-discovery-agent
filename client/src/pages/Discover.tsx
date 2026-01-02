@@ -1,6 +1,5 @@
 import { useState, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
-import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -92,7 +91,6 @@ export default function Discover() {
 
   return (
     <>
-      <Navigation />
       <div className="container py-8 space-y-8">
       <div className="space-y-4">
         <div>

@@ -1,5 +1,4 @@
 import { trpc } from "@/lib/trpc";
-import Navigation from "@/components/Navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, MousePointerClick, Link as LinkIcon, Mail } from "lucide-react";
 
@@ -26,7 +25,6 @@ export default function ClickAnalytics() {
   if (isLoading) {
     return (
       <>
-        <Navigation />
         <div className="container py-8 flex items-center justify-center min-h-[400px]">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
@@ -36,7 +34,6 @@ export default function ClickAnalytics() {
 
   return (
     <>
-      <Navigation />
       <div className="container py-8 space-y-8">
         <div className="space-y-2">
           <h1 className="text-4xl font-bold tracking-tight">Click Tracking</h1>

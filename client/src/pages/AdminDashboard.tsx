@@ -1,5 +1,4 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -100,7 +99,6 @@ export default function AdminDashboard() {
   if (!user) {
     return (
       <div className="min-h-screen flex flex-col">
-        <Navigation />
         <div className="flex-1 flex items-center justify-center">
           <p className="text-muted-foreground">Please log in to access the admin dashboard.</p>
         </div>
@@ -112,7 +110,6 @@ export default function AdminDashboard() {
   
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <Navigation />
       
       <main className="flex-1 container py-8">
         <div className="mb-8">

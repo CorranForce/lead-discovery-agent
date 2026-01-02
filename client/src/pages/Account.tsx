@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
-import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -105,7 +104,6 @@ export default function Account() {
 
   return (
     <>
-      <Navigation />
     <div className="container py-8 space-y-8">
       <div className="space-y-2">
         <h1 className="text-4xl font-bold tracking-tight">Account</h1>

@@ -451,3 +451,15 @@
 
 ## Bug Fixes
 - [x] Fix Email Engagement Dashboard pagination 404 error on page 2 (replaced placeholder menu items in DashboardLayout with actual navigation)
+
+## Navigation Redesign
+- [x] Move navigation menu from top to left sidebar
+- [x] Keep account/dashboard links in top header (logo, Dashboard button, account dropdown)
+- [x] Create new left sidebar navigation component (Sidebar.tsx)
+- [x] Update top header component to remove main menu (Navigation.tsx)
+- [x] Ensure left nav is visible on all pages after login (AppLayout.tsx wrapper)
+- [x] Test navigation on all pages (Dashboard, Discover, Leads, Conversations, Sequences, Email Engagement, Re-engagement, Admin, Analytics, Account)
+- [x] Verify navigation state persistence (active states working correctly)
+- [x] Update layout styling for new structure (fixed sidebar at 256px width, content offset with ml-64)
+- [x] Remove Navigation component from all individual pages (11 pages updated)
+- [ ] Add responsive behavior for mobile devices (future enhancement)

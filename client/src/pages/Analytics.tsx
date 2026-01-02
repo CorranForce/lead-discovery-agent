@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
-import Navigation from "@/components/Navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Mail, TrendingUp, Users, Target, BarChart3 } from "lucide-react";
 import {
@@ -76,7 +75,6 @@ export default function Analytics() {
   if (emailsLoading) {
     return (
       <>
-        <Navigation />
         <div className="container py-8 flex items-center justify-center min-h-[400px]">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
@@ -86,7 +84,6 @@ export default function Analytics() {
 
   return (
     <>
-      <Navigation />
       <div className="container py-8 space-y-8">
         <div className="flex items-center justify-between">
           <div className="space-y-2">
