@@ -479,3 +479,36 @@
 - [ ] Test on mobile viewport (320px-768px)
 - [ ] Test on tablet viewport (768px-1024px)
 - [x] Test on desktop viewport (1024px+) - sidebar always visible
+
+## User Account Management System
+- [x] Extend users table with account status and billing fields
+- [x] Add accountStatus field (active, inactive, suspended, trial)
+- [x] Add billingCycle field (monthly, yearly, none)
+- [x] Add nextBillingDate field (timestamp)
+- [x] Add subscriptionTier field (free, basic, pro, enterprise)
+- [x] Add accountActivatedAt and accountDeactivatedAt timestamps
+- [x] Push database schema changes via SQL migration
+- [x] Create database helper functions for account management
+- [x] Add getAllUsers, updateUserAccountStatus, updateUserBilling helpers
+- [x] Create admin tRPC endpoints for account management
+- [x] Add admin.users.list endpoint with filtering
+- [x] Add admin.users.updateStatus endpoint (activate/deactivate/suspend)
+- [x] Add admin.users.updateBilling endpoint (cycle, next date, tier)
+- [x] Add admin.users.getDetails endpoint for individual user info
+- [x] Build UserManagement admin page component
+- [x] Create users list table with status badges
+- [x] Add filtering by account status and subscription tier
+- [x] Add search by name/email
+- [x] Create user detail modal/drawer with edit controls
+- [x] Add status change controls (activate/deactivate/suspend buttons)
+- [x] Add billing cycle adjustment controls (dropdown + date picker)
+- [x] Add subscription tier management
+- [ ] Implement account status middleware for access control (future)
+- [ ] Block inactive/suspended users from accessing app (future)
+- [ ] Show appropriate messages for deactivated accounts (future)
+- [ ] Add trial expiration logic (future)
+- [x] Write comprehensive unit tests for account management (26 tests, all passing)
+- [ ] Test account status changes
+- [ ] Test billing cycle updates
+- [ ] Test access control with different statuses
+- [ ] Test admin endpoints with proper authorization

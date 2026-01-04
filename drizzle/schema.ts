@@ -32,6 +32,14 @@ export const users = mysqlTable("users", {
   batchNotifications: int("batchNotifications").default(0), // Send batch notifications instead of individual
   timezone: varchar("timezone", { length: 100 }).default("UTC"),
   useRealData: int("useRealData").default(0).notNull(), // 0 = test/template data, 1 = real Apollo.io data
+  // Account management
+  accountStatus: mysqlEnum("accountStatus", ["active", "inactive", "suspended", "trial"]).default("trial").notNull(),
+  subscriptionTier: mysqlEnum("subscriptionTier", ["free", "basic", "pro", "enterprise"]).default("free").notNull(),
+  billingCycle: mysqlEnum("billingCycle", ["monthly", "yearly", "none"]).default("none").notNull(),
+  nextBillingDate: timestamp("nextBillingDate"),
+  accountActivatedAt: timestamp("accountActivatedAt"),
+  accountDeactivatedAt: timestamp("accountDeactivatedAt"),
+  trialEndsAt: timestamp("trialEndsAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),

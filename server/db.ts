@@ -764,3 +764,70 @@ export async function getAllExecutionHistory(userId: number, limit: number = 50)
   
   return executions;
 }
+
+
+// ===== Account Management =====
+
+export async function getAllUsers() {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get users: database not available");
+    return [];
+  }
+  
+  return await db.select().from(users).orderBy(desc(users.createdAt));
+}
+
+export async function getUserById(userId: number) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get user: database not available");
+    return undefined;
+  }
+  
+  const result = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function updateUserAccountStatus(
+  userId: number,
+  status: "active" | "inactive" | "suspended" | "trial"
+) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot update account status: database not available");
+    return false;
+  }
+  
+  const updates: Record<string, any> = {
+    accountStatus: status,
+  };
+  
+  if (status === "active") {
+    updates.accountActivatedAt = new Date();
+    updates.accountDeactivatedAt = null;
+  } else if (status === "inactive" || status === "suspended") {
+    updates.accountDeactivatedAt = new Date();
+  }
+  
+  await db.update(users).set(updates).where(eq(users.id, userId));
+  return true;
+}
+
+export async function updateUserBilling(
+  userId: number,
+  data: {
+    billingCycle?: "monthly" | "yearly" | "none";
+    nextBillingDate?: Date | null;
+    subscriptionTier?: "free" | "basic" | "pro" | "enterprise";
+  }
+) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot update billing: database not available");
+    return false;
+  }
+  
+  await db.update(users).set(data).where(eq(users.id, userId));
+  return true;
+}

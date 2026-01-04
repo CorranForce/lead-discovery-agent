@@ -18,6 +18,7 @@ import Analytics from "./pages/Analytics";
 import EmailEngagement from "./pages/EmailEngagement";
 import Reengagement from "./pages/Reengagement";
 import AdminDashboard from "./pages/AdminDashboard";
+import UserManagement from "./pages/UserManagement";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -35,6 +36,7 @@ function Router() {
       <Route path={"/email-engagement"} component={EmailEngagement} />
       <Route path={"/reengagement"} component={Reengagement} />
       <Route path={"/admin"} component={AdminDashboard} />
+      <Route path={"/users"} component={UserManagement} />
       <Route path={"/account"} component={Account} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}

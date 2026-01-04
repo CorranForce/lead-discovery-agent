@@ -1275,6 +1275,95 @@ Be professional, empathetic, and focused on building trust.`;
         
         return { success: true, message: 'Job created and scheduled successfully' };
       }),
+    
+    // ===== User Account Management (Admin Only) =====
+    
+    // List all users (admin only)
+    listUsers: protectedProcedure
+      .input(z.object({
+        status: z.enum(["all", "active", "inactive", "suspended", "trial"]).optional(),
+        tier: z.enum(["all", "free", "basic", "pro", "enterprise"]).optional(),
+      }))
+      .query(async ({ ctx, input }) => {
+        // Check if user is admin
+        if (ctx.user.role !== "admin") {
+          throw new Error("Unauthorized: Admin access required");
+        }
+        
+        const { getAllUsers } = await import("./db");
+        let allUsers = await getAllUsers();
+        
+        // Filter by status if provided
+        if (input.status && input.status !== "all") {
+          allUsers = allUsers.filter(u => u.accountStatus === input.status);
+        }
+        
+        // Filter by tier if provided
+        if (input.tier && input.tier !== "all") {
+          allUsers = allUsers.filter(u => u.subscriptionTier === input.tier);
+        }
+        
+        return allUsers;
+      }),
+    
+    // Get user details (admin only)
+    getUserDetails: protectedProcedure
+      .input(z.object({ userId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        // Check if user is admin
+        if (ctx.user.role !== "admin") {
+          throw new Error("Unauthorized: Admin access required");
+        }
+        
+        const { getUserById } = await import("./db");
+        return await getUserById(input.userId);
+      }),
+    
+    // Update user account status (admin only)
+    updateUserStatus: protectedProcedure
+      .input(z.object({
+        userId: z.number(),
+        status: z.enum(["active", "inactive", "suspended", "trial"]),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Check if user is admin
+        if (ctx.user.role !== "admin") {
+          throw new Error("Unauthorized: Admin access required");
+        }
+        
+        const { updateUserAccountStatus } = await import("./db");
+        await updateUserAccountStatus(input.userId, input.status);
+        
+        return { success: true, message: `User status updated to ${input.status}` };
+      }),
+    
+    // Update user billing (admin only)
+    updateUserBilling: protectedProcedure
+      .input(z.object({
+        userId: z.number(),
+        billingCycle: z.enum(["monthly", "yearly", "none"]).optional(),
+        nextBillingDate: z.string().optional(), // ISO date string
+        subscriptionTier: z.enum(["free", "basic", "pro", "enterprise"]).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Check if user is admin
+        if (ctx.user.role !== "admin") {
+          throw new Error("Unauthorized: Admin access required");
+        }
+        
+        const { updateUserBilling } = await import("./db");
+        
+        const updates: any = {};
+        if (input.billingCycle) updates.billingCycle = input.billingCycle;
+        if (input.subscriptionTier) updates.subscriptionTier = input.subscriptionTier;
+        if (input.nextBillingDate) {
+          updates.nextBillingDate = new Date(input.nextBillingDate);
+        }
+        
+        await updateUserBilling(input.userId, updates);
+        
+        return { success: true, message: 'User billing updated successfully' };
+      }),
   }),
 });
 

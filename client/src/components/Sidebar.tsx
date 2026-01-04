@@ -11,6 +11,7 @@ import {
   Shield,
   BarChart3,
   X,
+  UserCog,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -31,6 +32,7 @@ export default function Sidebar({ isMobileMenuOpen, setIsMobileMenuOpen }: Sideb
     { href: "/email-engagement", label: "Email Engagement", icon: TrendingUp },
     { href: "/reengagement", label: "Re-engagement", icon: RefreshCcw },
     { href: "/admin", label: "Admin", icon: Shield },
+    { href: "/users", label: "Users", icon: UserCog },
     { href: "/analytics", label: "Analytics", icon: BarChart3 },
   ];
 

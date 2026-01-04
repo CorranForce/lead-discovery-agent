@@ -1,0 +1,8 @@
+{
+  "query": "ALTER TABLE users \nADD COLUMN accountStatus ENUM('active', 'inactive', 'suspended', 'trial') NOT NULL DEFAULT 'trial' AFTER useRealData,\nADD COLUMN subscriptionTier ENUM('free', 'basic', 'pro', 'enterprise') NOT NULL DEFAULT 'free' AFTER accountStatus,\nADD COLUMN billingCycle ENUM('monthly', 'yearly', 'none') NOT NULL DEFAULT 'none' AFTER subscriptionTier,\nADD COLUMN nextBillingDate TIMESTAMP NULL AFTER billingCycle,\nADD COLUMN accountActivatedAt TIMESTAMP NULL AFTER nextBillingDate,\nADD COLUMN accountDeactivatedAt TIMESTAMP NULL AFTER accountActivatedAt,\nADD COLUMN trialEndsAt TIMESTAMP NULL AFTER accountDeactivatedAt;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2Vkk6KVFrhiW4tR.d342a31b6531 --database LaKXu62qWLapokNcy8enjg --execute ALTER TABLE users \nADD COLUMN accountStatus ENUM('active', 'inactive', 'suspended', 'trial') NOT NULL DEFAULT 'trial' AFTER useRealData,\nADD COLUMN subscriptionTier ENUM('free', 'basic', 'pro', 'enterprise') NOT NULL DEFAULT 'free' AFTER accountStatus,\nADD COLUMN billingCycle ENUM('monthly', 'yearly', 'none') NOT NULL DEFAULT 'none' AFTER subscriptionTier,\nADD COLUMN nextBillingDate TIMESTAMP NULL AFTER billingCycle,\nADD COLUMN accountActivatedAt TIMESTAMP NULL AFTER nextBillingDate,\nADD COLUMN accountDeactivatedAt TIMESTAMP NULL AFTER accountActivatedAt,\nADD COLUMN trialEndsAt TIMESTAMP NULL AFTER accountDeactivatedAt;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'accountstatus' in 'users'"
+  ]
+}
