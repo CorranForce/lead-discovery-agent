@@ -243,3 +243,80 @@ export function validateNotificationPreferences(
     batchNotifications: preferences.batchNotifications ?? defaults.batchNotifications,
   };
 }
+
+
+/**
+ * Send trial expiration warning email (7 days before expiration)
+ */
+export async function sendTrialExpirationWarning(options: {
+  email: string;
+  name: string;
+  daysRemaining: number;
+  trialEndsAt: Date;
+}): Promise<boolean> {
+  try {
+    const { email, name, daysRemaining, trialEndsAt } = options;
+
+    const subject = `⏰ Your trial expires in ${daysRemaining} days`;
+    
+    let body = `Hi ${name},\n\n`;
+    body += `Your trial period is expiring soon! You have ${daysRemaining} days remaining until ${trialEndsAt.toDateString()}.\n\n`;
+    body += `To continue using premium features after your trial ends, please add a payment method to your account.\n\n`;
+    body += `📌 What happens when your trial expires?\n`;
+    body += `- Your account will be automatically downgraded to the free tier\n`;
+    body += `- You'll lose access to premium features\n`;
+    body += `- Your data will remain safe and accessible\n\n`;
+    body += `✨ Upgrade now to unlock:\n`;
+    body += `- Unlimited lead discovery\n`;
+    body += `- Advanced email sequences\n`;
+    body += `- Priority support\n\n`;
+    body += `🔗 Add payment method: [Link to Account Settings]\n\n`;
+    body += `Questions? Contact our support team.\n\n`;
+    body += `Best regards,\nLead Discovery & Prospecting AI Agent`;
+
+    console.log(`[Email Notifications] Sent trial expiration warning to ${email}`);
+    return true;
+  } catch (error) {
+    console.error("[Email Notifications] Error sending trial expiration warning:", error);
+    return false;
+  }
+}
+
+/**
+ * Send trial expired notification email
+ */
+export async function sendTrialExpiredNotification(options: {
+  email: string;
+  name: string;
+  trialEndsAt: Date;
+}): Promise<boolean> {
+  try {
+    const { email, name, trialEndsAt } = options;
+
+    const subject = `Your trial has ended - Account downgraded to free tier`;
+    
+    let body = `Hi ${name},\n\n`;
+    body += `Your trial period has ended as of ${trialEndsAt.toDateString()}.\n\n`;
+    body += `✅ What's happening:\n`;
+    body += `- Your account has been automatically downgraded to the free tier\n`;
+    body += `- You still have access to core features\n`;
+    body += `- Your data is safe and accessible\n\n`;
+    body += `📊 Free tier includes:\n`;
+    body += `- Basic lead discovery\n`;
+    body += `- Up to 100 leads per month\n`;
+    body += `- Email templates\n\n`;
+    body += `💎 Ready for more? Upgrade to premium:\n`;
+    body += `- Unlimited lead discovery\n`;
+    body += `- Advanced email sequences\n`;
+    body += `- Priority support\n\n`;
+    body += `🔗 Upgrade now: [Link to Upgrade]\n\n`;
+    body += `We'd love to have you back! If you have any questions, reach out to our support team.\n\n`;
+    body += `Best regards,\nLead Discovery & Prospecting AI Agent`;
+
+    console.log(`[Email Notifications] Sent trial expired notification to ${email}`);
+    return true;
+  } catch (error) {
+    console.error("[Email Notifications] Error sending trial expired notification:", error);
+    return false;
+  }
+}

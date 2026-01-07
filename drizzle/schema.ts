@@ -40,6 +40,9 @@ export const users = mysqlTable("users", {
   accountActivatedAt: timestamp("accountActivatedAt"),
   accountDeactivatedAt: timestamp("accountDeactivatedAt"),
   trialEndsAt: timestamp("trialEndsAt"),
+  hasPaymentMethod: int("hasPaymentMethod").default(0).notNull(), // 1 = has payment method, 0 = no payment method
+  paymentMethodId: varchar("paymentMethodId", { length: 255 }), // Stripe payment method ID
+  trialExpirationNotificationSentAt: timestamp("trialExpirationNotificationSentAt"), // Track when 7-day warning was sent
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),

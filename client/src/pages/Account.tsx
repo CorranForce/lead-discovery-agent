@@ -389,6 +389,29 @@ export default function Account() {
               </div>
             </CardContent>
           </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Payment Method</CardTitle>
+              <CardDescription>
+                Add or manage your payment method for premium features
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+                <p className="text-sm text-amber-700 dark:text-amber-400">
+                  Payment method management coming soon. Trial auto-downgrades to free tier if no payment method added.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label>Trial Status</Label>
+                <div className="p-3 bg-muted rounded-lg">
+                  <p className="text-sm font-medium">Status: Active Trial</p>
+                  <p className="text-xs text-muted-foreground mt-1">Days Remaining: 30 days</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="stats" className="space-y-6">

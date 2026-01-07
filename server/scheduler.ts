@@ -1,7 +1,9 @@
 import * as cron from "node-cron";
+
 import { executeAllUserWorkflows } from "./reengagement";
 import { sendWorkflowExecutionNotification, getDefaultNotificationPreferences, type WorkflowExecutionResult } from "./emailNotifications";
 import { getUserByOpenId } from "./db";
+import { sendTrialExpirationWarnings, autoDowngradeExpiredTrials } from "./trialExpiration";
 
 const scheduledJobs = new Map<string, cron.ScheduledTask>();
 
@@ -23,8 +25,22 @@ export function startScheduler() {
     }
   });
 
+  // Run trial expiration checks every day at 8:00 AM (before re-engagement)
+  const trialExpirationJob = cron.schedule("0 8 * * *", async () => {
+    console.log("[Scheduler] Running trial expiration checks");
+    try {
+      await sendTrialExpirationWarnings();
+      await autoDowngradeExpiredTrials();
+      console.log("[Scheduler] Trial expiration checks completed");
+    } catch (error) {
+      console.error("[Scheduler] Error running trial expiration checks:", error);
+    }
+  });
+
   scheduledJobs.set("daily-reengagement", dailyJob);
+  scheduledJobs.set("trial-expiration", trialExpirationJob);
   console.log("[Scheduler] Started daily re-engagement workflow scheduler (9:00 AM)");
+  console.log("[Scheduler] Started trial expiration checks scheduler (8:00 AM)");
 }
 
 /**

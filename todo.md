@@ -512,3 +512,34 @@
 - [ ] Test billing cycle updates
 - [ ] Test access control with different statuses
 - [ ] Test admin endpoints with proper authorization
+
+
+## Trial Expiration & Auto-Downgrade System
+- [ ] Add trialEndsAt field to users table (if not already present)
+- [ ] Add hasPaymentMethod boolean field to users table
+- [ ] Add paymentMethodId field to users table (for storing Stripe payment method)
+- [ ] Create paymentMethods table with encrypted card details
+- [ ] Create trialExpirationNotifications table to track sent notifications
+- [ ] Create database helpers for trial management (checkTrialExpiration, autoDowngradeExpiredTrials, hasPaymentMethod)
+- [ ] Create trial expiration check function that identifies users with expiring trials
+- [ ] Create auto-downgrade function that converts trial to free tier if no payment method
+- [ ] Create email template for trial expiration warning (7 days before)
+- [ ] Create email template for trial expired notification
+- [ ] Add tRPC endpoint to check user trial status
+- [ ] Add tRPC endpoint to add payment method
+- [ ] Create scheduler job to check for expiring trials daily
+- [ ] Create scheduler job to auto-downgrade expired trials daily
+- [ ] Send trial expiration warning email 7 days before expiration
+- [ ] Send trial expired notification email when downgrade occurs
+- [ ] Add payment method management UI in Account settings
+- [ ] Create card input form for adding payment method
+- [ ] Add payment method display with last 4 digits
+- [ ] Add remove payment method functionality
+- [ ] Show trial days remaining in dashboard/account page
+- [ ] Show trial expiration warning banner when trial is expiring soon
+- [ ] Write comprehensive unit tests for trial expiration logic
+- [ ] Test trial expiration check with various dates
+- [ ] Test auto-downgrade when trial expires without payment method
+- [ ] Test no downgrade when payment method exists
+- [ ] Test email notifications are sent at correct times
+- [ ] Test trial status display in UI
