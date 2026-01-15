@@ -25,6 +25,14 @@ import {
   listPaymentMethods,
   detachPaymentMethod,
   setDefaultPaymentMethod,
+  getCustomerSubscription,
+  getUpcomingInvoice,
+  createBillingPortalSession,
+  updateSubscriptionPrice,
+  cancelSubscriptionAtPeriodEnd,
+  reactivateSubscription,
+  getProductsWithPrices,
+  previewProration,
 } from "../services/stripe";
 import { TRPCError } from "@trpc/server";
 
@@ -585,4 +593,354 @@ export const billingRouter = router({
         };
       }
     }),
+
+  // ==================== Subscription Management ====================
+
+  /**
+   * Get current subscription details
+   */
+  getCurrentSubscription: protectedProcedure.query(async ({ ctx }) => {
+    try {
+      if (!ctx.user.paymentMethodId) {
+        return {
+          success: true,
+          subscription: null,
+          message: "No subscription found",
+        };
+      }
+
+      const subscription = await getCustomerSubscription(ctx.user.paymentMethodId);
+
+      if (!subscription) {
+        return {
+          success: true,
+          subscription: null,
+          message: "No active subscription",
+        };
+      }
+
+      // Extract product info from subscription items
+      const item = subscription.items.data[0];
+      const price = item?.price;
+      const product = price?.product as any;
+
+      return {
+        success: true,
+        subscription: {
+          id: subscription.id,
+          status: subscription.status,
+          cancelAtPeriodEnd: subscription.cancel_at_period_end,
+          currentPeriodStart: new Date((subscription as any).current_period_start * 1000),
+          currentPeriodEnd: new Date((subscription as any).current_period_end * 1000),
+          cancelAt: subscription.cancel_at ? new Date(subscription.cancel_at * 1000) : null,
+          plan: {
+            id: price?.id || "",
+            productId: product?.id || "",
+            name: product?.name || "Unknown Plan",
+            description: product?.description || "",
+            amount: price?.unit_amount || 0,
+            currency: price?.currency?.toUpperCase() || "USD",
+            interval: price?.recurring?.interval || "month",
+            intervalCount: price?.recurring?.interval_count || 1,
+            formattedAmount: formatAmount(price?.unit_amount || 0, price?.currency || "usd"),
+          },
+          defaultPaymentMethod: subscription.default_payment_method
+            ? {
+                id: (subscription.default_payment_method as any).id,
+                brand: (subscription.default_payment_method as any).card?.brand,
+                last4: (subscription.default_payment_method as any).card?.last4,
+              }
+            : null,
+        },
+      };
+    } catch (error) {
+      console.error("[Billing] Error getting subscription:", error);
+      return {
+        success: false,
+        error: "Failed to get subscription details",
+        subscription: null,
+      };
+    }
+  }),
+
+  /**
+   * Get upcoming invoice
+   */
+  getUpcomingInvoice: protectedProcedure.query(async ({ ctx }) => {
+    try {
+      if (!ctx.user.paymentMethodId) {
+        return {
+          success: true,
+          upcomingInvoice: null,
+        };
+      }
+
+      const invoice = await getUpcomingInvoice(ctx.user.paymentMethodId);
+
+      if (!invoice) {
+        return {
+          success: true,
+          upcomingInvoice: null,
+        };
+      }
+
+      return {
+        success: true,
+        upcomingInvoice: {
+          amount: invoice.total || 0,
+          currency: (invoice.currency || "usd").toUpperCase(),
+          formattedAmount: formatAmount(invoice.total || 0, invoice.currency || "usd"),
+          dueDate: invoice.next_payment_attempt
+            ? new Date(invoice.next_payment_attempt * 1000)
+            : null,
+          lineItems: invoice.lines?.data?.map((line: any) => ({
+            description: line.description || "",
+            amount: line.amount || 0,
+            formattedAmount: formatAmount(line.amount || 0, invoice.currency || "usd"),
+          })) || [],
+        },
+      };
+    } catch (error) {
+      console.error("[Billing] Error getting upcoming invoice:", error);
+      return {
+        success: false,
+        error: "Failed to get upcoming invoice",
+        upcomingInvoice: null,
+      };
+    }
+  }),
+
+  /**
+   * Get available plans from Stripe
+   */
+  getAvailablePlans: protectedProcedure.query(async () => {
+    try {
+      const products = await getProductsWithPrices();
+
+      const plans = products
+        .filter((product) => product.active)
+        .map((product) => ({
+          id: product.id,
+          name: product.name,
+          description: product.description || "",
+          features: product.metadata?.features
+            ? JSON.parse(product.metadata.features)
+            : [],
+          prices: product.prices
+            .filter((price) => price.active)
+            .map((price) => ({
+              id: price.id,
+              amount: price.unit_amount || 0,
+              currency: (price.currency || "usd").toUpperCase(),
+              interval: price.recurring?.interval || "month",
+              intervalCount: price.recurring?.interval_count || 1,
+              formattedAmount: formatAmount(
+                price.unit_amount || 0,
+                price.currency || "usd"
+              ),
+            }))
+            .sort((a, b) => a.amount - b.amount),
+          metadata: product.metadata || {},
+        }))
+        .sort((a, b) => {
+          // Sort by tier order if available in metadata
+          const tierOrder: Record<string, number> = { free: 0, basic: 1, pro: 2, enterprise: 3 };
+          const tierA = a.metadata?.tier || "basic";
+          const tierB = b.metadata?.tier || "basic";
+          return (tierOrder[tierA] || 1) - (tierOrder[tierB] || 1);
+        });
+
+      return {
+        success: true,
+        plans,
+      };
+    } catch (error) {
+      console.error("[Billing] Error getting available plans:", error);
+      return {
+        success: false,
+        error: "Failed to get available plans",
+        plans: [],
+      };
+    }
+  }),
+
+  /**
+   * Create billing portal session
+   */
+  createBillingPortal: protectedProcedure.mutation(async ({ ctx }) => {
+    try {
+      if (!ctx.user.paymentMethodId) {
+        throw new Error("No Stripe customer found");
+      }
+
+      const origin = ctx.req.headers.origin || "http://localhost:3000";
+      const session = await createBillingPortalSession(
+        ctx.user.paymentMethodId,
+        `${origin}/account`
+      );
+
+      return {
+        success: true,
+        url: session.url,
+      };
+    } catch (error) {
+      console.error("[Billing] Error creating billing portal:", error);
+      return {
+        success: false,
+        error: "Failed to create billing portal session",
+        url: "",
+      };
+    }
+  }),
+
+  /**
+   * Preview proration for plan change
+   */
+  previewPlanChange: protectedProcedure
+    .input(z.object({ newPriceId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      try {
+        if (!ctx.user.paymentMethodId) {
+          throw new Error("No Stripe customer found");
+        }
+
+        const subscription = await getCustomerSubscription(ctx.user.paymentMethodId);
+        if (!subscription) {
+          throw new Error("No active subscription");
+        }
+
+        const preview = await previewProration(
+          ctx.user.paymentMethodId,
+          subscription.id,
+          input.newPriceId
+        );
+
+        return {
+          success: true,
+          preview: {
+            immediateCharge: preview.total || 0,
+            formattedCharge: formatAmount(preview.total || 0, preview.currency || "usd"),
+            lineItems: preview.lines?.data?.map((line: any) => ({
+              description: line.description || "",
+              amount: line.amount || 0,
+              formattedAmount: formatAmount(line.amount || 0, preview.currency || "usd"),
+            })) || [],
+          },
+        };
+      } catch (error) {
+        console.error("[Billing] Error previewing plan change:", error);
+        return {
+          success: false,
+          error: "Failed to preview plan change",
+          preview: null,
+        };
+      }
+    }),
+
+  /**
+   * Change subscription plan
+   */
+  changePlan: protectedProcedure
+    .input(z.object({ newPriceId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        if (!ctx.user.paymentMethodId) {
+          throw new Error("No Stripe customer found");
+        }
+
+        const subscription = await getCustomerSubscription(ctx.user.paymentMethodId);
+        if (!subscription) {
+          throw new Error("No active subscription");
+        }
+
+        const updatedSubscription = await updateSubscriptionPrice(
+          subscription.id,
+          input.newPriceId
+        );
+
+        return {
+          success: true,
+          message: "Subscription updated successfully",
+          subscription: {
+            id: updatedSubscription.id,
+            status: updatedSubscription.status,
+          },
+        };
+      } catch (error) {
+        console.error("[Billing] Error changing plan:", error);
+        return {
+          success: false,
+          error: "Failed to change plan",
+        };
+      }
+    }),
+
+  /**
+   * Cancel subscription at period end
+   */
+  cancelSubscription: protectedProcedure.mutation(async ({ ctx }) => {
+    try {
+      if (!ctx.user.paymentMethodId) {
+        throw new Error("No Stripe customer found");
+      }
+
+      const subscription = await getCustomerSubscription(ctx.user.paymentMethodId);
+      if (!subscription) {
+        throw new Error("No active subscription");
+      }
+
+      const canceledSubscription = await cancelSubscriptionAtPeriodEnd(subscription.id);
+
+      return {
+        success: true,
+        message: "Subscription will be canceled at the end of the billing period",
+        cancelAt: (canceledSubscription as any).current_period_end
+          ? new Date((canceledSubscription as any).current_period_end * 1000)
+          : null,
+      };
+    } catch (error) {
+      console.error("[Billing] Error canceling subscription:", error);
+      return {
+        success: false,
+        error: "Failed to cancel subscription",
+      };
+    }
+  }),
+
+  /**
+   * Reactivate canceled subscription
+   */
+  reactivateSubscription: protectedProcedure.mutation(async ({ ctx }) => {
+    try {
+      if (!ctx.user.paymentMethodId) {
+        throw new Error("No Stripe customer found");
+      }
+
+      const subscription = await getCustomerSubscription(ctx.user.paymentMethodId);
+      if (!subscription) {
+        throw new Error("No subscription found");
+      }
+
+      if (!subscription.cancel_at_period_end) {
+        throw new Error("Subscription is not set to cancel");
+      }
+
+      const reactivatedSubscription = await reactivateSubscription(subscription.id);
+
+      return {
+        success: true,
+        message: "Subscription reactivated successfully",
+        subscription: {
+          id: reactivatedSubscription.id,
+          status: reactivatedSubscription.status,
+        },
+      };
+    } catch (error) {
+      console.error("[Billing] Error reactivating subscription:", error);
+      return {
+        success: false,
+        error: "Failed to reactivate subscription",
+      };
+    }
+  }),
 });

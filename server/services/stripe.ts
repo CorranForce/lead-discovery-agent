@@ -295,3 +295,224 @@ export async function getStripeCustomer(customerId: string) {
     throw error;
   }
 }
+
+
+// ==================== Subscription Management ====================
+
+/**
+ * Get customer's active subscription
+ */
+export async function getCustomerSubscription(customerId: string) {
+  try {
+    const subscriptions = await stripe.subscriptions.list({
+      customer: customerId,
+      status: 'all',
+      limit: 1,
+      expand: ['data.default_payment_method', 'data.latest_invoice'],
+    });
+
+    if (subscriptions.data.length === 0) {
+      return null;
+    }
+
+    return subscriptions.data[0];
+  } catch (error) {
+    console.error('[Stripe] Error getting customer subscription:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get subscription details with expanded data
+ */
+export async function getSubscriptionDetails(subscriptionId: string) {
+  try {
+    const subscription = await stripe.subscriptions.retrieve(subscriptionId, {
+      expand: ['default_payment_method', 'latest_invoice', 'items.data.price.product'],
+    });
+    return subscription;
+  } catch (error) {
+    console.error('[Stripe] Error getting subscription details:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get upcoming invoice for a subscription
+ */
+export async function getUpcomingInvoice(customerId: string, subscriptionId?: string) {
+  try {
+    const params: any = {
+      customer: customerId,
+    };
+    if (subscriptionId) {
+      params.subscription = subscriptionId;
+    }
+    // Use the upcoming invoice endpoint
+    const invoice = await (stripe.invoices as any).retrieveUpcoming(params);
+    return invoice;
+  } catch (error) {
+    // No upcoming invoice is not an error - customer may not have a subscription
+    if ((error as any).code === 'invoice_upcoming_none') {
+      return null;
+    }
+    console.error('[Stripe] Error getting upcoming invoice:', error);
+    throw error;
+  }
+}
+
+/**
+ * Create a billing portal session for subscription management
+ */
+export async function createBillingPortalSession(customerId: string, returnUrl: string) {
+  try {
+    const session = await stripe.billingPortal.sessions.create({
+      customer: customerId,
+      return_url: returnUrl,
+    });
+    return session;
+  } catch (error) {
+    console.error('[Stripe] Error creating billing portal session:', error);
+    throw error;
+  }
+}
+
+/**
+ * Update subscription to a new price (upgrade/downgrade)
+ */
+export async function updateSubscriptionPrice(subscriptionId: string, newPriceId: string) {
+  try {
+    const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+    
+    // Get the current subscription item
+    const subscriptionItemId = subscription.items.data[0]?.id;
+    if (!subscriptionItemId) {
+      throw new Error('No subscription item found');
+    }
+
+    // Update the subscription with the new price
+    const updatedSubscription = await stripe.subscriptions.update(subscriptionId, {
+      items: [
+        {
+          id: subscriptionItemId,
+          price: newPriceId,
+        },
+      ],
+      proration_behavior: 'create_prorations',
+    });
+
+    return updatedSubscription;
+  } catch (error) {
+    console.error('[Stripe] Error updating subscription price:', error);
+    throw error;
+  }
+}
+
+/**
+ * Cancel subscription at period end
+ */
+export async function cancelSubscriptionAtPeriodEnd(subscriptionId: string) {
+  try {
+    const subscription = await stripe.subscriptions.update(subscriptionId, {
+      cancel_at_period_end: true,
+    });
+    return subscription;
+  } catch (error) {
+    console.error('[Stripe] Error canceling subscription:', error);
+    throw error;
+  }
+}
+
+/**
+ * Reactivate a subscription that was set to cancel
+ */
+export async function reactivateSubscription(subscriptionId: string) {
+  try {
+    const subscription = await stripe.subscriptions.update(subscriptionId, {
+      cancel_at_period_end: false,
+    });
+    return subscription;
+  } catch (error) {
+    console.error('[Stripe] Error reactivating subscription:', error);
+    throw error;
+  }
+}
+
+/**
+ * Cancel subscription immediately
+ */
+export async function cancelSubscriptionImmediately(subscriptionId: string) {
+  try {
+    const subscription = await stripe.subscriptions.cancel(subscriptionId);
+    return subscription;
+  } catch (error) {
+    console.error('[Stripe] Error canceling subscription immediately:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get all products with prices for plan comparison
+ */
+export async function getProductsWithPrices() {
+  try {
+    const products = await stripe.products.list({
+      active: true,
+      expand: ['data.default_price'],
+    });
+
+    // Get all prices for each product
+    const productsWithPrices = await Promise.all(
+      products.data.map(async (product) => {
+        const prices = await stripe.prices.list({
+          product: product.id,
+          active: true,
+        });
+        return {
+          ...product,
+          prices: prices.data,
+        };
+      })
+    );
+
+    return productsWithPrices;
+  } catch (error) {
+    console.error('[Stripe] Error getting products with prices:', error);
+    throw error;
+  }
+}
+
+/**
+ * Preview proration for subscription change
+ */
+export async function previewProration(
+  customerId: string,
+  subscriptionId: string,
+  newPriceId: string
+) {
+  try {
+    const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+    const subscriptionItemId = subscription.items.data[0]?.id;
+
+    if (!subscriptionItemId) {
+      throw new Error('No subscription item found');
+    }
+
+    const invoice = await (stripe.invoices as any).retrieveUpcoming({
+      customer: customerId,
+      subscription: subscriptionId,
+      subscription_items: [
+        {
+          id: subscriptionItemId,
+          price: newPriceId,
+        },
+      ],
+      subscription_proration_behavior: 'create_prorations',
+    });
+
+    return invoice;
+  } catch (error) {
+    console.error('[Stripe] Error previewing proration:', error);
+    throw error;
+  }
+}

@@ -5,11 +5,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, User, Settings, BarChart3, Save, CreditCard } from "lucide-react";
+import { Loader2, User, Settings, BarChart3, Save, CreditCard, Crown } from "lucide-react";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import PaymentMethods from "@/components/PaymentMethods";
+import SubscriptionManagement from "@/components/SubscriptionManagement";
 
 export default function Account() {
   const { data: profile, isLoading: loadingProfile } = trpc.account.getProfile.useQuery();
@@ -126,6 +127,10 @@ export default function Account() {
           <TabsTrigger value="stats" className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4" />
             Statistics
+          </TabsTrigger>
+          <TabsTrigger value="subscription" className="flex items-center gap-2">
+            <Crown className="h-4 w-4" />
+            Subscription
           </TabsTrigger>
           <TabsTrigger value="payment" className="flex items-center gap-2">
             <CreditCard className="h-4 w-4" />
@@ -507,6 +512,10 @@ export default function Account() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="subscription" className="space-y-6">
+          <SubscriptionManagement />
         </TabsContent>
 
         <TabsContent value="payment" className="space-y-6">

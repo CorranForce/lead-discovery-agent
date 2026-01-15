@@ -604,3 +604,21 @@
 - [x] Add "Add Payment Method" button with Stripe Elements
 - [x] Add delete and set default buttons for each method
 - [x] Write unit tests for payment methods endpoints (included in admin billing tests)
+
+
+## Subscription Management Section
+- [x] Create endpoint to get user's current subscription details from Stripe
+- [x] Create endpoint to get subscription billing history and upcoming invoice
+- [x] Create endpoint to create checkout session for plan upgrade
+- [x] Create endpoint to create billing portal session for plan changes
+- [x] Build SubscriptionManagement UI component
+- [x] Display current plan name, tier, and features
+- [x] Show subscription status (active, canceled, past_due, trialing)
+- [x] Display current billing period dates (start/end)
+- [x] Show next billing date and amount
+- [x] Display available plans for upgrade/downgrade comparison
+- [x] Add upgrade button that opens Stripe checkout
+- [x] Add manage subscription button for billing portal
+- [x] Show cancel subscription option with confirmation
+- [x] Add subscription section to Account page (new "Subscription" tab)
+- [x] Write unit tests for subscription management endpoints (31 tests, all passing)
