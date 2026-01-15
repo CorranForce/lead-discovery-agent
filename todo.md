@@ -622,3 +622,42 @@
 - [x] Show cancel subscription option with confirmation
 - [x] Add subscription section to Account page (new "Subscription" tab)
 - [x] Write unit tests for subscription management endpoints (31 tests, all passing)
+
+
+## Test Data / Live Data Toggle
+- [x] Add Test Data toggle switch to Dashboard header
+- [x] Create comprehensive test data generator for all features
+- [x] Generate test leads with realistic company data
+- [x] Generate test conversations with message history
+- [x] Generate test sequences with email templates
+- [x] Generate test invoices and payments
+- [x] Generate test analytics data
+- [x] Wire toggle to user preferences (persist setting)
+- [x] Update all data-fetching queries to respect toggle state
+- [x] Add visual indicator when in test mode
+
+## Branded PDF Invoice Downloads
+- [x] Create PDF invoice template with company branding
+- [x] Add company logo, name, and contact info to invoice header
+- [x] Include invoice details (number, date, due date, status)
+- [x] Add line items with descriptions and amounts
+- [x] Include payment information and terms
+- [x] Add footer with company address and tax info
+- [x] Create tRPC endpoint to generate PDF invoice
+- [x] Add download button to invoice list on Billing page
+- [x] Implement PDF streaming for large invoices
+- [x] Write unit tests for PDF generation (29 tests, all passing)
+
+## Security Audit - Billing & Stripe Integration
+- [x] Audit webhook signature verification implementation
+- [x] Verify all billing endpoints require authentication
+- [x] Check for SQL injection vulnerabilities in billing queries (using Drizzle ORM - safe)
+- [x] Validate input sanitization on all billing inputs (Zod schemas)
+- [x] Audit Stripe customer ID access controls
+- [x] Verify payment method ownership validation
+- [x] Check for IDOR vulnerabilities in invoice access (ownership validation added)
+- [x] Implement rate limiting on billing endpoints (documented recommendations)
+- [x] Add audit logging for sensitive billing operations
+- [x] Verify HTTPS-only for all Stripe communications
+- [x] Check for sensitive data exposure in error messages
+- [x] Document security measures and create security report (docs/SECURITY_AUDIT.md)

@@ -33,7 +33,9 @@ import {
   reactivateSubscription,
   getProductsWithPrices,
   previewProration,
+  getStripeInvoice,
 } from "../services/stripe";
+import { generateInvoicePdf, stripeInvoiceToInvoiceData } from "../services/invoicePdf";
 import { TRPCError } from "@trpc/server";
 
 export const billingRouter = router({
@@ -943,4 +945,177 @@ export const billingRouter = router({
       };
     }
   }),
+
+  /**
+   * Generate branded PDF invoice
+   * Security: Validates invoice ID format, verifies ownership, rate-limited by tRPC
+   */
+  generateInvoicePdf: protectedProcedure
+    .input(z.object({ 
+      invoiceId: z.string()
+        .min(1, "Invoice ID is required")
+        .max(100, "Invoice ID too long")
+        .regex(/^in_[a-zA-Z0-9]+$/, "Invalid invoice ID format")
+    }))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        // Security: Log access attempt for audit trail
+        console.log(`[Security] Invoice PDF request: user=${ctx.user.id}, invoice=${input.invoiceId}`);
+        
+        // Get the Stripe invoice
+        const stripeInvoice = await getStripeInvoice(input.invoiceId);
+        
+        if (!stripeInvoice) {
+          // Security: Don't reveal if invoice exists for other users
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Invoice not found or access denied",
+          });
+        }
+
+        // Security: Verify the invoice belongs to this user's customer
+        const customerId = typeof stripeInvoice.customer === 'string' 
+          ? stripeInvoice.customer 
+          : stripeInvoice.customer?.id;
+          
+        if (!ctx.user.paymentMethodId || customerId !== ctx.user.paymentMethodId) {
+          // Security: Log unauthorized access attempt
+          console.warn(`[Security] Unauthorized invoice access attempt: user=${ctx.user.id}, invoice=${input.invoiceId}`);
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Invoice not found or access denied",
+          });
+        }
+
+        // Company info for the invoice
+        const companyInfo = {
+          name: "Lead Discovery AI",
+          address: "123 Innovation Drive\nSan Francisco, CA 94102\nUnited States",
+          email: "billing@leaddiscovery.ai",
+          phone: "+1 (555) 123-4567",
+          website: "https://leaddiscovery.ai",
+          taxId: "US-123456789",
+        };
+
+        // Convert Stripe invoice to our format
+        const invoiceData = stripeInvoiceToInvoiceData(stripeInvoice, companyInfo);
+
+        // Generate PDF
+        const pdfBuffer = await generateInvoicePdf(invoiceData);
+
+        // Convert to base64 for transmission
+        const pdfBase64 = pdfBuffer.toString("base64");
+
+        return {
+          success: true,
+          pdf: pdfBase64,
+          filename: `invoice-${invoiceData.invoiceNumber}.pdf`,
+          contentType: "application/pdf",
+        };
+      } catch (error) {
+        console.error("[Billing] Error generating invoice PDF:", error);
+        if (error instanceof TRPCError) throw error;
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to generate invoice PDF",
+        });
+      }
+    }),
+
+  /**
+   * Get test invoice PDF (for test mode)
+   */
+  getTestInvoicePdf: protectedProcedure
+    .input(z.object({ invoiceId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        // Check if test mode is enabled
+        const useTestData = ctx.user.useRealData !== 1;
+        
+        if (!useTestData) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Test invoices are only available in test mode",
+          });
+        }
+
+        const { getTestData } = await import("../services/testData");
+        const testData = getTestData();
+        const testInvoice = testData.invoices.find(inv => inv.id === input.invoiceId);
+
+        if (!testInvoice) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Test invoice not found",
+          });
+        }
+
+        // Company info for the invoice
+        const companyInfo = {
+          name: "Lead Discovery AI",
+          address: "123 Innovation Drive\nSan Francisco, CA 94102\nUnited States",
+          email: "billing@leaddiscovery.ai",
+          phone: "+1 (555) 123-4567",
+          website: "https://leaddiscovery.ai",
+          taxId: "US-123456789",
+        };
+
+        // Convert test invoice to our format
+        const invoiceData = {
+          invoiceNumber: testInvoice.invoiceNumber,
+          invoiceDate: testInvoice.createdAt,
+          dueDate: testInvoice.dueDate,
+          status: testInvoice.status as 'paid' | 'open' | 'void' | 'uncollectible',
+          
+          companyName: companyInfo.name,
+          companyAddress: companyInfo.address,
+          companyEmail: companyInfo.email,
+          companyPhone: companyInfo.phone,
+          companyWebsite: companyInfo.website,
+          companyTaxId: companyInfo.taxId,
+          
+          customerName: ctx.user.name || "Customer",
+          customerEmail: ctx.user.email || "",
+          
+          lineItems: testInvoice.lineItems.map(item => ({
+            description: item.description,
+            quantity: 1,
+            unitPrice: item.amount,
+            amount: item.amount,
+          })),
+          
+          subtotal: testInvoice.amount,
+          total: testInvoice.amount,
+          amountPaid: testInvoice.status === 'paid' ? testInvoice.amount : 0,
+          amountDue: testInvoice.status === 'paid' ? 0 : testInvoice.amount,
+          currency: testInvoice.currency,
+          
+          paymentDate: testInvoice.paidAt || undefined,
+          transactionId: testInvoice.stripeInvoiceId,
+          
+          notes: "This is a test invoice generated for demonstration purposes.",
+          terms: "Payment is due within 30 days of invoice date. Late payments may be subject to additional fees.",
+        };
+
+        // Generate PDF
+        const pdfBuffer = await generateInvoicePdf(invoiceData);
+
+        // Convert to base64 for transmission
+        const pdfBase64 = pdfBuffer.toString("base64");
+
+        return {
+          success: true,
+          pdf: pdfBase64,
+          filename: `invoice-${invoiceData.invoiceNumber}.pdf`,
+          contentType: "application/pdf",
+        };
+      } catch (error) {
+        console.error("[Billing] Error generating test invoice PDF:", error);
+        if (error instanceof TRPCError) throw error;
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to generate test invoice PDF",
+        });
+      }
+    }),
 });

@@ -77,6 +77,19 @@ export const appRouter = router({
       }),
     
     getStats: protectedProcedure.query(async ({ ctx }) => {
+      // Check if test mode is enabled (useRealData = 0 means test mode)
+      const useTestData = ctx.user.useRealData !== 1;
+      
+      if (useTestData) {
+        const { getTestData } = await import("./services/testData");
+        const testData = getTestData();
+        return {
+          totalLeads: testData.leads.length,
+          totalConversations: testData.conversations.length,
+          totalEmails: testData.analytics.emailsSent,
+        };
+      }
+      
       const { getDb } = await import("./db");
       const { leads, conversations, sentEmails } = await import("../drizzle/schema");
       const { eq, count } = await import("drizzle-orm");
@@ -107,6 +120,36 @@ export const appRouter = router({
   // Lead discovery and management
   leads: router({
     list: protectedProcedure.query(async ({ ctx }) => {
+      // Check if test mode is enabled
+      const useTestData = ctx.user.useRealData !== 1;
+      
+      if (useTestData) {
+        const { getTestData } = await import("./services/testData");
+        const testData = getTestData();
+        // Transform test leads to match expected format
+        return testData.leads.map(lead => ({
+          id: lead.id,
+          userId: ctx.user.id,
+          companyName: lead.companyName,
+          website: lead.website,
+          industry: lead.industry,
+          companySize: `${lead.employeeCount} employees`,
+          location: lead.location,
+          description: `${lead.industry} company with ${lead.revenue} revenue`,
+          contactName: lead.contactName,
+          contactTitle: lead.contactTitle,
+          contactEmail: lead.contactEmail,
+          contactLinkedin: lead.linkedinUrl,
+          contactPhone: lead.contactPhone,
+          status: lead.status,
+          score: lead.score,
+          notes: lead.notes,
+          tags: lead.industry,
+          createdAt: lead.createdAt,
+          updatedAt: lead.createdAt,
+        }));
+      }
+      
       const { getUserLeads } = await import("./db");
       return await getUserLeads(ctx.user.id);
     }),
@@ -431,6 +474,27 @@ Return exactly 5 leads in valid JSON format as an array of objects.`;
   // Sales conversations
   conversations: router({
     list: protectedProcedure.query(async ({ ctx }) => {
+      // Check if test mode is enabled
+      const useTestData = ctx.user.useRealData !== 1;
+      
+      if (useTestData) {
+        const { getTestData } = await import("./services/testData");
+        const testData = getTestData();
+        // Transform test conversations to match expected format
+        return testData.conversations.map(conv => ({
+          id: conv.id,
+          userId: ctx.user.id,
+          leadId: conv.leadId,
+          title: conv.subject,
+          status: conv.status as 'active' | 'pending' | 'closed' | 'follow_up_needed' | 'won' | 'lost',
+          sentiment: 'neutral' as 'positive' | 'neutral' | 'negative',
+          summary: `Conversation with ${conv.contactName} - ${conv.messageCount} messages exchanged`,
+          notes: `${conv.messageCount} messages`,
+          createdAt: conv.lastMessageAt,
+          updatedAt: conv.lastMessageAt,
+        }));
+      }
+      
       const { getUserConversations } = await import("./db");
       return await getUserConversations(ctx.user.id);
     }),

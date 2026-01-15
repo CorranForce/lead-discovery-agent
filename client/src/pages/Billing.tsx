@@ -1,14 +1,18 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { trpc } from "@/lib/trpc";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Download, CreditCard, AlertCircle } from "lucide-react";
+import { Loader2, Download, CreditCard, AlertCircle, FileText } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Billing() {
   const [activeTab, setActiveTab] = useState<"invoices" | "plans">("invoices");
+  const [downloadingInvoice, setDownloadingInvoice] = useState<number | string | null>(null);
+  const { user } = useAuth();
+  const isTestMode = user?.useRealData !== 1;
 
   // Fetch invoices
   const { data: invoicesData, isLoading: invoicesLoading } = trpc.billing.getInvoices.useQuery({
@@ -27,7 +31,7 @@ export default function Billing() {
         toast.error(data.error || "Failed to sync invoices");
       }
     },
-    onError: (error) => {
+    onError: () => {
       toast.error("Failed to sync invoices");
     },
   });
@@ -42,17 +46,92 @@ export default function Billing() {
         toast.error(data.error || "Failed to create checkout session");
       }
     },
-    onError: (error) => {
+    onError: () => {
       toast.error("Failed to create checkout session");
     },
   });
 
-  const handleDownloadInvoice = (downloadUrl: string | null | undefined) => {
-    if (!downloadUrl) {
+  // Generate branded PDF mutation
+  const generatePdfMutation = trpc.billing.generateInvoicePdf.useMutation({
+    onSuccess: (data) => {
+      if (data.success && data.pdf) {
+        // Convert base64 to blob and download
+        const byteCharacters = atob(data.pdf);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: "application/pdf" });
+
+        // Create download link
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = data.filename || "invoice.pdf";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+
+        toast.success("Invoice downloaded successfully");
+      }
+      setDownloadingInvoice(null);
+    },
+    onError: () => {
+      toast.error("Failed to generate invoice PDF");
+      setDownloadingInvoice(null);
+    },
+  });
+
+  // Generate test PDF mutation
+  const generateTestPdfMutation = trpc.billing.getTestInvoicePdf.useMutation({
+    onSuccess: (data) => {
+      if (data.success && data.pdf) {
+        // Convert base64 to blob and download
+        const byteCharacters = atob(data.pdf);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: "application/pdf" });
+
+        // Create download link
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = data.filename || "invoice.pdf";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+
+        toast.success("Test invoice downloaded successfully");
+      }
+      setDownloadingInvoice(null);
+    },
+    onError: () => {
+      toast.error("Failed to generate test invoice PDF");
+      setDownloadingInvoice(null);
+    },
+  });
+
+  const handleDownloadInvoice = (invoice: any) => {
+    if (isTestMode) {
+      // For test mode, use test PDF generation
+      setDownloadingInvoice(invoice.id);
+      generateTestPdfMutation.mutate({ invoiceId: invoice.id });
+    } else if (invoice.stripeInvoiceId) {
+      // For live mode with Stripe invoice, generate branded PDF
+      setDownloadingInvoice(invoice.stripeInvoiceId);
+      generatePdfMutation.mutate({ invoiceId: invoice.stripeInvoiceId });
+    } else if (invoice.downloadUrl) {
+      // Fallback to Stripe's hosted URL
+      window.open(invoice.downloadUrl, "_blank");
+    } else {
       toast.error("Invoice PDF not available");
-      return;
     }
-    window.open(downloadUrl, "_blank");
   };
 
   const handleUpgradeSubscription = (priceId: string, billingCycle: "monthly" | "yearly") => {
@@ -79,6 +158,19 @@ export default function Billing() {
         <h1 className="text-3xl font-bold tracking-tight">Billing & Invoices</h1>
         <p className="text-gray-500 mt-2">Manage your subscription and view payment history</p>
       </div>
+
+      {/* Test Mode Banner */}
+      {isTestMode && (
+        <div className="flex items-center gap-3 p-4 rounded-lg border border-amber-500/30 bg-amber-500/10">
+          <FileText className="h-5 w-5 text-amber-500 shrink-0" />
+          <div className="flex-1">
+            <p className="font-medium text-amber-600 dark:text-amber-400">Test Mode Active</p>
+            <p className="text-sm text-muted-foreground">
+              Viewing sample billing data. Download invoices to see branded PDF generation.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="flex gap-4 border-b">
@@ -109,14 +201,16 @@ export default function Billing() {
         <div className="space-y-4">
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-semibold">Invoice History</h2>
-            <Button
-              onClick={() => syncInvoicesMutation.mutate()}
-              disabled={syncInvoicesMutation.isPending}
-              variant="outline"
-            >
-              {syncInvoicesMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              Sync from Stripe
-            </Button>
+            {!isTestMode && (
+              <Button
+                onClick={() => syncInvoicesMutation.mutate()}
+                disabled={syncInvoicesMutation.isPending}
+                variant="outline"
+              >
+                {syncInvoicesMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                Sync from Stripe
+              </Button>
+            )}
           </div>
 
           {invoicesLoading ? (
@@ -128,6 +222,7 @@ export default function Billing() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead>Invoice #</TableHead>
                     <TableHead>Date</TableHead>
                     <TableHead>Amount</TableHead>
                     <TableHead>Status</TableHead>
@@ -138,6 +233,9 @@ export default function Billing() {
                 <TableBody>
                   {invoicesData.invoices.map((invoice) => (
                     <TableRow key={invoice.id}>
+                      <TableCell className="font-mono text-sm">
+                        {(invoice as any).invoiceNumber || `INV-${invoice.id}`}
+                      </TableCell>
                       <TableCell>
                         {new Date(invoice.createdAt).toLocaleDateString()}
                       </TableCell>
@@ -156,9 +254,14 @@ export default function Billing() {
                         <Button
                           size="sm"
                           variant="ghost"
-                          onClick={() => handleDownloadInvoice(invoice.downloadUrl)}
+                          onClick={() => handleDownloadInvoice(invoice)}
+                          disabled={downloadingInvoice === invoice.id || downloadingInvoice === (invoice as any).stripeInvoiceId}
                         >
-                          <Download className="w-4 h-4" />
+                          {(downloadingInvoice === invoice.id || downloadingInvoice === (invoice as any).stripeInvoiceId) ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Download className="w-4 h-4" />
+                          )}
                         </Button>
                       </TableCell>
                     </TableRow>

@@ -2,14 +2,43 @@ import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Building2, MessageSquare, Mail, Plus, TrendingUp, Users, ArrowRight } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Loader2, Building2, MessageSquare, Mail, Plus, TrendingUp, Users, ArrowRight, FlaskConical, Database } from "lucide-react";
 import { Link } from "wouter";
+import { toast } from "sonner";
 
 export default function Dashboard() {
   const { data: stats, isLoading: loadingStats } = trpc.account.getStats.useQuery();
   const { data: leads, isLoading: loadingLeads } = trpc.leads.list.useQuery();
   const { data: conversations, isLoading: loadingConversations } = trpc.conversations.list.useQuery();
   const { data: profile } = trpc.account.getProfile.useQuery();
+  const utils = trpc.useUtils();
+
+  const isTestMode = profile?.useRealData !== 1;
+
+  const updatePreferencesMutation = trpc.account.updatePreferences.useMutation({
+    onSuccess: () => {
+      utils.account.getProfile.invalidate();
+      utils.account.getStats.invalidate();
+      utils.leads.list.invalidate();
+      utils.conversations.list.invalidate();
+    },
+  });
+
+  const handleToggleTestMode = (checked: boolean) => {
+    const useRealData = checked ? 0 : 1;
+    updatePreferencesMutation.mutate({ useRealData });
+    if (checked) {
+      toast.info("Switched to Test Data mode", {
+        description: "You're now viewing sample data for testing purposes.",
+      });
+    } else {
+      toast.success("Switched to Live Data mode", {
+        description: "You're now viewing your real data.",
+      });
+    }
+  };
 
   const recentLeads = leads?.slice(0, 5) || [];
   const activeConversations = conversations?.filter(c => c.status === "active").slice(0, 5) || [];
@@ -24,15 +53,50 @@ export default function Dashboard() {
   return (
     <>
       <div className="container py-8 space-y-8">
-      {/* Welcome Section */}
-      <div className="space-y-2">
-        <h1 className="text-4xl font-bold tracking-tight">
-          Welcome back{profile?.name ? `, ${profile.name}` : ""}!
-        </h1>
-        <p className="text-muted-foreground text-lg">
-          Here's what's happening with your sales pipeline
-        </p>
+      {/* Welcome Section with Test Mode Toggle */}
+      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+        <div className="space-y-2">
+          <h1 className="text-4xl font-bold tracking-tight">
+            Welcome back{profile?.name ? `, ${profile.name}` : ""}!
+          </h1>
+          <p className="text-muted-foreground text-lg">
+            Here's what's happening with your sales pipeline
+          </p>
+        </div>
+
+        {/* Test Data Toggle */}
+        <div className="flex items-center gap-3 p-3 rounded-lg border bg-card">
+          <div className="flex items-center gap-2">
+            {isTestMode ? (
+              <FlaskConical className="h-4 w-4 text-amber-500" />
+            ) : (
+              <Database className="h-4 w-4 text-green-500" />
+            )}
+            <Label htmlFor="test-mode" className="text-sm font-medium cursor-pointer">
+              {isTestMode ? "Test Data" : "Live Data"}
+            </Label>
+          </div>
+          <Switch
+            id="test-mode"
+            checked={isTestMode}
+            onCheckedChange={handleToggleTestMode}
+            disabled={updatePreferencesMutation.isPending}
+          />
+        </div>
       </div>
+
+      {/* Test Mode Banner */}
+      {isTestMode && (
+        <div className="flex items-center gap-3 p-4 rounded-lg border border-amber-500/30 bg-amber-500/10">
+          <FlaskConical className="h-5 w-5 text-amber-500 shrink-0" />
+          <div className="flex-1">
+            <p className="font-medium text-amber-600 dark:text-amber-400">Test Mode Active</p>
+            <p className="text-sm text-muted-foreground">
+              You're viewing sample data. Toggle off to see your real data.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Quick Actions */}
       <div className="flex flex-wrap gap-3">

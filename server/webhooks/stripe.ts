@@ -18,20 +18,37 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
 
 /**
  * Verify Stripe webhook signature
+ * Security: Uses Stripe's cryptographic signature verification
  */
 function verifyWebhookSignature(
   body: string | Buffer,
   signature: string
 ): Stripe.Event | null {
+  // Security: Validate inputs
+  if (!signature || typeof signature !== 'string') {
+    console.error("[Security] Webhook missing signature header");
+    return null;
+  }
+  
+  if (!process.env.STRIPE_WEBHOOK_SECRET) {
+    console.error("[Security] STRIPE_WEBHOOK_SECRET not configured");
+    return null;
+  }
+  
   try {
     const event = stripe.webhooks.constructEvent(
       body,
       signature,
-      process.env.STRIPE_WEBHOOK_SECRET || ""
+      process.env.STRIPE_WEBHOOK_SECRET
     );
+    
+    // Security: Log successful verification for audit trail
+    console.log(`[Security] Webhook verified: type=${event.type}, id=${event.id}`);
+    
     return event;
   } catch (error) {
-    console.error("[Stripe Webhook] Signature verification failed:", error);
+    // Security: Log failed verification attempts
+    console.error("[Security] Webhook signature verification failed:", error);
     return null;
   }
 }

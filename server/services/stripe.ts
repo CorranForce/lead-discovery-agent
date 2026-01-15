@@ -114,13 +114,15 @@ export async function createPaymentCheckoutSession(
 /**
  * Retrieve invoice from Stripe
  */
-export async function getStripeInvoice(invoiceId: string) {
+export async function getStripeInvoice(invoiceId: string): Promise<Stripe.Invoice | null> {
   try {
-    const invoice = await stripe.invoices.retrieve(invoiceId);
+    const invoice = await stripe.invoices.retrieve(invoiceId, {
+      expand: ['default_payment_method', 'lines.data', 'customer'],
+    });
     return invoice;
   } catch (error) {
     console.error('[Stripe] Error retrieving invoice:', error);
-    throw error;
+    return null;
   }
 }
 
@@ -194,6 +196,8 @@ export async function getInvoicePdfUrl(invoiceId: string): Promise<string | null
     return null;
   }
 }
+
+
 
 
 // ==================== Payment Methods Management ====================
