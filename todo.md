@@ -552,7 +552,7 @@
 - [x] Create database helper functions for invoices, payments, and plans
 - [x] Create Stripe service for customer and subscription management
 - [x] Implement Stripe checkout session creation
-- [ ] Create webhook handler for Stripe events (payment_intent.succeeded, invoice.paid)
+- [x] Create webhook handler for Stripe events (payment_intent.succeeded, invoice.paid)
 - [x] Create tRPC endpoints for billing operations (getInvoices, createCheckout, getSubscriptionPlans)
 - [x] Build Billing page with invoice history table
 - [ ] Add invoice download as PDF functionality (integrated via Stripe)
@@ -565,3 +565,19 @@
 - [ ] Test invoice creation and retrieval
 - [ ] Test payment webhook handling
 - [ ] Test PDF receipt generation
+
+
+## Stripe Webhook Handler
+- [x] Create webhook endpoint at /api/stripe/webhook
+- [x] Implement Stripe signature verification
+- [x] Handle checkout.session.completed event
+- [x] Handle payment_intent.succeeded event
+- [x] Handle invoice.paid event
+- [x] Handle invoice.payment_failed event
+- [x] Update invoice status in database on payment success
+- [x] Create payment record on successful payment
+- [x] Update user subscription tier on successful checkout
+- [x] Handle test events for webhook verification
+- [x] Register webhook route with express.raw() middleware
+- [x] Write unit tests for webhook handler (13 tests, all passing)
+- [ ] Test webhook with Stripe CLI or test events

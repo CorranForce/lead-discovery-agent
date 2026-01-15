@@ -34,6 +34,18 @@ async function startServer() {
   // Start the scheduler for automated workflow execution
   const { startScheduler } = await import("../scheduler");
   startScheduler();
+  
+  // Stripe webhook endpoint - MUST be registered BEFORE express.json() middleware
+  // to ensure raw body is available for signature verification
+  app.post(
+    "/api/stripe/webhook",
+    express.raw({ type: "application/json" }),
+    async (req, res) => {
+      const { handleStripeWebhook } = await import("../webhooks/stripe");
+      await handleStripeWebhook(req, res);
+    }
+  );
+  
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
