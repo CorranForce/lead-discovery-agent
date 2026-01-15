@@ -1,0 +1,196 @@
+import Stripe from 'stripe';
+import { ENV } from '../_core/env';
+
+// Initialize Stripe with secret key
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+  apiVersion: '2025-12-15.clover' as any,
+});
+
+/**
+ * Create or retrieve a Stripe customer for a user
+ */
+export async function getOrCreateStripeCustomer(userId: number, email: string, name?: string) {
+  try {
+    // Search for existing customer by email
+    const customers = await stripe.customers.list({
+      email,
+      limit: 1,
+    });
+
+    if (customers.data.length > 0) {
+      return customers.data[0];
+    }
+
+    // Create new customer
+    const customer = await stripe.customers.create({
+      email,
+      name: name || undefined,
+      metadata: {
+        userId: userId.toString(),
+      },
+    });
+
+    return customer;
+  } catch (error) {
+    console.error('[Stripe] Error creating/retrieving customer:', error);
+    throw error;
+  }
+}
+
+/**
+ * Create a checkout session for subscription
+ */
+export async function createCheckoutSession(
+  customerId: string,
+  priceId: string,
+  successUrl: string,
+  cancelUrl: string,
+  metadata?: Record<string, string>
+) {
+  try {
+    const session = await stripe.checkout.sessions.create({
+      customer: customerId,
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ],
+      mode: 'subscription',
+      success_url: successUrl,
+      cancel_url: cancelUrl,
+      metadata: metadata || {},
+    });
+
+    return session;
+  } catch (error) {
+    console.error('[Stripe] Error creating checkout session:', error);
+    throw error;
+  }
+}
+
+/**
+ * Create a one-time payment checkout session
+ */
+export async function createPaymentCheckoutSession(
+  customerId: string,
+  amount: number,
+  currency: string,
+  description: string,
+  successUrl: string,
+  cancelUrl: string,
+  metadata?: Record<string, string>
+) {
+  try {
+    const session = await stripe.checkout.sessions.create({
+      customer: customerId,
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price_data: {
+            currency,
+            product_data: {
+              name: description,
+            },
+            unit_amount: amount,
+          },
+          quantity: 1,
+        },
+      ],
+      mode: 'payment',
+      success_url: successUrl,
+      cancel_url: cancelUrl,
+      metadata: metadata || {},
+    });
+
+    return session;
+  } catch (error) {
+    console.error('[Stripe] Error creating payment checkout session:', error);
+    throw error;
+  }
+}
+
+/**
+ * Retrieve invoice from Stripe
+ */
+export async function getStripeInvoice(invoiceId: string) {
+  try {
+    const invoice = await stripe.invoices.retrieve(invoiceId);
+    return invoice;
+  } catch (error) {
+    console.error('[Stripe] Error retrieving invoice:', error);
+    throw error;
+  }
+}
+
+/**
+ * List invoices for a customer
+ */
+export async function listCustomerInvoices(customerId: string, limit: number = 10) {
+  try {
+    const invoices = await stripe.invoices.list({
+      customer: customerId,
+      limit,
+    });
+    return invoices.data;
+  } catch (error) {
+    console.error('[Stripe] Error listing invoices:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get payment intent
+ */
+export async function getPaymentIntent(paymentIntentId: string) {
+  try {
+    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+    return paymentIntent;
+  } catch (error) {
+    console.error('[Stripe] Error retrieving payment intent:', error);
+    throw error;
+  }
+}
+
+/**
+ * Verify webhook signature
+ */
+export function verifyWebhookSignature(body: string, signature: string): Stripe.Event | null {
+  try {
+    const event = stripe.webhooks.constructEvent(
+      body,
+      signature,
+      process.env.STRIPE_WEBHOOK_SECRET || ''
+    );
+    return event;
+  } catch (error) {
+    console.error('[Stripe] Webhook signature verification failed:', error);
+    return null;
+  }
+}
+
+/**
+ * Format amount from cents to dollars
+ */
+export function formatAmount(amountInCents: number, currency: string = 'USD'): string {
+  const amount = amountInCents / 100;
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency,
+  }).format(amount);
+}
+
+/**
+ * Get invoice PDF URL
+ */
+export async function getInvoicePdfUrl(invoiceId: string): Promise<string | null> {
+  try {
+    const invoice = await stripe.invoices.retrieve(invoiceId);
+    const pdfUrl = (invoice as any).pdf || (invoice as any).hosted_invoice_url;
+    return pdfUrl || null;
+  } catch (error) {
+    console.error('[Stripe] Error getting invoice PDF URL:', error);
+    return null;
+  }
+}

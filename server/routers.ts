@@ -2,6 +2,7 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
+import { billingRouter } from "./routers/billing";
 import { z } from "zod";
 
 export const appRouter = router({
@@ -1364,7 +1365,9 @@ Be professional, empathetic, and focused on building trust.`;
         
         return { success: true, message: 'User billing updated successfully' };
       }),
-  }),
+   }),
+  
+  // Billing
+  billing: billingRouter,
 });
-
 export type AppRouter = typeof appRouter;

@@ -12,6 +12,7 @@ import {
   BarChart3,
   X,
   UserCog,
+  CreditCard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -34,6 +35,7 @@ export default function Sidebar({ isMobileMenuOpen, setIsMobileMenuOpen }: Sideb
     { href: "/admin", label: "Admin", icon: Shield },
     { href: "/users", label: "Users", icon: UserCog },
     { href: "/analytics", label: "Analytics", icon: BarChart3 },
+    { href: "/billing", label: "Billing", icon: CreditCard },
   ];
 
   return (

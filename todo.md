@@ -543,3 +543,25 @@
 - [ ] Test no downgrade when payment method exists
 - [ ] Test email notifications are sent at correct times
 - [ ] Test trial status display in UI
+
+
+## Billing & Invoice Management with Stripe
+- [x] Add invoices table to database schema
+- [x] Add payments table to database schema
+- [x] Add subscriptionPlans table to database schema
+- [x] Create database helper functions for invoices, payments, and plans
+- [x] Create Stripe service for customer and subscription management
+- [x] Implement Stripe checkout session creation
+- [ ] Create webhook handler for Stripe events (payment_intent.succeeded, invoice.paid)
+- [x] Create tRPC endpoints for billing operations (getInvoices, createCheckout, getSubscriptionPlans)
+- [x] Build Billing page with invoice history table
+- [ ] Add invoice download as PDF functionality (integrated via Stripe)
+- [ ] Implement receipt generation with company details
+- [ ] Add payment method management UI
+- [ ] Add subscription upgrade/downgrade functionality
+- [ ] Create invoice PDF template
+- [x] Write comprehensive unit tests for billing (25 tests written, pending table creation)
+- [ ] Test Stripe integration end-to-end
+- [ ] Test invoice creation and retrieval
+- [ ] Test payment webhook handling
+- [ ] Test PDF receipt generation

@@ -1,6 +1,6 @@
 import { eq, desc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, leads, InsertLead, searchHistory, InsertSearchHistory, enrichmentData, InsertEnrichmentData, conversations, InsertConversation, messages, InsertMessage, conversationTemplates, InsertConversationTemplate, emailTemplates, InsertEmailTemplate, sentEmails, InsertSentEmail, emailSequences, InsertEmailSequence, sequenceSteps, InsertSequenceStep, sequenceEnrollments, InsertSequenceEnrollment, emailClicks, InsertEmailClick, emailOpens, InsertEmailOpen, reengagementWorkflows, InsertReengagementWorkflow, reengagementExecutions } from "../drizzle/schema";
+import { InsertUser, users, leads, InsertLead, searchHistory, InsertSearchHistory, enrichmentData, InsertEnrichmentData, conversations, InsertConversation, messages, InsertMessage, conversationTemplates, InsertConversationTemplate, emailTemplates, InsertEmailTemplate, sentEmails, InsertSentEmail, emailSequences, InsertEmailSequence, sequenceSteps, InsertSequenceStep, sequenceEnrollments, InsertSequenceEnrollment, emailClicks, InsertEmailClick, emailOpens, InsertEmailOpen, reengagementWorkflows, InsertReengagementWorkflow, reengagementExecutions, invoices, Invoice, InsertInvoice, payments, Payment, InsertPayment, subscriptionPlans, SubscriptionPlan, InsertSubscriptionPlan } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -830,4 +830,181 @@ export async function updateUserBilling(
   
   await db.update(users).set(data).where(eq(users.id, userId));
   return true;
+}
+
+
+// ============================================
+// BILLING & INVOICE FUNCTIONS
+// ============================================
+
+/**
+ * Create or update a Stripe customer ID for a user
+ */
+export async function updateUserStripeCustomerId(userId: number, stripeCustomerId: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(users).set({ 
+    paymentMethodId: stripeCustomerId,
+    hasPaymentMethod: 1
+  }).where(eq(users.id, userId));
+}
+
+/**
+ * Create an invoice record
+ */
+export async function createInvoice(invoice: InsertInvoice) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(invoices).values(invoice);
+  return result;
+}
+
+/**
+ * Get user invoices
+ */
+export async function getUserInvoices(userId: number, limit: number = 50) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select().from(invoices)
+    .where(eq(invoices.userId, userId))
+    .orderBy(desc(invoices.createdAt))
+    .limit(limit);
+}
+
+/**
+ * Get a specific invoice
+ */
+export async function getInvoiceById(invoiceId: number, userId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select().from(invoices)
+    .where(eq(invoices.id, invoiceId))
+    .limit(1);
+  
+  if (result.length > 0 && result[0].userId === userId) {
+    return result[0];
+  }
+  return undefined;
+}
+
+/**
+ * Get invoice by Stripe ID
+ */
+export async function getInvoiceByStripeId(stripeInvoiceId: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select().from(invoices)
+    .where(eq(invoices.stripeInvoiceId, stripeInvoiceId))
+    .limit(1);
+  
+  return result.length > 0 ? result[0] : undefined;
+}
+
+/**
+ * Update invoice
+ */
+export async function updateInvoice(invoiceId: number, updates: Partial<Invoice>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(invoices).set(updates).where(eq(invoices.id, invoiceId));
+}
+
+/**
+ * Create a payment record
+ */
+export async function createPayment(payment: InsertPayment) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(payments).values(payment);
+  return result;
+}
+
+/**
+ * Get user payments
+ */
+export async function getUserPayments(userId: number, limit: number = 50) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select().from(payments)
+    .where(eq(payments.userId, userId))
+    .orderBy(desc(payments.createdAt))
+    .limit(limit);
+}
+
+/**
+ * Get payment by Stripe ID
+ */
+export async function getPaymentByStripeId(stripePaymentIntentId: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select().from(payments)
+    .where(eq(payments.stripePaymentIntentId, stripePaymentIntentId))
+    .limit(1);
+  
+  return result.length > 0 ? result[0] : undefined;
+}
+
+/**
+ * Update payment
+ */
+export async function updatePayment(paymentId: number, updates: Partial<Payment>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(payments).set(updates).where(eq(payments.id, paymentId));
+}
+
+/**
+ * Get subscription plan by tier
+ */
+export async function getSubscriptionPlanByTier(tier: "free" | "basic" | "pro" | "enterprise") {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select().from(subscriptionPlans)
+    .where(eq(subscriptionPlans.tier, tier))
+    .limit(1);
+  
+  return result.length > 0 ? result[0] : undefined;
+}
+
+/**
+ * Get all active subscription plans
+ */
+export async function getActiveSubscriptionPlans() {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select().from(subscriptionPlans)
+    .where(eq(subscriptionPlans.isActive, 1));
+}
+
+/**
+ * Create subscription plan
+ */
+export async function createSubscriptionPlan(plan: InsertSubscriptionPlan) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(subscriptionPlans).values(plan);
+  return result;
+}
+
+/**
+ * Update subscription plan
+ */
+export async function updateSubscriptionPlan(planId: number, updates: Partial<SubscriptionPlan>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(subscriptionPlans).set(updates).where(eq(subscriptionPlans.id, planId));
 }

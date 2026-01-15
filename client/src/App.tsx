@@ -19,6 +19,7 @@ import EmailEngagement from "./pages/EmailEngagement";
 import Reengagement from "./pages/Reengagement";
 import AdminDashboard from "./pages/AdminDashboard";
 import UserManagement from "./pages/UserManagement";
+import Billing from "./pages/Billing";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -38,6 +39,7 @@ function Router() {
       <Route path={"/admin"} component={AdminDashboard} />
       <Route path={"/users"} component={UserManagement} />
       <Route path={"/account"} component={Account} />
+      <Route path={"/billing"} component={Billing} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

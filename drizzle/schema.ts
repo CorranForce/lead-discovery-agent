@@ -344,3 +344,74 @@ export const scheduledJobs = mysqlTable("scheduledJobs", {
 
 export type ScheduledJob = typeof scheduledJobs.$inferSelect;
 export type InsertScheduledJob = typeof scheduledJobs.$inferInsert;
+
+
+/**
+ * Invoices table - stores invoice records for billing
+ * Stripe stores the actual invoice data; we store only essential identifiers and metadata
+ */
+export const invoices = mysqlTable("invoices", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(), // Foreign key to users table
+  stripeInvoiceId: varchar("stripeInvoiceId", { length: 255 }).notNull().unique(), // Stripe invoice ID
+  stripeCustomerId: varchar("stripeCustomerId", { length: 255 }).notNull(), // Stripe customer ID
+  amount: int("amount").notNull(), // Amount in cents (e.g., 9999 = $99.99)
+  currency: varchar("currency", { length: 3 }).default("USD").notNull(),
+  status: mysqlEnum("status", ["draft", "open", "paid", "void", "uncollectible"]).default("open").notNull(),
+  paidAt: timestamp("paidAt"), // When the invoice was paid
+  dueDate: timestamp("dueDate"), // Due date for payment
+  description: text("description"), // Invoice description/line items
+  receiptUrl: varchar("receiptUrl", { length: 500 }), // URL to Stripe receipt
+  downloadUrl: varchar("downloadUrl", { length: 500 }), // URL to downloadable PDF receipt
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Invoice = typeof invoices.$inferSelect;
+export type InsertInvoice = typeof invoices.$inferInsert;
+
+/**
+ * Payments table - stores payment records for transactions
+ * Stripe stores the actual payment data; we store only essential identifiers
+ */
+export const payments = mysqlTable("payments", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(), // Foreign key to users table
+  stripePaymentIntentId: varchar("stripePaymentIntentId", { length: 255 }).notNull().unique(), // Stripe payment intent ID
+  stripeCustomerId: varchar("stripeCustomerId", { length: 255 }).notNull(), // Stripe customer ID
+  invoiceId: int("invoiceId"), // Optional link to invoice
+  amount: int("amount").notNull(), // Amount in cents
+  currency: varchar("currency", { length: 3 }).default("USD").notNull(),
+  status: mysqlEnum("status", ["requires_payment_method", "requires_confirmation", "requires_action", "processing", "requires_capture", "canceled", "succeeded"]).default("requires_payment_method").notNull(),
+  paymentMethodType: varchar("paymentMethodType", { length: 50 }), // e.g., "card", "bank_account"
+  description: text("description"), // Payment description
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Payment = typeof payments.$inferSelect;
+export type InsertPayment = typeof payments.$inferInsert;
+
+/**
+ * Subscription plans table - stores available subscription tiers and pricing
+ */
+export const subscriptionPlans = mysqlTable("subscriptionPlans", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 100 }).notNull(), // e.g., "Basic", "Pro", "Enterprise"
+  tier: mysqlEnum("tier", ["free", "basic", "pro", "enterprise"]).notNull().unique(),
+  description: text("description"),
+  monthlyPrice: int("monthlyPrice").notNull(), // Price in cents for monthly billing
+  yearlyPrice: int("yearlyPrice").notNull(), // Price in cents for yearly billing
+  stripePriceIdMonthly: varchar("stripePriceIdMonthly", { length: 255 }), // Stripe price ID for monthly
+  stripePriceIdYearly: varchar("stripePriceIdYearly", { length: 255 }), // Stripe price ID for yearly
+  features: text("features"), // JSON array of features included in this plan
+  maxLeads: int("maxLeads"), // Maximum leads allowed, NULL = unlimited
+  maxEmails: int("maxEmails"), // Maximum emails per month, NULL = unlimited
+  maxSequences: int("maxSequences"), // Maximum sequences, NULL = unlimited
+  isActive: int("isActive").default(1).notNull(), // 1 = active, 0 = archived
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type SubscriptionPlan = typeof subscriptionPlans.$inferSelect;
+export type InsertSubscriptionPlan = typeof subscriptionPlans.$inferInsert;
