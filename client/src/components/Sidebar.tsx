@@ -13,6 +13,7 @@ import {
   X,
   UserCog,
   CreditCard,
+  DollarSign,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -33,6 +34,7 @@ export default function Sidebar({ isMobileMenuOpen, setIsMobileMenuOpen }: Sideb
     { href: "/email-engagement", label: "Email Engagement", icon: TrendingUp },
     { href: "/reengagement", label: "Re-engagement", icon: RefreshCcw },
     { href: "/admin", label: "Admin", icon: Shield },
+    { href: "/admin/billing", label: "Revenue", icon: DollarSign },
     { href: "/users", label: "Users", icon: UserCog },
     { href: "/analytics", label: "Analytics", icon: BarChart3 },
     { href: "/billing", label: "Billing", icon: CreditCard },

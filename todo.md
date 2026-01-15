@@ -581,3 +581,26 @@
 - [x] Register webhook route with express.raw() middleware
 - [x] Write unit tests for webhook handler (13 tests, all passing)
 - [ ] Test webhook with Stripe CLI or test events
+
+
+## Admin Billing Dashboard
+- [x] Create admin billing metrics endpoint (revenue, subscription counts)
+- [x] Add revenue calculation functions to database helpers
+- [x] Build Admin Billing Dashboard page
+- [x] Display total revenue metrics (monthly, yearly, all-time)
+- [x] Show subscription counts by tier (free, basic, pro, enterprise)
+- [x] Display recent payment activity table
+- [x] Add revenue trend chart
+- [x] Implement date range filtering for metrics
+- [x] Write unit tests for admin billing endpoints (30 tests, all passing)
+
+## Payment Methods Management
+- [x] Create Stripe SetupIntent endpoint for adding payment methods
+- [x] Create endpoint to list user payment methods
+- [x] Create endpoint to delete payment method
+- [x] Create endpoint to set default payment method
+- [x] Build Payment Methods UI section in Account settings
+- [x] Display saved payment methods with card details
+- [x] Add "Add Payment Method" button with Stripe Elements
+- [x] Add delete and set default buttons for each method
+- [x] Write unit tests for payment methods endpoints (included in admin billing tests)

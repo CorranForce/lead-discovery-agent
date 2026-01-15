@@ -7,6 +7,13 @@ import {
   createInvoice,
   createPayment,
   getUserPayments,
+  getTotalRevenue,
+  getMonthlyRevenue,
+  getSubscriptionCountsByTier,
+  getRecentPayments,
+  getRevenueByTier,
+  getDailyRevenue,
+  getBillingMetricsSummary,
 } from "../db";
 import {
   getOrCreateStripeCustomer,
@@ -14,7 +21,12 @@ import {
   listCustomerInvoices,
   formatAmount,
   getInvoicePdfUrl,
+  createSetupIntent,
+  listPaymentMethods,
+  detachPaymentMethod,
+  setDefaultPaymentMethod,
 } from "../services/stripe";
+import { TRPCError } from "@trpc/server";
 
 export const billingRouter = router({
   /**
@@ -243,4 +255,334 @@ export const billingRouter = router({
       };
     }
   }),
+
+  // ==================== Admin Billing Endpoints ====================
+
+  /**
+   * Get billing metrics summary (admin only)
+   */
+  getMetricsSummary: protectedProcedure.query(async ({ ctx }) => {
+    // Check if user is admin
+    if (ctx.user.role !== "admin") {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "Admin access required",
+      });
+    }
+
+    try {
+      const summary = await getBillingMetricsSummary();
+      return {
+        success: true,
+        metrics: summary,
+      };
+    } catch (error) {
+      console.error("[Billing] Error fetching metrics summary:", error);
+      return {
+        success: false,
+        error: "Failed to fetch metrics",
+        metrics: null,
+      };
+    }
+  }),
+
+  /**
+   * Get monthly revenue data (admin only)
+   */
+  getMonthlyRevenue: protectedProcedure
+    .input(z.object({ months: z.number().default(12) }).optional())
+    .query(async ({ ctx, input }) => {
+      if (ctx.user.role !== "admin") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Admin access required",
+        });
+      }
+
+      try {
+        const data = await getMonthlyRevenue(input?.months || 12);
+        return {
+          success: true,
+          data: data.map((item) => ({
+            month: item.month,
+            revenue: item.revenue,
+            count: item.count,
+            formattedRevenue: formatAmount(item.revenue),
+          })),
+        };
+      } catch (error) {
+        console.error("[Billing] Error fetching monthly revenue:", error);
+        return {
+          success: false,
+          error: "Failed to fetch monthly revenue",
+          data: [],
+        };
+      }
+    }),
+
+  /**
+   * Get daily revenue data (admin only)
+   */
+  getDailyRevenue: protectedProcedure
+    .input(z.object({ days: z.number().default(30) }).optional())
+    .query(async ({ ctx, input }) => {
+      if (ctx.user.role !== "admin") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Admin access required",
+        });
+      }
+
+      try {
+        const data = await getDailyRevenue(input?.days || 30);
+        return {
+          success: true,
+          data: data.map((item) => ({
+            date: item.date,
+            revenue: item.revenue,
+            count: item.count,
+            formattedRevenue: formatAmount(item.revenue),
+          })),
+        };
+      } catch (error) {
+        console.error("[Billing] Error fetching daily revenue:", error);
+        return {
+          success: false,
+          error: "Failed to fetch daily revenue",
+          data: [],
+        };
+      }
+    }),
+
+  /**
+   * Get subscription counts by tier (admin only)
+   */
+  getSubscriptionCounts: protectedProcedure.query(async ({ ctx }) => {
+    if (ctx.user.role !== "admin") {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "Admin access required",
+      });
+    }
+
+    try {
+      const counts = await getSubscriptionCountsByTier();
+      return {
+        success: true,
+        counts,
+      };
+    } catch (error) {
+      console.error("[Billing] Error fetching subscription counts:", error);
+      return {
+        success: false,
+        error: "Failed to fetch subscription counts",
+        counts: [],
+      };
+    }
+  }),
+
+  /**
+   * Get recent payments (admin only)
+   */
+  getRecentPaymentsAdmin: protectedProcedure
+    .input(z.object({ limit: z.number().default(20) }).optional())
+    .query(async ({ ctx, input }) => {
+      if (ctx.user.role !== "admin") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Admin access required",
+        });
+      }
+
+      try {
+        const payments = await getRecentPayments(input?.limit || 20);
+        return {
+          success: true,
+          payments: payments.map((payment) => ({
+            id: payment.id,
+            amount: payment.amount,
+            currency: payment.currency,
+            status: payment.status,
+            paymentMethodType: payment.paymentMethodType,
+            description: payment.description,
+            createdAt: payment.createdAt,
+            userId: payment.userId,
+            userName: payment.userName,
+            userEmail: payment.userEmail,
+            formattedAmount: formatAmount(payment.amount, payment.currency),
+          })),
+        };
+      } catch (error) {
+        console.error("[Billing] Error fetching recent payments:", error);
+        return {
+          success: false,
+          error: "Failed to fetch recent payments",
+          payments: [],
+        };
+      }
+    }),
+
+  /**
+   * Get revenue by tier (admin only)
+   */
+  getRevenueByTier: protectedProcedure.query(async ({ ctx }) => {
+    if (ctx.user.role !== "admin") {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "Admin access required",
+      });
+    }
+
+    try {
+      const data = await getRevenueByTier();
+      return {
+        success: true,
+        data: data.map((item) => ({
+          tier: item.tier,
+          revenue: item.revenue,
+          count: item.count,
+          formattedRevenue: formatAmount(item.revenue),
+        })),
+      };
+    } catch (error) {
+      console.error("[Billing] Error fetching revenue by tier:", error);
+      return {
+        success: false,
+        error: "Failed to fetch revenue by tier",
+        data: [],
+      };
+    }
+  }),
+
+  // ==================== Payment Methods Endpoints ====================
+
+  /**
+   * Create SetupIntent for adding a new payment method
+   */
+  createSetupIntent: protectedProcedure.mutation(async ({ ctx }) => {
+    try {
+      // Get or create Stripe customer
+      const customer = await getOrCreateStripeCustomer(
+        ctx.user.id,
+        ctx.user.email || "",
+        ctx.user.name || undefined
+      );
+
+      // Update user with Stripe customer ID
+      await updateUserStripeCustomerId(ctx.user.id, customer.id);
+
+      // Create SetupIntent
+      const setupIntent = await createSetupIntent(customer.id);
+
+      return {
+        success: true,
+        clientSecret: setupIntent.client_secret || "",
+        setupIntentId: setupIntent.id,
+      };
+    } catch (error) {
+      console.error("[Billing] Error creating SetupIntent:", error);
+      return {
+        success: false,
+        error: "Failed to create SetupIntent",
+        clientSecret: "",
+        setupIntentId: "",
+      };
+    }
+  }),
+
+  /**
+   * List user's payment methods
+   */
+  listPaymentMethods: protectedProcedure.query(async ({ ctx }) => {
+    try {
+      // Check if user has Stripe customer ID
+      if (!ctx.user.paymentMethodId) {
+        return {
+          success: true,
+          paymentMethods: [],
+          defaultPaymentMethodId: null,
+        };
+      }
+
+      const { paymentMethods, defaultPaymentMethodId } = await listPaymentMethods(
+        ctx.user.paymentMethodId
+      );
+
+      return {
+        success: true,
+        paymentMethods: paymentMethods.map((pm) => ({
+          id: pm.id,
+          type: pm.type,
+          card: pm.card
+            ? {
+                brand: pm.card.brand,
+                last4: pm.card.last4,
+                expMonth: pm.card.exp_month,
+                expYear: pm.card.exp_year,
+              }
+            : null,
+          isDefault: pm.id === defaultPaymentMethodId,
+        })),
+        defaultPaymentMethodId,
+      };
+    } catch (error) {
+      console.error("[Billing] Error listing payment methods:", error);
+      return {
+        success: false,
+        error: "Failed to list payment methods",
+        paymentMethods: [],
+        defaultPaymentMethodId: null,
+      };
+    }
+  }),
+
+  /**
+   * Delete a payment method
+   */
+  deletePaymentMethod: protectedProcedure
+    .input(z.object({ paymentMethodId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        await detachPaymentMethod(input.paymentMethodId);
+        return {
+          success: true,
+          message: "Payment method deleted successfully",
+        };
+      } catch (error) {
+        console.error("[Billing] Error deleting payment method:", error);
+        return {
+          success: false,
+          error: "Failed to delete payment method",
+        };
+      }
+    }),
+
+  /**
+   * Set default payment method
+   */
+  setDefaultPaymentMethod: protectedProcedure
+    .input(z.object({ paymentMethodId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        if (!ctx.user.paymentMethodId) {
+          throw new Error("No Stripe customer found");
+        }
+
+        await setDefaultPaymentMethod(
+          ctx.user.paymentMethodId,
+          input.paymentMethodId
+        );
+
+        return {
+          success: true,
+          message: "Default payment method updated",
+        };
+      } catch (error) {
+        console.error("[Billing] Error setting default payment method:", error);
+        return {
+          success: false,
+          error: "Failed to set default payment method",
+        };
+      }
+    }),
 });

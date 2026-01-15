@@ -194,3 +194,104 @@ export async function getInvoicePdfUrl(invoiceId: string): Promise<string | null
     return null;
   }
 }
+
+
+// ==================== Payment Methods Management ====================
+
+/**
+ * Create a SetupIntent for adding a new payment method
+ */
+export async function createSetupIntent(customerId: string) {
+  try {
+    const setupIntent = await stripe.setupIntents.create({
+      customer: customerId,
+      payment_method_types: ['card'],
+    });
+    return setupIntent;
+  } catch (error) {
+    console.error('[Stripe] Error creating SetupIntent:', error);
+    throw error;
+  }
+}
+
+/**
+ * List payment methods for a customer
+ */
+export async function listPaymentMethods(customerId: string) {
+  try {
+    const paymentMethods = await stripe.paymentMethods.list({
+      customer: customerId,
+      type: 'card',
+    });
+
+    // Get customer to find default payment method
+    const customer = await stripe.customers.retrieve(customerId);
+    const defaultPaymentMethodId = (customer as Stripe.Customer).invoice_settings?.default_payment_method as string | null;
+
+    return {
+      paymentMethods: paymentMethods.data,
+      defaultPaymentMethodId,
+    };
+  } catch (error) {
+    console.error('[Stripe] Error listing payment methods:', error);
+    throw error;
+  }
+}
+
+/**
+ * Detach (delete) a payment method from a customer
+ */
+export async function detachPaymentMethod(paymentMethodId: string) {
+  try {
+    const paymentMethod = await stripe.paymentMethods.detach(paymentMethodId);
+    return paymentMethod;
+  } catch (error) {
+    console.error('[Stripe] Error detaching payment method:', error);
+    throw error;
+  }
+}
+
+/**
+ * Set default payment method for a customer
+ */
+export async function setDefaultPaymentMethod(customerId: string, paymentMethodId: string) {
+  try {
+    const customer = await stripe.customers.update(customerId, {
+      invoice_settings: {
+        default_payment_method: paymentMethodId,
+      },
+    });
+    return customer;
+  } catch (error) {
+    console.error('[Stripe] Error setting default payment method:', error);
+    throw error;
+  }
+}
+
+/**
+ * Attach a payment method to a customer
+ */
+export async function attachPaymentMethod(paymentMethodId: string, customerId: string) {
+  try {
+    const paymentMethod = await stripe.paymentMethods.attach(paymentMethodId, {
+      customer: customerId,
+    });
+    return paymentMethod;
+  } catch (error) {
+    console.error('[Stripe] Error attaching payment method:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get Stripe customer
+ */
+export async function getStripeCustomer(customerId: string) {
+  try {
+    const customer = await stripe.customers.retrieve(customerId);
+    return customer;
+  } catch (error) {
+    console.error('[Stripe] Error retrieving customer:', error);
+    throw error;
+  }
+}

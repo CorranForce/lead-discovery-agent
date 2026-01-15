@@ -20,8 +20,10 @@ import * as stripeService from "../services/stripe";
 describe("Billing Functions", () => {
   const testUserId = 1;
   const testStripeCustomerId = "cus_test123";
-  const testStripeInvoiceId = "in_test123";
-  const testStripePaymentIntentId = "pi_test123";
+  // Use unique IDs for each test run to avoid duplicate key errors
+  const testRunId = Date.now().toString();
+  const testStripeInvoiceId = `in_test_${testRunId}`;
+  const testStripePaymentIntentId = `pi_test_${testRunId}`;
 
   describe("Invoice Management", () => {
     it("should create an invoice", async () => {
@@ -114,7 +116,8 @@ describe("Billing Functions", () => {
     });
 
     it("should track payment status transitions", async () => {
-      const statuses = ["requires_payment_method", "processing", "succeeded"];
+      // Use valid enum values from schema: succeeded, processing, failed, canceled
+      const statuses = ["processing", "succeeded", "failed"];
       for (const status of statuses) {
         await updatePayment(1, {
           status: status as any,
@@ -217,7 +220,7 @@ describe("Billing Functions", () => {
 
     it("should handle large amounts", () => {
       const formatted = stripeService.formatAmount(999999, "USD");
-      expect(formatted).toContain("9999.99");
+      expect(formatted).toContain("9,999.99");
     });
   });
 

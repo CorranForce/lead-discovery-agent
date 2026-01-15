@@ -1,4 +1,4 @@
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and, gte, lte, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { InsertUser, users, leads, InsertLead, searchHistory, InsertSearchHistory, enrichmentData, InsertEnrichmentData, conversations, InsertConversation, messages, InsertMessage, conversationTemplates, InsertConversationTemplate, emailTemplates, InsertEmailTemplate, sentEmails, InsertSentEmail, emailSequences, InsertEmailSequence, sequenceSteps, InsertSequenceStep, sequenceEnrollments, InsertSequenceEnrollment, emailClicks, InsertEmailClick, emailOpens, InsertEmailOpen, reengagementWorkflows, InsertReengagementWorkflow, reengagementExecutions, invoices, Invoice, InsertInvoice, payments, Payment, InsertPayment, subscriptionPlans, SubscriptionPlan, InsertSubscriptionPlan } from "../drizzle/schema";
 import { ENV } from './_core/env';
@@ -1007,4 +1007,192 @@ export async function updateSubscriptionPlan(planId: number, updates: Partial<Su
   if (!db) throw new Error("Database not available");
   
   await db.update(subscriptionPlans).set(updates).where(eq(subscriptionPlans.id, planId));
+}
+
+
+// ==================== Admin Billing Metrics ====================
+
+/**
+ * Get total revenue for a date range
+ */
+export async function getTotalRevenue(startDate?: Date, endDate?: Date) {
+  const db = await getDb();
+  if (!db) return { total: 0, count: 0 };
+  
+  let query = db.select({
+    total: sql<number>`COALESCE(SUM(amount), 0)`,
+    count: sql<number>`COUNT(*)`,
+  }).from(payments).where(eq(payments.status, "succeeded"));
+  
+  if (startDate && endDate) {
+    query = db.select({
+      total: sql<number>`COALESCE(SUM(amount), 0)`,
+      count: sql<number>`COUNT(*)`,
+    }).from(payments).where(
+      and(
+        eq(payments.status, "succeeded"),
+        gte(payments.createdAt, startDate),
+        lte(payments.createdAt, endDate)
+      )
+    );
+  }
+  
+  const result = await query;
+  return result[0] || { total: 0, count: 0 };
+}
+
+/**
+ * Get monthly revenue for the last N months
+ */
+export async function getMonthlyRevenue(months: number = 12) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const result = await db.select({
+    month: sql<string>`DATE_FORMAT(createdAt, '%Y-%m')`,
+    revenue: sql<number>`COALESCE(SUM(amount), 0)`,
+    count: sql<number>`COUNT(*)`,
+  })
+    .from(payments)
+    .where(
+      and(
+        eq(payments.status, "succeeded"),
+        gte(payments.createdAt, sql`DATE_SUB(NOW(), INTERVAL ${months} MONTH)`)
+      )
+    )
+    .groupBy(sql`DATE_FORMAT(createdAt, '%Y-%m')`)
+    .orderBy(sql`DATE_FORMAT(createdAt, '%Y-%m')`);
+  
+  return result;
+}
+
+/**
+ * Get subscription counts by tier
+ */
+export async function getSubscriptionCountsByTier() {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const result = await db.select({
+    tier: users.subscriptionTier,
+    count: sql<number>`COUNT(*)`,
+  })
+    .from(users)
+    .groupBy(users.subscriptionTier);
+  
+  return result;
+}
+
+/**
+ * Get recent payments with user info
+ */
+export async function getRecentPayments(limit: number = 20) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const result = await db.select({
+    id: payments.id,
+    amount: payments.amount,
+    currency: payments.currency,
+    status: payments.status,
+    paymentMethodType: payments.paymentMethodType,
+    description: payments.description,
+    createdAt: payments.createdAt,
+    userId: payments.userId,
+    userName: users.name,
+    userEmail: users.email,
+  })
+    .from(payments)
+    .leftJoin(users, eq(payments.userId, users.id))
+    .orderBy(desc(payments.createdAt))
+    .limit(limit);
+  
+  return result;
+}
+
+/**
+ * Get revenue by subscription tier
+ */
+export async function getRevenueByTier() {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const result = await db.select({
+    tier: users.subscriptionTier,
+    revenue: sql<number>`COALESCE(SUM(${payments.amount}), 0)`,
+    count: sql<number>`COUNT(DISTINCT ${payments.id})`,
+  })
+    .from(payments)
+    .leftJoin(users, eq(payments.userId, users.id))
+    .where(eq(payments.status, "succeeded"))
+    .groupBy(users.subscriptionTier);
+  
+  return result;
+}
+
+/**
+ * Get daily revenue for the last N days
+ */
+export async function getDailyRevenue(days: number = 30) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const result = await db.select({
+    date: sql<string>`DATE(createdAt)`,
+    revenue: sql<number>`COALESCE(SUM(amount), 0)`,
+    count: sql<number>`COUNT(*)`,
+  })
+    .from(payments)
+    .where(
+      and(
+        eq(payments.status, "succeeded"),
+        gte(payments.createdAt, sql`DATE_SUB(NOW(), INTERVAL ${days} DAY)`)
+      )
+    )
+    .groupBy(sql`DATE(createdAt)`)
+    .orderBy(sql`DATE(createdAt)`);
+  
+  return result;
+}
+
+/**
+ * Get billing metrics summary
+ */
+export async function getBillingMetricsSummary() {
+  const db = await getDb();
+  if (!db) return null;
+  
+  // Get current month dates
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+  
+  // Get current month revenue
+  const currentMonthRevenue = await getTotalRevenue(startOfMonth, now);
+  
+  // Get last month revenue
+  const lastMonthRevenue = await getTotalRevenue(startOfLastMonth, endOfLastMonth);
+  
+  // Get all-time revenue
+  const allTimeRevenue = await getTotalRevenue();
+  
+  // Get subscription counts
+  const subscriptionCounts = await getSubscriptionCountsByTier();
+  
+  // Calculate growth rate
+  const growthRate = lastMonthRevenue.total > 0 
+    ? ((currentMonthRevenue.total - lastMonthRevenue.total) / lastMonthRevenue.total) * 100 
+    : 0;
+  
+  return {
+    currentMonthRevenue: currentMonthRevenue.total,
+    currentMonthTransactions: currentMonthRevenue.count,
+    lastMonthRevenue: lastMonthRevenue.total,
+    lastMonthTransactions: lastMonthRevenue.count,
+    allTimeRevenue: allTimeRevenue.total,
+    allTimeTransactions: allTimeRevenue.count,
+    growthRate,
+    subscriptionCounts,
+  };
 }
