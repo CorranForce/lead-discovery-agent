@@ -21,6 +21,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import UserManagement from "./pages/UserManagement";
 import Billing from "./pages/Billing";
 import AdminBilling from "./pages/AdminBilling";
+import PromoCodeManagement from "./pages/PromoCodeManagement";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -42,6 +43,7 @@ function Router() {
       <Route path={"/account"} component={Account} />
       <Route path={"/billing"} component={Billing} />
       <Route path={"/admin/billing"} component={AdminBilling} />
+      <Route path={"/admin/promo-codes"} component={PromoCodeManagement} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

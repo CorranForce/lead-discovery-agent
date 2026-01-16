@@ -661,3 +661,22 @@
 - [x] Verify HTTPS-only for all Stripe communications
 - [x] Check for sensitive data exposure in error messages
 - [x] Document security measures and create security report (docs/SECURITY_AUDIT.md)
+
+
+## Promo Code Management (Admin)
+- [x] Create Stripe service functions for coupon/promo code management
+- [x] Implement createCoupon function (percentage or fixed amount discounts)
+- [x] Implement createPromoCode function (user-facing codes linked to coupons)
+- [x] Implement listPromoCodes function to fetch all promo codes
+- [x] Implement getPromoCode function to get single promo code details
+- [x] Implement updatePromoCode function (activate/deactivate)
+- [x] Implement deletePromoCode function
+- [x] Create tRPC endpoints for promo code CRUD operations
+- [x] Build PromoCodeManagement admin page component
+- [x] Add promo code list table with status, discount, and usage stats
+- [x] Create "New Promo Code" dialog with discount configuration
+- [x] Add activate/deactivate toggle for each promo code
+- [x] Add delete button with confirmation dialog
+- [x] Display promo code usage statistics (times redeemed, total savings)
+- [x] Add promo code link to admin sidebar navigation
+- [x] Write comprehensive unit tests for promo code endpoints (25 tests, all passing)

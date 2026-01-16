@@ -520,3 +520,226 @@ export async function previewProration(
     throw error;
   }
 }
+
+
+// ==================== Promo Code Management ====================
+
+export interface CreateCouponParams {
+  name: string;
+  percentOff?: number;
+  amountOff?: number;
+  currency?: string;
+  duration: 'once' | 'repeating' | 'forever';
+  durationInMonths?: number;
+  maxRedemptions?: number;
+  redeemBy?: Date;
+}
+
+export interface CreatePromoCodeParams {
+  couponId: string;
+  code: string;
+  maxRedemptions?: number;
+  expiresAt?: Date;
+  firstTimeTransaction?: boolean;
+  minimumAmount?: number;
+  minimumAmountCurrency?: string;
+}
+
+/**
+ * Create a Stripe coupon (the discount definition)
+ */
+export async function createCoupon(params: CreateCouponParams) {
+  try {
+    const couponParams: Stripe.CouponCreateParams = {
+      name: params.name,
+      duration: params.duration,
+    };
+
+    if (params.percentOff) {
+      couponParams.percent_off = params.percentOff;
+    } else if (params.amountOff) {
+      couponParams.amount_off = params.amountOff;
+      couponParams.currency = params.currency || 'usd';
+    }
+
+    if (params.duration === 'repeating' && params.durationInMonths) {
+      couponParams.duration_in_months = params.durationInMonths;
+    }
+
+    if (params.maxRedemptions) {
+      couponParams.max_redemptions = params.maxRedemptions;
+    }
+
+    if (params.redeemBy) {
+      couponParams.redeem_by = Math.floor(params.redeemBy.getTime() / 1000);
+    }
+
+    const coupon = await stripe.coupons.create(couponParams);
+    console.log('[Stripe] Created coupon:', coupon.id);
+    return coupon;
+  } catch (error) {
+    console.error('[Stripe] Error creating coupon:', error);
+    throw error;
+  }
+}
+
+/**
+ * Create a promo code (user-facing code linked to a coupon)
+ */
+export async function createPromoCode(params: CreatePromoCodeParams) {
+  try {
+    const promoParams: any = {
+      coupon: params.couponId,
+      code: params.code.toUpperCase(),
+    };
+
+    if (params.maxRedemptions) {
+      promoParams.max_redemptions = params.maxRedemptions;
+    }
+
+    if (params.expiresAt) {
+      promoParams.expires_at = Math.floor(params.expiresAt.getTime() / 1000);
+    }
+
+    if (params.firstTimeTransaction !== undefined) {
+      promoParams.restrictions = {
+        ...promoParams.restrictions,
+        first_time_transaction: params.firstTimeTransaction,
+      };
+    }
+
+    if (params.minimumAmount) {
+      promoParams.restrictions = {
+        ...promoParams.restrictions,
+        minimum_amount: params.minimumAmount,
+        minimum_amount_currency: params.minimumAmountCurrency || 'usd',
+      };
+    }
+
+    const promoCode = await stripe.promotionCodes.create(promoParams);
+    console.log('[Stripe] Created promo code:', promoCode.code);
+    return promoCode;
+  } catch (error) {
+    console.error('[Stripe] Error creating promo code:', error);
+    throw error;
+  }
+}
+
+/**
+ * List all promo codes with optional filtering
+ */
+export async function listPromoCodes(options?: {
+  active?: boolean;
+  limit?: number;
+  startingAfter?: string;
+}) {
+  try {
+    const params: Stripe.PromotionCodeListParams = {
+      limit: options?.limit || 100,
+      expand: ['data.coupon'],
+    };
+
+    if (options?.active !== undefined) {
+      params.active = options.active;
+    }
+
+    if (options?.startingAfter) {
+      params.starting_after = options.startingAfter;
+    }
+
+    const promoCodes = await stripe.promotionCodes.list(params);
+    return promoCodes;
+  } catch (error) {
+    console.error('[Stripe] Error listing promo codes:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get a single promo code by ID
+ */
+export async function getPromoCode(promoCodeId: string) {
+  try {
+    const promoCode = await stripe.promotionCodes.retrieve(promoCodeId, {
+      expand: ['coupon'],
+    });
+    return promoCode;
+  } catch (error) {
+    console.error('[Stripe] Error retrieving promo code:', error);
+    throw error;
+  }
+}
+
+/**
+ * Update a promo code (activate/deactivate)
+ */
+export async function updatePromoCode(promoCodeId: string, active: boolean) {
+  try {
+    const promoCode = await stripe.promotionCodes.update(promoCodeId, {
+      active,
+    });
+    console.log('[Stripe] Updated promo code:', promoCodeId, 'active:', active);
+    return promoCode;
+  } catch (error) {
+    console.error('[Stripe] Error updating promo code:', error);
+    throw error;
+  }
+}
+
+/**
+ * List all coupons
+ */
+export async function listCoupons(limit: number = 100) {
+  try {
+    const coupons = await stripe.coupons.list({ limit });
+    return coupons;
+  } catch (error) {
+    console.error('[Stripe] Error listing coupons:', error);
+    throw error;
+  }
+}
+
+/**
+ * Delete a coupon (this will also invalidate associated promo codes)
+ */
+export async function deleteCoupon(couponId: string) {
+  try {
+    const deleted = await stripe.coupons.del(couponId);
+    console.log('[Stripe] Deleted coupon:', couponId);
+    return deleted;
+  } catch (error) {
+    console.error('[Stripe] Error deleting coupon:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get coupon redemption statistics
+ */
+export async function getCouponStats(couponId: string) {
+  try {
+    const coupon = await stripe.coupons.retrieve(couponId);
+    
+    // Get all promo codes for this coupon
+    const promoCodes = await stripe.promotionCodes.list({
+      coupon: couponId,
+      limit: 100,
+    });
+
+    // Calculate total redemptions across all promo codes
+    const totalRedemptions = promoCodes.data.reduce(
+      (sum, pc) => sum + (pc.times_redeemed || 0),
+      0
+    );
+
+    return {
+      coupon,
+      promoCodes: promoCodes.data,
+      totalRedemptions,
+      promoCodeCount: promoCodes.data.length,
+    };
+  } catch (error) {
+    console.error('[Stripe] Error getting coupon stats:', error);
+    throw error;
+  }
+}

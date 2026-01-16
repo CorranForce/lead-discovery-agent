@@ -34,6 +34,14 @@ import {
   getProductsWithPrices,
   previewProration,
   getStripeInvoice,
+  createCoupon,
+  createPromoCode,
+  listPromoCodes,
+  getPromoCode,
+  updatePromoCode,
+  listCoupons,
+  deleteCoupon,
+  getCouponStats,
 } from "../services/stripe";
 import { generateInvoicePdf, stripeInvoiceToInvoiceData } from "../services/invoicePdf";
 import { TRPCError } from "@trpc/server";
@@ -1093,16 +1101,13 @@ export const billingRouter = router({
           paymentDate: testInvoice.paidAt || undefined,
           transactionId: testInvoice.stripeInvoiceId,
           
-          notes: "This is a test invoice generated for demonstration purposes.",
-          terms: "Payment is due within 30 days of invoice date. Late payments may be subject to additional fees.",
-        };
-
+                 notes: "This is a test invoice generated for demonstration purposes.",
+        terms: "Payment is due within 30 days of invoice date. Late payments may be subject to additional fees.",
+      };
         // Generate PDF
         const pdfBuffer = await generateInvoicePdf(invoiceData);
-
         // Convert to base64 for transmission
         const pdfBase64 = pdfBuffer.toString("base64");
-
         return {
           success: true,
           pdf: pdfBase64,
@@ -1115,6 +1120,313 @@ export const billingRouter = router({
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to generate test invoice PDF",
+        });
+      }
+    }),
+
+  // ==================== Promo Code Management (Admin) ====================
+
+  /**
+   * List all promo codes (admin only)
+   */
+  listPromoCodes: protectedProcedure
+    .input(z.object({
+      active: z.boolean().optional(),
+      limit: z.number().default(100),
+    }).optional())
+    .query(async ({ ctx, input }) => {
+      // Check if user is admin
+      if (ctx.user.role !== 'admin') {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Only admins can manage promo codes",
+        });
+      }
+
+      try {
+        const promoCodes = await listPromoCodes({
+          active: input?.active,
+          limit: input?.limit || 100,
+        });
+
+        return {
+          success: true,
+          promoCodes: promoCodes.data.map((pc: any) => ({
+            id: pc.id,
+            code: pc.code,
+            active: pc.active,
+            timesRedeemed: pc.times_redeemed || 0,
+            maxRedemptions: pc.max_redemptions,
+            expiresAt: pc.expires_at ? new Date(pc.expires_at * 1000) : null,
+            createdAt: new Date(pc.created * 1000),
+            coupon: pc.coupon ? {
+              id: typeof pc.coupon === 'string' ? pc.coupon : pc.coupon.id,
+              name: typeof pc.coupon === 'string' ? null : pc.coupon.name,
+              percentOff: typeof pc.coupon === 'string' ? null : pc.coupon.percent_off,
+              amountOff: typeof pc.coupon === 'string' ? null : pc.coupon.amount_off,
+              currency: typeof pc.coupon === 'string' ? null : pc.coupon.currency,
+              duration: typeof pc.coupon === 'string' ? null : pc.coupon.duration,
+              durationInMonths: typeof pc.coupon === 'string' ? null : pc.coupon.duration_in_months,
+            } : null,
+            restrictions: pc.restrictions ? {
+              firstTimeTransaction: pc.restrictions.first_time_transaction,
+              minimumAmount: pc.restrictions.minimum_amount,
+              minimumAmountCurrency: pc.restrictions.minimum_amount_currency,
+            } : null,
+          })),
+          hasMore: promoCodes.has_more,
+        };
+      } catch (error) {
+        console.error("[Billing] Error listing promo codes:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to list promo codes",
+        });
+      }
+    }),
+
+  /**
+   * Create a new coupon and promo code (admin only)
+   */
+  createPromoCode: protectedProcedure
+    .input(z.object({
+      code: z.string().min(3).max(20).regex(/^[A-Z0-9]+$/i, "Code must be alphanumeric"),
+      name: z.string().min(1).max(100),
+      discountType: z.enum(['percent', 'amount']),
+      discountValue: z.number().positive(),
+      currency: z.string().default('usd'),
+      duration: z.enum(['once', 'repeating', 'forever']),
+      durationInMonths: z.number().optional(),
+      maxRedemptions: z.number().optional(),
+      expiresAt: z.string().optional(), // ISO date string
+      firstTimeOnly: z.boolean().default(false),
+      minimumAmount: z.number().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      // Check if user is admin
+      if (ctx.user.role !== 'admin') {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Only admins can create promo codes",
+        });
+      }
+
+      try {
+        // First create the coupon
+        const coupon = await createCoupon({
+          name: input.name,
+          percentOff: input.discountType === 'percent' ? input.discountValue : undefined,
+          amountOff: input.discountType === 'amount' ? Math.round(input.discountValue * 100) : undefined,
+          currency: input.currency,
+          duration: input.duration,
+          durationInMonths: input.durationInMonths,
+          maxRedemptions: input.maxRedemptions,
+          redeemBy: input.expiresAt ? new Date(input.expiresAt) : undefined,
+        });
+
+        // Then create the promo code linked to the coupon
+        const promoCode = await createPromoCode({
+          couponId: coupon.id,
+          code: input.code.toUpperCase(),
+          maxRedemptions: input.maxRedemptions,
+          expiresAt: input.expiresAt ? new Date(input.expiresAt) : undefined,
+          firstTimeTransaction: input.firstTimeOnly,
+          minimumAmount: input.minimumAmount ? Math.round(input.minimumAmount * 100) : undefined,
+          minimumAmountCurrency: input.currency,
+        });
+
+        console.log(`[Billing] Admin ${ctx.user.id} created promo code: ${promoCode.code}`);
+
+        return {
+          success: true,
+          promoCode: {
+            id: promoCode.id,
+            code: promoCode.code,
+            couponId: coupon.id,
+            couponName: coupon.name,
+          },
+        };
+      } catch (error: any) {
+        console.error("[Billing] Error creating promo code:", error);
+        
+        // Handle Stripe-specific errors
+        if (error.type === 'StripeInvalidRequestError') {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: error.message || "Invalid promo code configuration",
+          });
+        }
+
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to create promo code",
+        });
+      }
+    }),
+
+  /**
+   * Update promo code status (activate/deactivate) - admin only
+   */
+  updatePromoCodeStatus: protectedProcedure
+    .input(z.object({
+      promoCodeId: z.string(),
+      active: z.boolean(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      // Check if user is admin
+      if (ctx.user.role !== 'admin') {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Only admins can update promo codes",
+        });
+      }
+
+      try {
+        const promoCode = await updatePromoCode(input.promoCodeId, input.active);
+        
+        console.log(`[Billing] Admin ${ctx.user.id} ${input.active ? 'activated' : 'deactivated'} promo code: ${promoCode.code}`);
+
+        return {
+          success: true,
+          promoCode: {
+            id: promoCode.id,
+            code: promoCode.code,
+            active: promoCode.active,
+          },
+        };
+      } catch (error) {
+        console.error("[Billing] Error updating promo code:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to update promo code",
+        });
+      }
+    }),
+
+  /**
+   * Get promo code details with usage stats (admin only)
+   */
+  getPromoCodeStats: protectedProcedure
+    .input(z.object({ promoCodeId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      // Check if user is admin
+      if (ctx.user.role !== 'admin') {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Only admins can view promo code stats",
+        });
+      }
+
+      try {
+        const promoCode = await getPromoCode(input.promoCodeId) as any;
+        const couponId = typeof promoCode.coupon === 'string' ? promoCode.coupon : promoCode.coupon.id;
+        const stats = await getCouponStats(couponId);
+
+        return {
+          success: true,
+          promoCode: {
+            id: promoCode.id,
+            code: promoCode.code,
+            active: promoCode.active,
+            timesRedeemed: promoCode.times_redeemed || 0,
+            maxRedemptions: promoCode.max_redemptions,
+            expiresAt: promoCode.expires_at ? new Date(promoCode.expires_at * 1000) : null,
+            createdAt: new Date(promoCode.created * 1000),
+          },
+          coupon: {
+            id: stats.coupon.id,
+            name: stats.coupon.name,
+            percentOff: stats.coupon.percent_off,
+            amountOff: stats.coupon.amount_off,
+            currency: stats.coupon.currency,
+            duration: stats.coupon.duration,
+            valid: stats.coupon.valid,
+          },
+          stats: {
+            totalRedemptions: stats.totalRedemptions,
+            promoCodeCount: stats.promoCodeCount,
+          },
+        };
+      } catch (error) {
+        console.error("[Billing] Error getting promo code stats:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to get promo code stats",
+        });
+      }
+    }),
+
+  /**
+   * Delete a coupon and all associated promo codes (admin only)
+   */
+  deleteCoupon: protectedProcedure
+    .input(z.object({ couponId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      // Check if user is admin
+      if (ctx.user.role !== 'admin') {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Only admins can delete coupons",
+        });
+      }
+
+      try {
+        await deleteCoupon(input.couponId);
+        
+        console.log(`[Billing] Admin ${ctx.user.id} deleted coupon: ${input.couponId}`);
+
+        return {
+          success: true,
+          message: "Coupon and associated promo codes deleted",
+        };
+      } catch (error) {
+        console.error("[Billing] Error deleting coupon:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to delete coupon",
+        });
+      }
+    }),
+
+  /**
+   * List all coupons (admin only)
+   */
+  listCoupons: protectedProcedure
+    .input(z.object({ limit: z.number().default(100) }).optional())
+    .query(async ({ ctx, input }) => {
+      // Check if user is admin
+      if (ctx.user.role !== 'admin') {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Only admins can view coupons",
+        });
+      }
+
+      try {
+        const coupons = await listCoupons(input?.limit || 100);
+
+        return {
+          success: true,
+          coupons: coupons.data.map(coupon => ({
+            id: coupon.id,
+            name: coupon.name,
+            percentOff: coupon.percent_off,
+            amountOff: coupon.amount_off,
+            currency: coupon.currency,
+            duration: coupon.duration,
+            durationInMonths: coupon.duration_in_months,
+            valid: coupon.valid,
+            timesRedeemed: coupon.times_redeemed,
+            maxRedemptions: coupon.max_redemptions,
+            redeemBy: coupon.redeem_by ? new Date(coupon.redeem_by * 1000) : null,
+            createdAt: new Date(coupon.created * 1000),
+          })),
+        };
+      } catch (error) {
+        console.error("[Billing] Error listing coupons:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to list coupons",
         });
       }
     }),
