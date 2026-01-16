@@ -680,3 +680,20 @@
 - [x] Display promo code usage statistics (times redeemed, total savings)
 - [x] Add promo code link to admin sidebar navigation
 - [x] Write comprehensive unit tests for promo code endpoints (25 tests, all passing)
+
+
+## Apollo.io & Stripe Integration Verification
+- [x] Review Apollo.io integration code in server/apollo.ts
+- [x] Test Apollo.io free tier (organization search endpoint)
+- [x] Test Apollo.io paid tier compatibility (people search endpoint - documented for future)
+- [x] Verify Apollo API key configuration and error handling
+- [x] Test lead discovery with Apollo.io real data
+- [x] Verify Stripe checkout session creation
+- [x] Test Stripe webhook handling
+- [x] Verify Stripe customer creation and management
+- [x] Test payment method management endpoints
+- [x] Test subscription management endpoints
+- [x] Verify promo code application in checkout
+- [x] Write integration tests for Apollo.io (26 tests, all passing)
+- [x] Write integration tests for Stripe (72 tests, all passing)
+- [x] Document integration status and limitations (docs/INTEGRATION_STATUS.md)
