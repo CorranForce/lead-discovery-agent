@@ -706,3 +706,15 @@
 - [x] Add Twitter Card tags
 - [x] Optimize page title
 - [x] Add canonical URL
+
+
+## Pricing Page
+- [x] Create Pricing page component
+- [x] Design pricing cards for Basic, Pro, Enterprise plans
+- [x] Add feature comparison table
+- [x] Display monthly and yearly pricing options
+- [x] Add "Get Started" buttons with Stripe checkout integration
+- [x] Highlight most popular plan
+- [x] Add FAQ section
+- [x] Add route for /pricing
+- [ ] Add Pricing link to navigation (optional - page accessible via direct URL)

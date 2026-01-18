@@ -22,12 +22,14 @@ import UserManagement from "./pages/UserManagement";
 import Billing from "./pages/Billing";
 import AdminBilling from "./pages/AdminBilling";
 import PromoCodeManagement from "./pages/PromoCodeManagement";
+import Pricing from "./pages/Pricing";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
       <Route path={"/"} component={Home} />
+      <Route path={"/pricing"} component={Pricing} />
       <Route path={"/dashboard"} component={Dashboard} />
       <Route path={"/discover"} component={Discover} />
       <Route path={"/leads"} component={Leads} />
