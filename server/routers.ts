@@ -3,6 +3,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { billingRouter } from "./routers/billing";
+
 import { z } from "zod";
 
 export const appRouter = router({
@@ -1004,6 +1005,67 @@ Be professional, empathetic, and focused on building trust.`;
             clickRate: sent > 0 ? Math.round((clicks / sent) * 1000) / 10 : 0,
           };
         });
+      }),
+    
+    // Resend transactional emails
+    sendWelcome: protectedProcedure
+      .input(z.object({
+        to: z.string().email(),
+        userName: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        const { sendWelcomeEmail } = await import("./services/email");
+        const result = await sendWelcomeEmail(input.to, input.userName);
+        if (!result.success) {
+          throw new Error(result.error || "Failed to send welcome email");
+        }
+        return result;
+      }),
+    
+    sendPaymentConfirmation: protectedProcedure
+      .input(z.object({
+        to: z.string().email(),
+        userName: z.string(),
+        amount: z.number(),
+        planName: z.string(),
+        receiptUrl: z.string().url().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { sendPaymentConfirmationEmail } = await import("./services/email");
+        const result = await sendPaymentConfirmationEmail(
+          input.to,
+          input.userName,
+          input.amount,
+          input.planName,
+          input.receiptUrl
+        );
+        if (!result.success) {
+          throw new Error(result.error || "Failed to send payment confirmation email");
+        }
+        return result;
+      }),
+    
+    sendLeadNotification: protectedProcedure
+      .input(z.object({
+        to: z.string().email(),
+        userName: z.string(),
+        leadName: z.string(),
+        leadCompany: z.string(),
+        leadEmail: z.string().email().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { sendLeadNotificationEmail } = await import("./services/email");
+        const result = await sendLeadNotificationEmail(
+          input.to,
+          input.userName,
+          input.leadName,
+          input.leadCompany,
+          input.leadEmail
+        );
+        if (!result.success) {
+          throw new Error(result.error || "Failed to send lead notification email");
+        }
+        return result;
       }),
   }),
 

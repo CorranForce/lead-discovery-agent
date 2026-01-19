@@ -718,3 +718,19 @@
 - [x] Add FAQ section
 - [x] Add route for /pricing
 - [ ] Add Pricing link to navigation (optional - page accessible via direct URL)
+
+
+## Resend Email Integration
+- [x] Install resend package
+- [x] Request RESEND_API_KEY from user
+- [x] Create email service wrapper for Resend
+- [x] Create welcome email template
+- [x] Create payment confirmation email template
+- [x] Create subscription renewal email template
+- [ ] Create password reset email template (future enhancement)
+- [x] Create lead notification email template
+- [x] Add tRPC endpoints for sending emails
+- [ ] Integrate email sending into user registration flow (ready to use)
+- [ ] Integrate email sending into payment webhook (ready to use)
+- [x] Write unit tests for email service (15 tests with rate limit handling)
+- [x] Document email templates and usage
