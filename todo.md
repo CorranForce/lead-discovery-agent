@@ -734,3 +734,21 @@
 - [ ] Integrate email sending into payment webhook (ready to use)
 - [x] Write unit tests for email service (15 tests with rate limit handling)
 - [x] Document email templates and usage
+
+
+## Email Automation Features
+- [x] Auto-send welcome email on user registration
+- [x] Add welcome email trigger to OAuth callback
+- [x] Test welcome email automation
+- [x] Integrate payment confirmation emails into Stripe webhook
+- [x] Send payment confirmation on payment_intent.succeeded
+- [x] Send payment confirmation on invoice.paid
+- [x] Test payment confirmation automation
+- [x] Add emailNotifications field to user settings (already exists)
+- [x] Create user settings endpoint for email preferences (already exists)
+- [x] Add email notification toggle in Account settings UI (already exists)
+- [x] Trigger lead notification email when new leads are discovered
+- [x] Add lead notification preference check before sending
+- [x] Write unit tests for welcome email automation (19 tests, all passing)
+- [x] Write unit tests for payment confirmation automation (included in 19 tests)
+- [x] Write unit tests for lead notification automation (included in 19 tests)

@@ -336,6 +336,24 @@ export const appRouter = router({
               resultsCount: leads.length,
             });
             
+            // Send lead notification email if enabled and leads were found
+            if (ctx.user.emailNotifications === 1 && leads.length > 0 && ctx.user.email) {
+              try {
+                const { sendLeadNotificationEmail } = await import("./services/email");
+                const firstLead = leads[0];
+                await sendLeadNotificationEmail(
+                  ctx.user.email,
+                  ctx.user.name || "there",
+                  firstLead.contactName,
+                  firstLead.companyName,
+                  firstLead.contactEmail || undefined
+                );
+                console.log("[Lead Discovery] Notification email sent to", ctx.user.email);
+              } catch (emailError) {
+                console.error("[Lead Discovery] Failed to send notification email:", emailError);
+              }
+            }
+            
             return leads;
           } catch (error) {
             console.error("[Apollo API] Error:", error);
@@ -426,7 +444,26 @@ Return exactly 5 leads in valid JSON format as an array of objects.`;
           resultsCount: result.leads?.length || 0,
         });
         
-        return result.leads || [];
+        // Send lead notification email if enabled and leads were found
+        const leads = result.leads || [];
+        if (ctx.user.emailNotifications === 1 && leads.length > 0 && ctx.user.email) {
+          try {
+            const { sendLeadNotificationEmail } = await import("./services/email");
+            const firstLead = leads[0];
+            await sendLeadNotificationEmail(
+              ctx.user.email,
+              ctx.user.name || "there",
+              firstLead.contactName,
+              firstLead.companyName,
+              firstLead.contactEmail || undefined
+            );
+            console.log("[Lead Discovery] Notification email sent to", ctx.user.email);
+          } catch (emailError) {
+            console.error("[Lead Discovery] Failed to send notification email:", emailError);
+          }
+        }
+        
+        return leads;
       }),
   }),
   

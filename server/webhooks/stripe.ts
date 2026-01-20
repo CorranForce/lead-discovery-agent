@@ -162,6 +162,23 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
         description: paymentIntent.description || "Payment",
       });
       console.log(`[Stripe Webhook] Created payment record for ${paymentIntent.id}`);
+      
+      // Send payment confirmation email
+      if (user.email) {
+        try {
+          const { sendPaymentConfirmationEmail } = await import("../services/email");
+          await sendPaymentConfirmationEmail(
+            user.email,
+            user.name || "there",
+            paymentIntent.amount / 100,
+            paymentIntent.description || "Payment",
+            (paymentIntent as any).charges?.data?.[0]?.receipt_url || undefined
+          );
+          console.log("[Stripe Webhook] Payment confirmation email sent to", user.email);
+        } catch (emailError) {
+          console.error("[Stripe Webhook] Failed to send payment confirmation email:", emailError);
+        }
+      }
     } catch (error) {
       console.error("[Stripe Webhook] Error creating payment:", error);
     }
@@ -209,6 +226,23 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
         downloadUrl: (invoice as any).hosted_invoice_url || "",
       });
       console.log(`[Stripe Webhook] Created invoice record for ${invoice.id}`);
+      
+      // Send payment confirmation email for subscription invoices
+      if (user.email) {
+        try {
+          const { sendPaymentConfirmationEmail } = await import("../services/email");
+          await sendPaymentConfirmationEmail(
+            user.email,
+            user.name || "there",
+            (invoice.total || 0) / 100,
+            invoice.description || "Subscription",
+            (invoice as any).hosted_invoice_url || undefined
+          );
+          console.log("[Stripe Webhook] Invoice payment confirmation email sent to", user.email);
+        } catch (emailError) {
+          console.error("[Stripe Webhook] Failed to send invoice confirmation email:", emailError);
+        }
+      }
     } catch (error) {
       console.error("[Stripe Webhook] Error creating invoice:", error);
     }

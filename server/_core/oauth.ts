@@ -28,6 +28,10 @@ export function registerOAuthRoutes(app: Express) {
         return;
       }
 
+      // Check if this is a new user
+      const existingUser = await db.getUserByOpenId(userInfo.openId);
+      const isNewUser = !existingUser;
+      
       await db.upsertUser({
         openId: userInfo.openId,
         name: userInfo.name || null,
@@ -35,6 +39,18 @@ export function registerOAuthRoutes(app: Express) {
         loginMethod: userInfo.loginMethod ?? userInfo.platform ?? null,
         lastSignedIn: new Date(),
       });
+      
+      // Send welcome email to new users
+      if (isNewUser && userInfo.email) {
+        try {
+          const { sendWelcomeEmail } = await import("../services/email");
+          await sendWelcomeEmail(userInfo.email, userInfo.name || "there");
+          console.log("[OAuth] Welcome email sent to", userInfo.email);
+        } catch (emailError) {
+          // Don't fail the login if email sending fails
+          console.error("[OAuth] Failed to send welcome email:", emailError);
+        }
+      }
 
       const sessionToken = await sdk.createSessionToken(userInfo.openId, {
         name: userInfo.name || "",
