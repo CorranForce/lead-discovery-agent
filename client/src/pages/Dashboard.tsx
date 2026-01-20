@@ -47,8 +47,22 @@ export default function Dashboard() {
     new: "bg-blue-500/10 text-blue-500 border-blue-500/20",
     contacted: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
     qualified: "bg-green-500/10 text-green-500 border-green-500/20",
+    won: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
+    lost: "bg-red-500/10 text-red-500 border-red-500/20",
+    nurturing: "bg-purple-500/10 text-purple-500 border-purple-500/20",
+    unresponsive: "bg-gray-500/10 text-gray-500 border-gray-500/20",
     active: "bg-green-500/10 text-green-500 border-green-500/20",
   };
+
+  const leadStatuses = [
+    { key: "new", label: "New", description: "Recently discovered leads" },
+    { key: "contacted", label: "Contacted", description: "Initial outreach sent" },
+    { key: "qualified", label: "Qualified", description: "Meets target criteria" },
+    { key: "nurturing", label: "Nurturing", description: "Building relationship" },
+    { key: "won", label: "Won", description: "Successfully converted" },
+    { key: "lost", label: "Lost", description: "Opportunity closed" },
+    { key: "unresponsive", label: "Unresponsive", description: "No response received" },
+  ];
 
   return (
     <>
@@ -173,6 +187,30 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Lead Status Legend */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Lead Status Guide</CardTitle>
+          <CardDescription>Understanding your lead pipeline stages</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {leadStatuses.map((status) => (
+              <div key={status.key} className="flex items-start gap-3 p-3 rounded-lg border bg-accent/30">
+                <Badge className={statusColors[status.key]} variant="outline">
+                  {status.label}
+                </Badge>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-muted-foreground">
+                    {status.description}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Recent Leads and Active Conversations */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
