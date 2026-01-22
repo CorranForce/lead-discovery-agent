@@ -760,3 +760,24 @@
 - [x] Add legend card above Recent Leads and Active Conversations sections
 - [x] Make legend card full-width
 - [x] Use consistent colors matching the status badges throughout the app
+
+## Automated Lead Status Workflow System
+- [x] Add leadStatusHistory table to track all status changes with metadata
+- [x] Create workflow automation service with rules engine (workflowAutomation.ts)
+- [x] Define workflow rules for automatic status transitions (email_sent → contacted, email_opened → nurturing, etc.)
+- [x] Implement processWorkflowTrigger function to evaluate and apply rules
+- [x] Implement updateLeadStatus function for manual status updates with history tracking
+- [x] Implement getLeadStatusHistory function to retrieve status change history
+- [ ] Add workflow triggers to email sending endpoint (email_sent trigger)
+- [ ] Add workflow triggers to conversation creation endpoint (conversation_started trigger)
+- [ ] Add workflow triggers to email open tracking (email_opened trigger)
+- [ ] Add workflow triggers to email click tracking (email_clicked trigger)
+- [ ] Create tRPC endpoints for manual status updates (leads.updateStatus)
+- [ ] Create tRPC endpoints for status history viewing (leads.statusHistory)
+- [ ] Write comprehensive unit tests for workflow automation (18+ test cases)
+- [ ] Test automatic status transitions (new → contacted → nurturing → qualified → won/lost)
+- [ ] Test manual status override functionality
+- [ ] Test status history tracking and metadata storage
+- [x] Update frontend status dropdowns to use new status values
+- [ ] Add status history timeline to Lead Detail page
+- [ ] Verify all workflow triggers are firing correctly

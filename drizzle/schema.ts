@@ -68,7 +68,7 @@ export const leads = mysqlTable("leads", {
   contactEmail: varchar("contactEmail", { length: 320 }),
   contactLinkedin: varchar("contactLinkedin", { length: 500 }),
   contactPhone: varchar("contactPhone", { length: 50 }),
-  status: mysqlEnum("status", ["new", "contacted", "qualified", "unqualified", "converted"]).default("new").notNull(),
+  status: mysqlEnum("status", ["new", "contacted", "qualified", "unqualified", "converted", "nurturing", "won", "lost", "unresponsive"]).default("new").notNull(),
   score: int("score").default(0), // Lead scoring 0-100
   notes: text("notes"),
   tags: text("tags"), // JSON array of tags

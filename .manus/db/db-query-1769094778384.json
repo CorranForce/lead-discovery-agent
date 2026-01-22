@@ -1,0 +1,9 @@
+{
+  "query": "ALTER TABLE leads MODIFY COLUMN status ENUM('new', 'contacted', 'qualified', 'unqualified', 'converted', 'nurturing', 'won', 'lost', 'unresponsive') DEFAULT 'new' NOT NULL",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2Vkk6KVFrhiW4tR.d342a31b6531 --database LaKXu62qWLapokNcy8enjg --execute ALTER TABLE leads MODIFY COLUMN status ENUM('new', 'contacted', 'qualified', 'unqualified', 'converted', 'nurturing', 'won', 'lost', 'unresponsive') DEFAULT 'new' NOT NULL",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 6695
+}
