@@ -589,7 +589,10 @@ export async function createCoupon(params: CreateCouponParams) {
 export async function createPromoCode(params: CreatePromoCodeParams) {
   try {
     const promoParams: any = {
-      coupon: params.couponId,
+      promotion: {
+        type: 'coupon',
+        coupon: params.couponId,
+      },
       code: params.code.toUpperCase(),
     };
 

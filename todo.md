@@ -781,3 +781,8 @@
 - [x] Update frontend status dropdowns to use new status values
 - [ ] Add status history timeline to Lead Detail page
 - [ ] Verify all workflow triggers are firing correctly
+
+## Bug Fixes - Promo Codes
+- [x] Fix Stripe API error "Received unknown parameter: coupon" in promo codes
+- [x] Update from deprecated 'coupon' parameter to 'promotion_code' parameter
+- [x] Test promo code creation and application in checkout
