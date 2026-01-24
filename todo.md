@@ -786,3 +786,9 @@
 - [x] Fix Stripe API error "Received unknown parameter: coupon" in promo codes
 - [x] Update from deprecated 'coupon' parameter to 'promotion_code' parameter
 - [x] Test promo code creation and application in checkout
+
+## Bug Fixes - Conversations
+- [x] Fix conversations not appearing after creation (even after refresh)
+- [x] Add smooth animation when new conversations are added to active list
+- [x] Ensure conversation list auto-refreshes after creation
+- [x] Add visual feedback when conversation is successfully created

@@ -544,6 +544,13 @@ Return exactly 5 leads in valid JSON format as an array of objects.`;
         notes: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
+        // Check if test mode is enabled
+        const useTestData = ctx.user.useRealData !== 1;
+        
+        if (useTestData) {
+          throw new Error("Cannot create conversations in test mode. Toggle off 'Test Data' to create real conversations.");
+        }
+        
         const { createConversation } = await import("./db");
         return await createConversation({
           ...input,

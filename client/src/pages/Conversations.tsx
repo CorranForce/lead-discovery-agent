@@ -58,11 +58,13 @@ export default function Conversations() {
   const createMutation = trpc.conversations.create.useMutation({
     onSuccess: (result) => {
       utils.conversations.list.invalidate();
-      toast.success("Conversation created!");
+      toast.success("Conversation created! Opening now...");
       setNewConversationOpen(false);
       setNewTitle("");
-      // Navigate to the conversation (we'll create this page next)
-      // For now, just show success
+      // Navigate to the new conversation
+      setTimeout(() => {
+        setLocation(`/conversation/${result.id}`);
+      }, 300);
     },
     onError: (error) => {
       toast.error(`Failed to create conversation: ${error.message}`);
@@ -222,8 +224,12 @@ export default function Conversations() {
         </Card>
       ) : (
         <div className="grid grid-cols-1 gap-4">
-          {filteredConversations.map((conversation) => (
-            <Card key={conversation.id} className="hover:border-primary/50 transition-colors">
+          {filteredConversations.map((conversation, index) => (
+            <Card 
+              key={conversation.id} 
+              className="hover:border-primary/50 transition-all duration-300 ease-out animate-in fade-in slide-in-from-bottom-4"
+              style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'backwards' }}
+            >
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="space-y-1 flex-1">

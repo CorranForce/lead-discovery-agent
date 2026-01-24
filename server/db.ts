@@ -266,7 +266,11 @@ export async function createConversation(conversation: InsertConversation) {
   if (!db) throw new Error("Database not available");
   
   const result = await db.insert(conversations).values(conversation);
-  return result;
+  const insertId = (result as any).insertId;
+  
+  // Fetch and return the created conversation
+  const [created] = await db.select().from(conversations).where(eq(conversations.id, insertId)).limit(1);
+  return created;
 }
 
 export async function getUserConversations(userId: number) {
