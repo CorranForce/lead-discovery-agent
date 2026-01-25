@@ -792,3 +792,15 @@
 - [x] Add smooth animation when new conversations are added to active list
 - [x] Ensure conversation list auto-refreshes after creation
 - [x] Add visual feedback when conversation is successfully created
+
+## Email Service Testing
+- [x] Send test email to corranforce@gmail.com (Email ID: e5cba33d-a31c-4fa6-bcfe-5dd66c2af1d0)
+- [x] Verify email delivery and formatting
+- [ ] Confirm email tracking (opens/clicks) is working
+
+## Custom Domain Email Configuration
+- [x] Update email service to use freedomopsai.dev domain
+- [x] Change default from address to allen@freedomopsai.dev
+- [x] Update all email templates to use custom domain
+- [x] Test email sending with custom domain to external recipients (Email ID: 3188b17f-e6df-483a-9747-5cbc5bd7dbf3)
+- [x] Verify email deliverability with custom domain

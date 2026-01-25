@@ -16,7 +16,7 @@ export interface SendEmailOptions {
 export async function sendEmail(options: SendEmailOptions) {
   try {
     const { data, error } = await resend.emails.send({
-      from: options.from || "Lead Discovery <onboarding@resend.dev>",
+      from: options.from || "Allen Davis <allen@freedomopsai.dev>",
       to: options.to,
       subject: options.subject,
       html: options.html,
