@@ -804,3 +804,15 @@
 - [x] Update all email templates to use custom domain
 - [x] Test email sending with custom domain to external recipients (Email ID: 3188b17f-e6df-483a-9747-5cbc5bd7dbf3)
 - [x] Verify email deliverability with custom domain
+
+## Welcome Email Automation for New Leads
+- [x] Design welcome email template with Allen's brand voice (smart, quick-witted, empathic)
+- [x] Include introduction to RPA/AI expertise and military background
+- [x] Add links to best YouTube content (Freedom Ops AI channel)
+- [x] Include CTA for Funnel Freedom product
+- [x] Create automation trigger when new leads are added to database
+- [x] Add database field to track if welcome email was sent
+- [x] Create admin settings page to enable/disable welcome emails (reuses emailNotifications)
+- [ ] Add option to customize welcome email template (future enhancement)
+- [x] Test welcome email automation with real lead creation
+- [x] Verify email deliverability and formatting (4/4 tests passed)

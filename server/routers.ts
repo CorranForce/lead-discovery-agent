@@ -187,11 +187,49 @@ export const appRouter = router({
         
         const scoringResult = calculateLeadScore(tempLead, 0, 0);
         
-        return await createLead({
+        const result = await createLead({
           ...input,
           userId: ctx.user.id,
           score: scoringResult.score,
         });
+        
+        // Send welcome email if contact email is provided and welcome email automation is enabled
+        if (input.contactEmail && input.contactName) {
+          const { sendWelcomeEmail } = await import("./services/welcomeEmail");
+          const { getDb } = await import("./db");
+          const { leads } = await import("../drizzle/schema");
+          const { eq } = await import("drizzle-orm");
+          
+          // Check if user has welcome email automation enabled (default: enabled)
+          const shouldSendWelcome = ctx.user.emailNotifications !== 0; // Reuse emailNotifications setting
+          
+          if (shouldSendWelcome) {
+            try {
+              const emailResult = await sendWelcomeEmail({
+                to: input.contactEmail,
+                leadName: input.contactName,
+                leadCompany: input.companyName,
+              });
+              
+              if (emailResult.success) {
+                // Mark welcome email as sent
+                const db = await getDb();
+                if (db) {
+                  const insertId = (result as any).insertId;
+                  await db.update(leads)
+                    .set({ welcomeEmailSent: 1 })
+                    .where(eq(leads.id, insertId));
+                }
+                console.log(`[Welcome Email] Sent to ${input.contactEmail}`);
+              }
+            } catch (error) {
+              console.error("[Welcome Email] Failed to send:", error);
+              // Don't fail the lead creation if email fails
+            }
+          }
+        }
+        
+        return result;
       }),
     
     get: protectedProcedure

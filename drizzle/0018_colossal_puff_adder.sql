@@ -1,0 +1,1 @@
+ALTER TABLE `leads` ADD `welcomeEmailSent` int DEFAULT 0 NOT NULL;

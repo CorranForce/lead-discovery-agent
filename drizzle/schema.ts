@@ -72,6 +72,7 @@ export const leads = mysqlTable("leads", {
   score: int("score").default(0), // Lead scoring 0-100
   notes: text("notes"),
   tags: text("tags"), // JSON array of tags
+  welcomeEmailSent: int("welcomeEmailSent").default(0).notNull(), // 0 = not sent, 1 = sent
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
