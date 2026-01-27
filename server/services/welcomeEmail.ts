@@ -210,17 +210,17 @@ export async function sendWelcomeEmail(options: WelcomeEmailOptions) {
             <div class="video-links">
               <h3>📺 Start Here - My Best Content</h3>
               
-              <a href="https://www.youtube.com/@CorranForce" class="video-link">
+              <a href="https://www.youtube.com/@AllenDavis-AI" class="video-link">
                 <span class="video-title">🎬 Freedom Ops AI YouTube Channel</span>
                 <span class="video-desc">AI automation strategies for veterans & beginners</span>
               </a>
               
-              <a href="https://www.youtube.com/@CorranForce/videos" class="video-link">
+              <a href="https://www.youtube.com/@AllenDavis-AI/videos" class="video-link">
                 <span class="video-title">⚡ Latest Videos</span>
                 <span class="video-desc">Weekly tutorials on making money online with AI</span>
               </a>
               
-              <a href="https://www.facebook.com/phoenixwolf78" class="video-link">
+              <a href="https://www.facebook.com/allen.davis.54" class="video-link">
                 <span class="video-title">💬 Join the Community</span>
                 <span class="video-desc">Connect with other veterans & AI enthusiasts</span>
               </a>
@@ -236,7 +236,7 @@ export async function sendWelcomeEmail(options: WelcomeEmailOptions) {
             </ul>
             
             <div class="cta-section">
-              <a href="https://www.youtube.com/@CorranForce?sub_confirmation=1" class="button">
+              <a href="https://www.youtube.com/@AllenDavis-AI?sub_confirmation=1" class="button">
                 🎯 Subscribe to My Channel
               </a>
               <br>
@@ -254,8 +254,8 @@ export async function sendWelcomeEmail(options: WelcomeEmailOptions) {
               <div class="signature-title">Senior RPA Developer | Army Veteran | AI Automation Strategist</div>
               <div class="signature-title">Freedom Ops AI</div>
               <div class="signature-links">
-                <a href="https://www.youtube.com/@CorranForce">YouTube</a>
-                <a href="https://www.facebook.com/phoenixwolf78">Facebook</a>
+                <a href="https://www.youtube.com/@AllenDavis-AI">YouTube</a>
+                <a href="https://www.facebook.com/allen.davis.54">Facebook</a>
                 <a href="mailto:allen@freedomopsai.dev">Email</a>
               </div>
             </div>
