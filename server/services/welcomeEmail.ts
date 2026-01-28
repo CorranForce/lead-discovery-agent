@@ -6,6 +6,9 @@ export interface WelcomeEmailOptions {
   leadCompany?: string;
 }
 
+// Configuration: Update this URL when you create your "Start Here" playlist
+const START_HERE_PLAYLIST_URL = "https://www.youtube.com/@AllenDavis-AI/playlists"; // TODO: Replace with actual playlist URL
+
 /**
  * Send welcome email to new lead introducing Allen's expertise
  */
@@ -210,17 +213,17 @@ export async function sendWelcomeEmail(options: WelcomeEmailOptions) {
             <div class="video-links">
               <h3>📺 Start Here - My Best Content</h3>
               
-              <a href="https://www.youtube.com/@AllenDavis-AI" class="video-link">
-                <span class="video-title">🎬 Freedom Ops AI YouTube Channel</span>
-                <span class="video-desc">AI automation strategies for veterans & beginners</span>
+              <a href="${START_HERE_PLAYLIST_URL}?utm_source=welcome_email&utm_medium=email&utm_campaign=lead_nurture" class="video-link">
+                <span class="video-title">🎬 Start Here Playlist</span>
+                <span class="video-desc">Curated videos for veterans & AI beginners</span>
               </a>
               
-              <a href="https://www.youtube.com/@AllenDavis-AI/videos" class="video-link">
+              <a href="https://www.youtube.com/@AllenDavis-AI/videos?utm_source=welcome_email&utm_medium=email&utm_campaign=lead_nurture" class="video-link">
                 <span class="video-title">⚡ Latest Videos</span>
                 <span class="video-desc">Weekly tutorials on making money online with AI</span>
               </a>
               
-              <a href="https://www.facebook.com/allen.davis.54" class="video-link">
+              <a href="https://www.facebook.com/allen.davis.54?utm_source=welcome_email&utm_medium=email&utm_campaign=lead_nurture" class="video-link">
                 <span class="video-title">💬 Join the Community</span>
                 <span class="video-desc">Connect with other veterans & AI enthusiasts</span>
               </a>
@@ -236,7 +239,7 @@ export async function sendWelcomeEmail(options: WelcomeEmailOptions) {
             </ul>
             
             <div class="cta-section">
-              <a href="https://www.youtube.com/@AllenDavis-AI?sub_confirmation=1" class="button">
+              <a href="https://www.youtube.com/@AllenDavis-AI?sub_confirmation=1&utm_source=welcome_email&utm_medium=email&utm_campaign=lead_nurture" class="button">
                 🎯 Subscribe to My Channel
               </a>
               <br>

@@ -35,6 +35,10 @@ async function startServer() {
   const { startScheduler } = await import("../scheduler");
   startScheduler();
   
+  // Start the email sequence scheduler
+  const { startEmailSequenceScheduler } = await import("../services/emailSequenceScheduler");
+  startEmailSequenceScheduler();
+  
   // Stripe webhook endpoint - MUST be registered BEFORE express.json() middleware
   // to ensure raw body is available for signature verification
   app.post(

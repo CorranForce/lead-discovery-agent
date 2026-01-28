@@ -219,6 +219,10 @@ export const appRouter = router({
                   await db.update(leads)
                     .set({ welcomeEmailSent: 1 })
                     .where(eq(leads.id, insertId));
+                  
+                  // Schedule follow-up email sequence
+                  const { scheduleFollowUpEmails } = await import("./services/emailSequenceScheduler");
+                  await scheduleFollowUpEmails(insertId);
                 }
                 console.log(`[Welcome Email] Sent to ${input.contactEmail}`);
               }

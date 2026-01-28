@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS emailSequenceLog (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  leadId INT NOT NULL,\n  emailNumber TINYINT NOT NULL,\n  sentAt TIMESTAMP NULL,\n  scheduledFor TIMESTAMP NOT NULL,\n  INDEX idx_lead_email (leadId, emailNumber),\n  INDEX idx_scheduled (scheduledFor),\n  FOREIGN KEY (leadId) REFERENCES leads(id) ON DELETE CASCADE\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2Vkk6KVFrhiW4tR.d342a31b6531 --database LaKXu62qWLapokNcy8enjg --execute CREATE TABLE IF NOT EXISTS emailSequenceLog (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  leadId INT NOT NULL,\n  emailNumber TINYINT NOT NULL,\n  sentAt TIMESTAMP NULL,\n  scheduledFor TIMESTAMP NOT NULL,\n  INDEX idx_lead_email (leadId, emailNumber),\n  INDEX idx_scheduled (scheduledFor),\n  FOREIGN KEY (leadId) REFERENCES leads(id) ON DELETE CASCADE\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 458
+}

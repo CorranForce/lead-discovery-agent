@@ -822,3 +822,32 @@
 - [x] Update links to current/correct URLs provided by Allen
 - [x] Verify all YouTube and social media links are accurate
 - [x] Test updated email with new links (Email ID: 4f2cb25b-6fbf-424b-8533-2187511ebca7)
+
+
+## Lead Nurturing Enhancements
+
+### UTM Tracking for Analytics
+- [x] Add UTM parameters to all welcome email links (source=welcome_email, medium=email, campaign=lead_nurture)
+- [x] Add UTM parameters to YouTube channel links
+- [x] Add UTM parameters to Facebook profile links
+- [x] Add UTM parameters to CTA buttons
+- [x] Document UTM structure for future email campaigns
+
+### Start Here Playlist Integration
+- [x] Create placeholder for "Start Here" YouTube playlist URL
+- [x] Update welcome email to link to curated playlist instead of general channel
+- [ ] Add admin setting to configure playlist URL (future enhancement)
+- [x] Test playlist link in email
+
+### Automated Follow-Up Email Sequence
+- [x] Design 3-email nurture sequence (Day 2, Day 4, Day 7)
+- [x] Email 1: Share specific video for veterans/AI beginners with case study
+- [x] Email 2: Share advanced automation tutorial with social proof
+- [x] Email 3: Introduce Funnel Freedom product with special offer
+- [x] Create database table for email sequence tracking (emailSequenceLog)
+- [x] Add fields: leadId, emailNumber, sentAt, scheduledFor
+- [x] Implement scheduler to send follow-up emails at correct intervals
+- [x] Integrate scheduler into server startup
+- [x] Add sequence scheduling when welcome email is sent
+- [x] Test complete sequence with real email delivery
+- [ ] Write unit tests for sequence logic (future enhancement)
