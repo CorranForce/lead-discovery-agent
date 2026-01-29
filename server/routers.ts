@@ -1581,5 +1581,25 @@ Be professional, empathetic, and focused on building trust.`;
   
   // Billing
   billing: billingRouter,
+  
+  // Apollo Usage Monitoring
+  apollo: router({
+    getUsageSummary: protectedProcedure.query(async ({ ctx }) => {
+      const { getUsageSummary } = await import('./services/apolloUsageTracker');
+      return await getUsageSummary(ctx.user.id);
+    }),
+    
+    getUsageStats: protectedProcedure
+      .input(z.object({
+        startDate: z.string().optional(),
+        endDate: z.string().optional(),
+      }))
+      .query(async ({ ctx, input }) => {
+        const { getUserUsageStats } = await import('./services/apolloUsageTracker');
+        const start = input.startDate ? new Date(input.startDate) : undefined;
+        const end = input.endDate ? new Date(input.endDate) : undefined;
+        return await getUserUsageStats(ctx.user.id, start, end);
+      }),
+  }),
 });
 export type AppRouter = typeof appRouter;

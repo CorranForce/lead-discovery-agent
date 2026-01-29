@@ -4,6 +4,8 @@
  * Note: Using /organizations/search endpoint which works with free API keys
  */
 
+import { logApolloUsage } from './services/apolloUsageTracker';
+
 const APOLLO_API_KEY = process.env.APOLLO_API_KEY;
 const APOLLO_API_BASE = "https://api.apollo.io/api/v1";
 
@@ -76,7 +78,7 @@ function extractSearchKeywords(query: string): string {
  * Search for organizations using Apollo.io API
  * This endpoint works with free API keys
  */
-export async function searchOrganizations(params: ApolloOrganizationSearchParams): Promise<ApolloOrganizationSearchResponse> {
+export async function searchOrganizations(params: ApolloOrganizationSearchParams, userId?: number): Promise<ApolloOrganizationSearchResponse> {
   if (!APOLLO_API_KEY) {
     throw new Error("APOLLO_API_KEY is not configured");
   }
@@ -128,6 +130,8 @@ export async function searchOrganizations(params: ApolloOrganizationSearchParams
     requestBody.organization_locations = [params.location];
   }
 
+  const startTime = Date.now();
+  
   try {
     const response = await fetch(`${APOLLO_API_BASE}/organizations/search`, {
       method: "POST",
@@ -145,8 +149,39 @@ export async function searchOrganizations(params: ApolloOrganizationSearchParams
     }
 
     const data = await response.json();
+    const responseTime = Date.now() - startTime;
+    
+    // Log successful usage
+    if (userId) {
+      await logApolloUsage({
+        userId,
+        endpoint: '/organizations/search',
+        requestType: 'search',
+        resultsCount: data.organizations?.length || 0,
+        responseTime,
+        success: true,
+        creditsUsed: data.organizations?.length || 1,
+      }).catch(err => console.error('[Apollo] Failed to log usage:', err));
+    }
+    
     return data;
   } catch (error) {
+    const responseTime = Date.now() - startTime;
+    
+    // Log failed usage
+    if (userId) {
+      await logApolloUsage({
+        userId,
+        endpoint: '/organizations/search',
+        requestType: 'search',
+        resultsCount: 0,
+        responseTime,
+        success: false,
+        errorMessage: error instanceof Error ? error.message : String(error),
+        creditsUsed: 0,
+      }).catch(err => console.error('[Apollo] Failed to log usage:', err));
+    }
+    
     console.error("[Apollo API] Search failed:", error);
     throw error;
   }

@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS apolloUsage (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  userId INT NOT NULL,\n  endpoint VARCHAR(255) NOT NULL,\n  requestType VARCHAR(50) NOT NULL,\n  resultsCount INT DEFAULT 0,\n  responseTime INT DEFAULT 0,\n  success TINYINT(1) DEFAULT 1,\n  errorMessage TEXT,\n  creditsUsed INT DEFAULT 1,\n  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\n  INDEX idx_user_date (userId, createdAt),\n  INDEX idx_endpoint (endpoint),\n  FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2Vkk6KVFrhiW4tR.d342a31b6531 --database LaKXu62qWLapokNcy8enjg --execute CREATE TABLE IF NOT EXISTS apolloUsage (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  userId INT NOT NULL,\n  endpoint VARCHAR(255) NOT NULL,\n  requestType VARCHAR(50) NOT NULL,\n  resultsCount INT DEFAULT 0,\n  responseTime INT DEFAULT 0,\n  success TINYINT(1) DEFAULT 1,\n  errorMessage TEXT,\n  creditsUsed INT DEFAULT 1,\n  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\n  INDEX idx_user_date (userId, createdAt),\n  INDEX idx_endpoint (endpoint),\n  FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 605
+}

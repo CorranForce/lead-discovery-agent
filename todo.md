@@ -851,3 +851,24 @@
 - [x] Add sequence scheduling when welcome email is sent
 - [x] Test complete sequence with real email delivery
 - [ ] Write unit tests for sequence logic (future enhancement)
+
+
+## Apollo.io API Verification After Plan Upgrade
+- [x] Check current Apollo API key configuration in environment variables
+- [x] Review Apollo.io API key documentation for plan changes
+- [x] Test Apollo API with current key to verify functionality (200 OK, 65,506 orgs found)
+- [x] Determine if new API key is required after payment plan upgrade (NO - same key works)
+- [x] Update API key if needed and test lead discovery functionality (NOT NEEDED)
+
+
+## Apollo.io Enhanced Features Implementation
+- [x] Test enhanced plan features with large lead discovery batch (84 companies in 3.19s)
+- [x] Verify new rate limits and improved data quality from upgraded plan
+- [x] Document new plan limits in codebase (apollo-config.ts with rate limits, monthly credits, batch sizes)
+- [x] Add Apollo credit monitoring system to track API usage (apolloUsageTracker.ts)
+- [x] Create database table for Apollo usage tracking (apolloUsage table)
+- [x] Implement usage analytics dashboard showing daily/monthly consumption (tRPC endpoints)
+- [x] Add alert system for approaching monthly limits (80%, 90%, 95% thresholds)
+- [x] Send email notifications when credit thresholds are reached (automatic alerts)
+- [x] Add usage warnings in admin dashboard (getUsageSummary endpoint)
+- [x] Test complete monitoring system with real API calls
