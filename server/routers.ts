@@ -11,6 +11,138 @@ export const appRouter = router({
   system: systemRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
+    
+    signup: publicProcedure
+      .input(z.object({
+        email: z.string().email(),
+        password: z.string().min(8),
+        name: z.string().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const { hashPassword, validatePasswordStrength, validateEmail } = await import("./_core/password");
+        const { getUserByEmail } = await import("./db");
+        const { getDb } = await import("./db");
+        const { users } = await import("../drizzle/schema");
+        const jwt = await import("jsonwebtoken");
+        const { ENV } = await import("./_core/env");
+        
+        // Validate email
+        const emailValidation = validateEmail(input.email);
+        if (!emailValidation.isValid) {
+          throw new Error(emailValidation.error);
+        }
+        
+        // Validate password strength
+        const passwordValidation = validatePasswordStrength(input.password);
+        if (!passwordValidation.isValid) {
+          throw new Error(passwordValidation.error);
+        }
+        
+        // Check if user already exists
+        const existingUser = await getUserByEmail(input.email);
+        if (existingUser) {
+          throw new Error("An account with this email already exists");
+        }
+        
+        // Hash password
+        const passwordHash = await hashPassword(input.password);
+        
+        // Create user
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+        
+        const result = await db.insert(users).values({
+          email: input.email,
+          passwordHash,
+          name: input.name || null,
+          loginMethod: "email",
+          role: "user",
+        });
+        
+        const userId = Number(result[0].insertId);
+        
+        // Get the created user
+        const { getUserById } = await import("./db");
+        const user = await getUserById(userId);
+        if (!user) throw new Error("Failed to create user");
+        
+        // Create session token
+        const token = jwt.default.sign(
+          { userId: user.id, email: user.email },
+          ENV.jwtSecret,
+          { expiresIn: "30d" }
+        );
+        
+        // Set session cookie
+        const cookieOptions = getSessionCookieOptions(ctx.req);
+        ctx.res.cookie(COOKIE_NAME, token, cookieOptions);
+        
+        return {
+          success: true,
+          user: {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+          },
+        };
+      }),
+    
+    login: publicProcedure
+      .input(z.object({
+        email: z.string().email(),
+        password: z.string(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const { verifyPassword } = await import("./_core/password");
+        const { getUserByEmail } = await import("./db");
+        const jwt = await import("jsonwebtoken");
+        const { ENV } = await import("./_core/env");
+        
+        // Get user by email
+        const user = await getUserByEmail(input.email);
+        if (!user || !user.passwordHash) {
+          throw new Error("Invalid email or password");
+        }
+        
+        // Verify password
+        const isValid = await verifyPassword(input.password, user.passwordHash);
+        if (!isValid) {
+          throw new Error("Invalid email or password");
+        }
+        
+        // Create session token
+        const token = jwt.default.sign(
+          { userId: user.id, email: user.email },
+          ENV.jwtSecret,
+          { expiresIn: "30d" }
+        );
+        
+        // Set session cookie
+        const cookieOptions = getSessionCookieOptions(ctx.req);
+        ctx.res.cookie(COOKIE_NAME, token, cookieOptions);
+        
+        // Update last signed in
+        const { getDb } = await import("./db");
+        const { users } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+        
+        const db = await getDb();
+        if (db) {
+          await db.update(users)
+            .set({ lastSignedIn: new Date() })
+            .where(eq(users.id, user.id));
+        }
+        
+        return {
+          success: true,
+          user: {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+          },
+        };
+      }),
+    
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
@@ -23,8 +155,8 @@ export const appRouter = router({
   // Account management
   account: router({
     getProfile: protectedProcedure.query(async ({ ctx }) => {
-      const { getUserByOpenId } = await import("./db");
-      return await getUserByOpenId(ctx.user.openId);
+      // User is already loaded in context
+      return ctx.user;
     }),
     
     updateProfile: protectedProcedure
@@ -47,7 +179,7 @@ export const appRouter = router({
         
         await db.update(users)
           .set(input)
-          .where(eq(users.openId, ctx.user.openId));
+          .where(eq(users.id, ctx.user.id));
         
         return { success: true };
       }),
@@ -72,7 +204,7 @@ export const appRouter = router({
         
         await db.update(users)
           .set(input)
-          .where(eq(users.openId, ctx.user.openId));
+          .where(eq(users.id, ctx.user.id));
         
         return { success: true };
       }),

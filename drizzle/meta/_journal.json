@@ -134,6 +134,13 @@
       "when": 1769443551037,
       "tag": "0018_colossal_puff_adder",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "5",
+      "when": 1769779805610,
+      "tag": "0019_hard_pretty_boy",
+      "breakpoints": true
     }
   ]
 }

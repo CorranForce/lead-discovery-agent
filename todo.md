@@ -872,3 +872,19 @@
 - [x] Send email notifications when credit thresholds are reached (automatic alerts)
 - [x] Add usage warnings in admin dashboard (getUsageSummary endpoint)
 - [x] Test complete monitoring system with real API calls
+
+
+## Email/Password Authentication System
+- [x] Update users table schema to add passwordHash field
+- [x] Create password hashing utility using bcrypt
+- [x] Create password validation utility
+- [x] Build signup tRPC endpoint with email/password
+- [x] Build login tRPC endpoint with email/password authentication
+- [x] Create signup UI page with form validation
+- [x] Create login UI page with form validation
+- [x] Update authentication context to support both OAuth and email/password
+- [x] Add "Sign up with Email" option to login page
+- [ ] Add password reset functionality (forgot password) - future enhancement
+- [x] Write unit tests for password hashing and validation (22 tests, all passed)
+- [x] Write integration tests for signup and login flows
+- [x] Test complete authentication system end-to-end
