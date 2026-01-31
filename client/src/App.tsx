@@ -25,6 +25,10 @@ import PromoCodeManagement from "./pages/PromoCodeManagement";
 import Pricing from "./pages/Pricing";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+import VerifyEmail from "./pages/VerifyEmail";
+import HowTo from "./pages/HowTo";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -32,7 +36,11 @@ function Router() {
     <Switch>
       <Route path="/signup" component={Signup} />
       <Route path="/login" component={Login} />
+      <Route path="/forgot-password" component={ForgotPassword} />
+      <Route path="/reset-password" component={ResetPassword} />
+      <Route path="/verify-email" component={VerifyEmail} />
       <Route path={"/"} component={Home} />
+      <Route path={"/how-to"} component={HowTo} />
       <Route path={"/pricing"} component={Pricing} />
       <Route path={"/dashboard"} component={Dashboard} />
       <Route path={"/discover"} component={Discover} />

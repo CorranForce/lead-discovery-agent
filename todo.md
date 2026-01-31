@@ -888,3 +888,48 @@
 - [x] Write unit tests for password hashing and validation (22 tests, all passed)
 - [x] Write integration tests for signup and login flows
 - [x] Test complete authentication system end-to-end
+
+
+## How-To Use Documentation
+- [x] Create HowTo page component with step-by-step search guide
+- [x] Add sections: Getting Started, Using Search Filters, Understanding Results, Managing Leads
+- [x] Include screenshots or illustrations for each step
+- [x] Add FAQ section for common questions
+- [x] Create route for /how-to page
+- [x] Add link to How-To from navigation menu and landing page
+
+## Landing Page Upgrade
+- [x] Add high-level benefits section with 3-5 key value propositions
+- [x] Create testimonials section with 3-4 customer success stories
+- [x] Find and integrate professional stock images of diverse professionals
+- [x] Add social proof elements (user count, success metrics)
+- [x] Improve hero section with compelling headline and CTA
+- [x] Add features showcase with icons and descriptions
+- [x] Optimize landing page for conversion (clear CTAs, trust signals)
+
+## Password Reset Functionality
+- [x] Create passwordResetTokens table in database schema
+- [x] Add fields: id, userId, token, expiresAt, createdAt
+- [x] Create password reset request endpoint (generates token, sends email)
+- [x] Create password reset verification endpoint (validates token)
+- [x] Create password reset completion endpoint (updates password)
+- [x] Build "Forgot Password" UI page with email input
+- [x] Build "Reset Password" UI page with new password form
+- [x] Create password reset email template with reset link
+- [x] Add "Forgot Password?" link to login page
+- [ ] Write unit tests for password reset flow
+- [ ] Test complete password reset journey end-to-end
+
+## Email Verification for New Signups
+- [x] Add emailVerified boolean field to users table
+- [x] Create emailVerificationTokens table for token management
+- [x] Generate verification token on signup
+- [x] Send verification email with confirmation link
+- [x] Create email verification endpoint that validates token
+- [x] Build email verification success page
+- [x] Require email verification before allowing full platform access
+- [x] Add "Resend Verification Email" functionality
+- [x] Create verification email template with confirmation link
+- [ ] Add verification status indicator in user profile
+- [ ] Write unit tests for email verification flow
+- [ ] Test complete signup verification journey end-to-end

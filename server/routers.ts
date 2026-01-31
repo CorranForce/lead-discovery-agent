@@ -66,6 +66,10 @@ export const appRouter = router({
         const user = await getUserById(userId);
         if (!user) throw new Error("Failed to create user");
         
+        // Send email verification
+        const { createEmailVerificationToken } = await import("./services/emailVerification");
+        await createEmailVerificationToken(user.id, user.email!, user.name || undefined);
+        
         // Create session token
         const token = jwt.default.sign(
           { userId: user.id, email: user.email },
@@ -84,6 +88,7 @@ export const appRouter = router({
             email: user.email,
             name: user.name,
           },
+          message: "Account created! Please check your email to verify your address.",
         };
       }),
     
@@ -150,6 +155,103 @@ export const appRouter = router({
         success: true,
       } as const;
     }),
+    
+    requestPasswordReset: publicProcedure
+      .input(z.object({
+        email: z.string().email(),
+      }))
+      .mutation(async ({ input }) => {
+        const { createPasswordResetToken } = await import("./services/passwordReset");
+        return await createPasswordResetToken(input.email);
+      }),
+    
+    verifyResetToken: publicProcedure
+      .input(z.object({
+        token: z.string(),
+      }))
+      .query(async ({ input }) => {
+        const { verifyResetToken } = await import("./services/passwordReset");
+        return await verifyResetToken(input.token);
+      }),
+    
+    resetPassword: publicProcedure
+      .input(z.object({
+        token: z.string(),
+        newPassword: z.string().min(8),
+      }))
+      .mutation(async ({ input }) => {
+        const { verifyResetToken, markTokenAsUsed } = await import("./services/passwordReset");
+        const { hashPassword, validatePasswordStrength } = await import("./_core/password");
+        const { getDb } = await import("./db");
+        const { users } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+        
+        // Validate password strength
+        const passwordValidation = validatePasswordStrength(input.newPassword);
+        if (!passwordValidation.isValid) {
+          throw new Error(passwordValidation.error);
+        }
+        
+        // Verify token
+        const tokenVerification = await verifyResetToken(input.token);
+        if (!tokenVerification.valid || !tokenVerification.userId) {
+          throw new Error("Invalid or expired reset token");
+        }
+        
+        // Hash new password
+        const passwordHash = await hashPassword(input.newPassword);
+        
+        // Update user password
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+        
+        await db.update(users)
+          .set({ passwordHash })
+          .where(eq(users.id, tokenVerification.userId));
+        
+        // Mark token as used
+        await markTokenAsUsed(input.token);
+        
+        return {
+          success: true,
+          message: "Password reset successfully",
+        };
+      }),
+    
+    verifyEmail: publicProcedure
+      .input(z.object({
+        token: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        const { verifyEmailToken, markEmailAsVerified } = await import("./services/emailVerification");
+        
+        // Verify token
+        const tokenVerification = await verifyEmailToken(input.token);
+        if (!tokenVerification.valid || !tokenVerification.userId) {
+          throw new Error("Invalid or expired verification token");
+        }
+        
+        // Mark email as verified
+        await markEmailAsVerified(input.token, tokenVerification.userId);
+        
+        return {
+          success: true,
+          message: "Email verified successfully",
+        };
+      }),
+    
+    resendVerification: protectedProcedure
+      .mutation(async ({ ctx }) => {
+        const { resendVerificationEmail } = await import("./services/emailVerification");
+        return await resendVerificationEmail(ctx.user.id);
+      }),
+    
+    checkEmailVerification: protectedProcedure
+      .query(async ({ ctx }) => {
+        const { isEmailVerified } = await import("./services/emailVerification");
+        const verified = await isEmailVerified(ctx.user.id);
+        return { verified };
+      }),
   }),
   
   // Account management

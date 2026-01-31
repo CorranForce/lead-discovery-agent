@@ -84,8 +84,7 @@ export default function Login() {
               />
             </div>
 
-            {/* TODO: Add forgot password functionality */}
-            {/* <div className="flex justify-end">
+            <div className="flex justify-end">
               <button
                 type="button"
                 onClick={() => setLocation("/forgot-password")}
@@ -93,7 +92,7 @@ export default function Login() {
               >
                 Forgot password?
               </button>
-            </div> */}
+            </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
             <Button
