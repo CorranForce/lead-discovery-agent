@@ -115,18 +115,18 @@ export default function Dashboard() {
 
       {/* Quick Actions */}
       <div className="flex flex-wrap gap-3">
-        <Link href="/discover">
-          <Button>
+        <Button asChild>
+          <Link href="/discover">
             <Plus className="h-4 w-4 mr-2" />
             Discover Leads
-          </Button>
-        </Link>
-        <Link href="/conversations">
-          <Button variant="outline">
+          </Link>
+        </Button>
+        <Button variant="outline" asChild>
+          <Link href="/conversations">
             <MessageSquare className="h-4 w-4 mr-2" />
             New Conversation
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       </div>
 
       {/* Statistics Cards */}
@@ -223,12 +223,12 @@ export default function Dashboard() {
                 <CardTitle>Recent Leads</CardTitle>
                 <CardDescription>Your latest discovered leads</CardDescription>
               </div>
-              <Link href="/leads">
-                <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/leads">
                   View All
                   <ArrowRight className="h-4 w-4 ml-1" />
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </div>
           </CardHeader>
           <CardContent>
@@ -240,11 +240,11 @@ export default function Dashboard() {
               <div className="text-center py-8 text-muted-foreground">
                 <Building2 className="h-12 w-12 mx-auto mb-2 opacity-50" />
                 <p className="text-sm">No leads yet</p>
-                <Link href="/discover">
-                  <Button variant="link" size="sm" className="mt-2">
+                <Button variant="link" size="sm" className="mt-2" asChild>
+                  <Link href="/discover">
                     Start discovering leads
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
               </div>
             ) : (
               <div className="space-y-3">
@@ -277,12 +277,12 @@ export default function Dashboard() {
                 <CardTitle>Active Conversations</CardTitle>
                 <CardDescription>Ongoing sales discussions</CardDescription>
               </div>
-              <Link href="/conversations">
-                <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/conversations">
                   View All
                   <ArrowRight className="h-4 w-4 ml-1" />
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </div>
           </CardHeader>
           <CardContent>
@@ -294,11 +294,11 @@ export default function Dashboard() {
               <div className="text-center py-8 text-muted-foreground">
                 <MessageSquare className="h-12 w-12 mx-auto mb-2 opacity-50" />
                 <p className="text-sm">No active conversations</p>
-                <Link href="/conversations">
-                  <Button variant="link" size="sm" className="mt-2">
+                <Button variant="link" size="sm" className="mt-2" asChild>
+                  <Link href="/conversations">
                     Start a conversation
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
               </div>
             ) : (
               <div className="space-y-3">

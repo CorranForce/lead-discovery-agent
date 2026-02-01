@@ -936,3 +936,4 @@
 
 ## Bug Fixes - Dashboard
 - [x] Fix nested anchor tag error in active conversations section
+- [x] Find and fix all remaining nested anchor tag errors on Dashboard (5 Button+Link combinations fixed with asChild prop)
