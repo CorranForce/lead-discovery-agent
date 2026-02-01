@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Loader2, Building2, MessageSquare, Mail, Plus, TrendingUp, Users, ArrowRight, FlaskConical, Database } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { toast } from "sonner";
 
 export default function Dashboard() {
@@ -14,6 +14,7 @@ export default function Dashboard() {
   const { data: conversations, isLoading: loadingConversations } = trpc.conversations.list.useQuery();
   const { data: profile } = trpc.account.getProfile.useQuery();
   const utils = trpc.useUtils();
+  const [, setLocation] = useLocation();
 
   const isTestMode = profile?.useRealData !== 1;
 
@@ -302,17 +303,19 @@ export default function Dashboard() {
             ) : (
               <div className="space-y-3">
                 {activeConversations.map((conversation) => (
-                  <Link key={conversation.id} href={`/conversation/${conversation.id}`}>
-                    <div className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent/50 transition-colors cursor-pointer">
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium truncate">{conversation.title}</p>
-                        <p className="text-sm text-muted-foreground">
-                          Updated {new Date(conversation.updatedAt).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                  <div 
+                    key={conversation.id}
+                    onClick={() => setLocation(`/conversation/${conversation.id}`)}
+                    className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent/50 transition-colors cursor-pointer"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium truncate">{conversation.title}</p>
+                      <p className="text-sm text-muted-foreground">
+                        Updated {new Date(conversation.updatedAt).toLocaleDateString()}
+                      </p>
                     </div>
-                  </Link>
+                    <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                  </div>
                 ))}
               </div>
             )}

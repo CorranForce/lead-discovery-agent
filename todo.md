@@ -933,3 +933,6 @@
 - [ ] Add verification status indicator in user profile
 - [ ] Write unit tests for email verification flow
 - [ ] Test complete signup verification journey end-to-end
+
+## Bug Fixes - Dashboard
+- [x] Fix nested anchor tag error in active conversations section
