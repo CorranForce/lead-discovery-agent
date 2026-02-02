@@ -141,6 +141,13 @@
       "when": 1769779805610,
       "tag": "0019_hard_pretty_boy",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "5",
+      "when": 1769982785648,
+      "tag": "0020_cheerful_ego",
+      "breakpoints": true
     }
   ]
 }

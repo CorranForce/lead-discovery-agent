@@ -417,3 +417,22 @@ export const subscriptionPlans = mysqlTable("subscriptionPlans", {
 
 export type SubscriptionPlan = typeof subscriptionPlans.$inferSelect;
 export type InsertSubscriptionPlan = typeof subscriptionPlans.$inferInsert;
+
+/**
+ * Feedback table - stores user bug reports and enhancement ideas
+ */
+export const feedback = mysqlTable("feedback", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(), // Foreign key to users table
+  type: mysqlEnum("type", ["bug", "enhancement"]).notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description").notNull(),
+  status: mysqlEnum("status", ["submitted", "in_review", "planned", "in_progress", "completed", "rejected"]).default("submitted").notNull(),
+  adminResponse: text("adminResponse"), // Admin's response to the feedback
+  readByAdmin: int("readByAdmin").default(0).notNull(), // 0 = unread, 1 = read
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Feedback = typeof feedback.$inferSelect;
+export type InsertFeedback = typeof feedback.$inferInsert;

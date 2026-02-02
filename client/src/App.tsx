@@ -29,6 +29,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import VerifyEmail from "./pages/VerifyEmail";
 import HowTo from "./pages/HowTo";
+import AdminFeedback from "./pages/AdminFeedback";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -58,6 +59,7 @@ function Router() {
       <Route path={"/billing"} component={Billing} />
       <Route path={"/admin/billing"} component={AdminBilling} />
       <Route path={"/admin/promo-codes"} component={PromoCodeManagement} />
+      <Route path={"/admin/feedback"} component={AdminFeedback} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

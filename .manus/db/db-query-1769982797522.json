@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS `feedback` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `userId` int NOT NULL,\n  `type` enum('bug','enhancement') NOT NULL,\n  `title` varchar(255) NOT NULL,\n  `description` text NOT NULL,\n  `status` enum('submitted','in_review','planned','in_progress','completed','rejected') NOT NULL DEFAULT 'submitted',\n  `adminResponse` text,\n  `readByAdmin` int NOT NULL DEFAULT 0,\n  `createdAt` timestamp NOT NULL DEFAULT (now()),\n  `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,\n  CONSTRAINT `feedback_id` PRIMARY KEY(`id`)\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2Vkk6KVFrhiW4tR.d342a31b6531 --database LaKXu62qWLapokNcy8enjg --execute CREATE TABLE IF NOT EXISTS `feedback` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `userId` int NOT NULL,\n  `type` enum('bug','enhancement') NOT NULL,\n  `title` varchar(255) NOT NULL,\n  `description` text NOT NULL,\n  `status` enum('submitted','in_review','planned','in_progress','completed','rejected') NOT NULL DEFAULT 'submitted',\n  `adminResponse` text,\n  `readByAdmin` int NOT NULL DEFAULT 0,\n  `createdAt` timestamp NOT NULL DEFAULT (now()),\n  `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,\n  CONSTRAINT `feedback_id` PRIMARY KEY(`id`)\n);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 823
+}

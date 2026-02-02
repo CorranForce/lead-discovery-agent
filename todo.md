@@ -937,3 +937,14 @@
 ## Bug Fixes - Dashboard
 - [x] Fix nested anchor tag error in active conversations section
 - [x] Find and fix all remaining nested anchor tag errors on Dashboard (5 Button+Link combinations fixed with asChild prop)
+
+## User Feedback System
+- [x] Create feedback table in database schema (id, userId, type, title, description, status, adminResponse, createdAt, updatedAt, readByAdmin)
+- [x] Add tRPC endpoints for feedback submission and admin management
+- [x] Create feedback submission dialog component with type selector (bug/enhancement)
+- [x] Add feedback button next to avatar in header (mobile view)
+- [x] Add feedback button and notification bell to desktop sidebar footer (rendering issue to be investigated)
+- [x] Create admin notification bell showing unread feedback count
+- [x] Build admin feedback review panel with status management
+- [x] Add success toast showing "Submitted" status
+- [ ] Write unit tests for feedback system

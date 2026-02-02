@@ -1835,5 +1835,88 @@ Be professional, empathetic, and focused on building trust.`;
         return await getUserUsageStats(ctx.user.id, start, end);
       }),
   }),
+  
+  // Feedback System
+  feedback: router({
+    submit: protectedProcedure
+      .input(z.object({
+        type: z.enum(["bug", "enhancement"]),
+        title: z.string().min(1).max(255),
+        description: z.string().min(1),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { createFeedback } = await import("./db");
+        await createFeedback({
+          userId: ctx.user.id,
+          type: input.type,
+          title: input.title,
+          description: input.description,
+        });
+        return { success: true, status: "submitted" };
+      }),
+    
+    list: protectedProcedure.query(async ({ ctx }) => {
+      const { getUserFeedback } = await import("./db");
+      return await getUserFeedback(ctx.user.id);
+    }),
+    
+    // Admin-only endpoints
+    adminList: protectedProcedure.query(async ({ ctx }) => {
+      if (ctx.user.role !== "admin") {
+        throw new Error("Unauthorized");
+      }
+      const { getAllFeedback } = await import("./db");
+      return await getAllFeedback();
+    }),
+    
+    unreadCount: protectedProcedure.query(async ({ ctx }) => {
+      if (ctx.user.role !== "admin") {
+        return 0;
+      }
+      const { getUnreadFeedbackCount } = await import("./db");
+      return await getUnreadFeedbackCount();
+    }),
+    
+    markAsRead: protectedProcedure
+      .input(z.object({ feedbackId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") {
+          throw new Error("Unauthorized");
+        }
+        const { markFeedbackAsRead } = await import("./db");
+        await markFeedbackAsRead(input.feedbackId);
+        return { success: true };
+      }),
+    
+    updateStatus: protectedProcedure
+      .input(z.object({
+        feedbackId: z.number(),
+        status: z.enum(["submitted", "in_review", "planned", "in_progress", "completed", "rejected"]),
+        adminResponse: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") {
+          throw new Error("Unauthorized");
+        }
+        const { updateFeedback } = await import("./db");
+        await updateFeedback(input.feedbackId, {
+          status: input.status,
+          adminResponse: input.adminResponse,
+          readByAdmin: 1,
+        });
+        return { success: true };
+      }),
+    
+    delete: protectedProcedure
+      .input(z.object({ feedbackId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") {
+          throw new Error("Unauthorized");
+        }
+        const { deleteFeedback } = await import("./db");
+        await deleteFeedback(input.feedbackId);
+        return { success: true };
+      }),
+  }),
 });
 export type AppRouter = typeof appRouter;

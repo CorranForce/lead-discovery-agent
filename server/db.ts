@@ -1,6 +1,6 @@
 import { eq, desc, and, gte, lte, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, leads, InsertLead, searchHistory, InsertSearchHistory, enrichmentData, InsertEnrichmentData, conversations, InsertConversation, messages, InsertMessage, conversationTemplates, InsertConversationTemplate, emailTemplates, InsertEmailTemplate, sentEmails, InsertSentEmail, emailSequences, InsertEmailSequence, sequenceSteps, InsertSequenceStep, sequenceEnrollments, InsertSequenceEnrollment, emailClicks, InsertEmailClick, emailOpens, InsertEmailOpen, reengagementWorkflows, InsertReengagementWorkflow, reengagementExecutions, invoices, Invoice, InsertInvoice, payments, Payment, InsertPayment, subscriptionPlans, SubscriptionPlan, InsertSubscriptionPlan } from "../drizzle/schema";
+import { InsertUser, users, leads, InsertLead, searchHistory, InsertSearchHistory, enrichmentData, InsertEnrichmentData, conversations, InsertConversation, messages, InsertMessage, conversationTemplates, InsertConversationTemplate, emailTemplates, InsertEmailTemplate, sentEmails, InsertSentEmail, emailSequences, InsertEmailSequence, sequenceSteps, InsertSequenceStep, sequenceEnrollments, InsertSequenceEnrollment, emailClicks, InsertEmailClick, emailOpens, InsertEmailOpen, reengagementWorkflows, InsertReengagementWorkflow, reengagementExecutions, invoices, Invoice, InsertInvoice, payments, Payment, InsertPayment, subscriptionPlans, SubscriptionPlan, InsertSubscriptionPlan, feedback, Feedback, InsertFeedback } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -1211,4 +1211,82 @@ export async function getBillingMetricsSummary() {
     growthRate,
     subscriptionCounts,
   };
+}
+
+
+// ===== Feedback Functions =====
+
+export async function createFeedback(feedbackData: InsertFeedback) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(feedback).values(feedbackData);
+  return result;
+}
+
+export async function getAllFeedback(limit: number = 100) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const result = await db
+    .select()
+    .from(feedback)
+    .orderBy(desc(feedback.createdAt))
+    .limit(limit);
+  
+  return result;
+}
+
+export async function getUserFeedback(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const result = await db
+    .select()
+    .from(feedback)
+    .where(eq(feedback.userId, userId))
+    .orderBy(desc(feedback.createdAt));
+  
+  return result;
+}
+
+export async function getUnreadFeedbackCount() {
+  const db = await getDb();
+  if (!db) return 0;
+  
+  const result = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(feedback)
+    .where(eq(feedback.readByAdmin, 0));
+  
+  return result[0]?.count || 0;
+}
+
+export async function updateFeedback(feedbackId: number, updates: Partial<Feedback>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db
+    .update(feedback)
+    .set(updates)
+    .where(eq(feedback.id, feedbackId));
+}
+
+export async function markFeedbackAsRead(feedbackId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db
+    .update(feedback)
+    .set({ readByAdmin: 1 })
+    .where(eq(feedback.id, feedbackId));
+}
+
+export async function deleteFeedback(feedbackId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db
+    .delete(feedback)
+    .where(eq(feedback.id, feedbackId));
 }

@@ -21,11 +21,14 @@ import {
 } from "@/components/ui/sidebar";
 import { APP_LOGO, APP_TITLE, getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users, Search, MessageSquare, Mail, TrendingUp, RefreshCcw, Shield, BarChart3 } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, Users, Search, MessageSquare, Mail, TrendingUp, RefreshCcw, Shield, BarChart3, Bell, MessageSquarePlus } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
+import { FeedbackDialog } from "./FeedbackDialog";
+import { Badge } from "./ui/badge";
+import { NotificationBell } from "./NotificationBell";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
@@ -237,7 +240,20 @@ function DashboardLayoutContent({
             </SidebarMenu>
           </SidebarContent>
 
-          <SidebarFooter className="p-3">
+          <SidebarFooter className="p-3 space-y-2">
+            <div className="flex items-center gap-2 px-1">
+              <FeedbackDialog trigger={
+                <Button variant="outline" size="sm" className="flex-1">
+                  <MessageSquarePlus className="h-4 w-4 mr-2 group-data-[collapsible=icon]:mr-0" />
+                  <span className="group-data-[collapsible=icon]:hidden">Feedback</span>
+                </Button>
+              } />
+              {user?.role === "admin" && (
+                <div className="group-data-[collapsible=icon]:hidden">
+                  <NotificationBell />
+                </div>
+              )}
+            </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-3 rounded-lg px-1 py-1 hover:bg-accent/50 transition-colors w-full text-left group-data-[collapsible=icon]:justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
@@ -290,6 +306,14 @@ function DashboardLayoutContent({
                   </span>
                 </div>
               </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <FeedbackDialog trigger={
+                <Button variant="ghost" size="icon" className="h-9 w-9">
+                  <MessageSquarePlus className="h-4 w-4" />
+                </Button>
+              } />
+              {user?.role === "admin" && <NotificationBell />}
             </div>
           </div>
         )}
