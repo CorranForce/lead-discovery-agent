@@ -354,29 +354,33 @@ export default function Account() {
                 </div>
               )}
               
-              <div className="flex items-center justify-between pt-4 border-t">
-                <div className="space-y-0.5">
-                  <Label htmlFor="use-real-data">Use Real Lead Data</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Enable Apollo.io integration for real company data (requires API key)
-                  </p>
-                </div>
-                <Switch
-                  id="use-real-data"
-                  checked={useRealData}
-                  onCheckedChange={(checked) => {
-                    setUseRealData(checked);
-                    setPreferencesChanged(true);
-                  }}
-                />
-              </div>
-              
-              {useRealData && (
-                <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                  <p className="text-sm text-blue-700 dark:text-blue-400">
-                    <strong>ℹ️ Real Data Mode:</strong> Lead discovery will use Apollo.io's database of 210M+ contacts. API calls consume credits from your Apollo plan.
-                  </p>
-                </div>
+              {profile?.role === 'admin' && (
+                <>
+                  <div className="flex items-center justify-between pt-4 border-t">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="use-real-data">Use Real Lead Data</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Enable Apollo.io integration for real company data (requires API key)
+                      </p>
+                    </div>
+                    <Switch
+                      id="use-real-data"
+                      checked={useRealData}
+                      onCheckedChange={(checked) => {
+                        setUseRealData(checked);
+                        setPreferencesChanged(true);
+                      }}
+                    />
+                  </div>
+                  
+                  {useRealData && (
+                    <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                      <p className="text-sm text-blue-700 dark:text-blue-400">
+                        <strong>ℹ️ Real Data Mode:</strong> Lead discovery will use Apollo.io's database of 210M+ contacts. API calls consume credits from your Apollo plan.
+                      </p>
+                    </div>
+                  )}
+                </>
               )}
 
               <div className="flex justify-end pt-4 border-t">
@@ -408,18 +412,23 @@ export default function Account() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg">
-                <p className="text-sm text-amber-700 dark:text-amber-400">
-                  Payment method management coming soon. Trial auto-downgrades to free tier if no payment method added.
-                </p>
-              </div>
-              <div className="space-y-2">
-                <Label>Trial Status</Label>
-                <div className="p-3 bg-muted rounded-lg">
-                  <p className="text-sm font-medium">Status: Active Trial</p>
-                  <p className="text-xs text-muted-foreground mt-1">Days Remaining: 30 days</p>
-                </div>
-              </div>
+              {profile?.role === 'admin' && (
+                <>
+                  <div className="space-y-2">
+                    <Label>Current Subscription Tier</Label>
+                    <div className="p-3 bg-muted rounded-lg">
+                      <p className="text-sm font-medium">
+                        Tier: {profile?.subscriptionTier ? profile.subscriptionTier.charAt(0).toUpperCase() + profile.subscriptionTier.slice(1) : 'Free'}
+                      </p>
+                      {profile?.subscriptionTier && profile.subscriptionTier !== 'free' && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Status: Active
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

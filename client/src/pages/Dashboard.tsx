@@ -79,29 +79,31 @@ export default function Dashboard() {
           </p>
         </div>
 
-        {/* Test Data Toggle */}
-        <div className="flex items-center gap-3 p-3 rounded-lg border bg-card">
-          <div className="flex items-center gap-2">
-            {isTestMode ? (
-              <FlaskConical className="h-4 w-4 text-amber-500" />
-            ) : (
-              <Database className="h-4 w-4 text-green-500" />
-            )}
-            <Label htmlFor="test-mode" className="text-sm font-medium cursor-pointer">
-              {isTestMode ? "Test Data" : "Live Data"}
-            </Label>
+        {/* Test Data Toggle - Admin Only */}
+        {profile?.role === 'admin' && (
+          <div className="flex items-center gap-3 p-3 rounded-lg border bg-card">
+            <div className="flex items-center gap-2">
+              {isTestMode ? (
+                <FlaskConical className="h-4 w-4 text-amber-500" />
+              ) : (
+                <Database className="h-4 w-4 text-green-500" />
+              )}
+              <Label htmlFor="test-mode" className="text-sm font-medium cursor-pointer">
+                {isTestMode ? "Test Data" : "Live Data"}
+              </Label>
+            </div>
+            <Switch
+              id="test-mode"
+              checked={isTestMode}
+              onCheckedChange={handleToggleTestMode}
+              disabled={updatePreferencesMutation.isPending}
+            />
           </div>
-          <Switch
-            id="test-mode"
-            checked={isTestMode}
-            onCheckedChange={handleToggleTestMode}
-            disabled={updatePreferencesMutation.isPending}
-          />
-        </div>
+        )}
       </div>
 
-      {/* Test Mode Banner */}
-      {isTestMode && (
+      {/* Test Mode Banner - Admin Only */}
+      {profile?.role === 'admin' && isTestMode && (
         <div className="flex items-center gap-3 p-4 rounded-lg border border-amber-500/30 bg-amber-500/10">
           <FlaskConical className="h-5 w-5 text-amber-500 shrink-0" />
           <div className="flex-1">

@@ -956,3 +956,8 @@
 
 ## Bug Fix - Nested Anchor Tags
 - [x] Find and fix all nested anchor tag errors on Dashboard page (fixed in Navigation.tsx)
+
+## Admin-Only Features Display
+- [x] Verify Real Data Mode toggle only shows for admin account (Account.tsx and Dashboard.tsx)
+- [x] Verify API tier information only shows for admin account (Account.tsx)
+- [x] Fix tier display to show actual subscription level (not hardcoded "Free")
