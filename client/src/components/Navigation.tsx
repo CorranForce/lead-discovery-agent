@@ -60,12 +60,12 @@ export default function Navigation({ isMobileMenuOpen, setIsMobileMenuOpen }: Na
             </span>
           </Link>
           
-          <Link href="/dashboard">
-            <Button variant="ghost" size="sm" className="gap-2">
+          <Button variant="ghost" size="sm" className="gap-2" asChild>
+            <Link href="/dashboard">
               <LayoutDashboard className="h-4 w-4" />
               Dashboard
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
 
         <div className="flex items-center gap-4">
@@ -84,12 +84,12 @@ export default function Navigation({ isMobileMenuOpen, setIsMobileMenuOpen }: Na
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <Link href="/account">
-                <DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/account">
                   <Settings className="mr-2 h-4 w-4" />
                   Account Settings
-                </DropdownMenuItem>
-              </Link>
+                </Link>
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout} className="text-red-600">
                 <LogOut className="mr-2 h-4 w-4" />

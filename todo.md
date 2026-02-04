@@ -953,3 +953,6 @@
 - [x] Fix desktop sidebar footer to show feedback button and notification bell (added to Sidebar.tsx)
 - [x] Add email notifications when users submit new feedback
 - [x] Create user feedback history page at /account/feedback with status tracking
+
+## Bug Fix - Nested Anchor Tags
+- [x] Find and fix all nested anchor tag errors on Dashboard page (fixed in Navigation.tsx)
