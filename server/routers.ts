@@ -1846,12 +1846,22 @@ Be professional, empathetic, and focused on building trust.`;
       }))
       .mutation(async ({ ctx, input }) => {
         const { createFeedback } = await import("./db");
+        const { notifyOwner } = await import("./_core/notification");
+        
         await createFeedback({
           userId: ctx.user.id,
           type: input.type,
           title: input.title,
           description: input.description,
         });
+        
+        // Send email notification to admin
+        const feedbackType = input.type === "bug" ? "Bug Report" : "Enhancement Idea";
+        await notifyOwner({
+          title: `New ${feedbackType} Submitted`,
+          content: `**From:** ${ctx.user.name || ctx.user.email}\n\n**Title:** ${input.title}\n\n**Description:**\n${input.description}\n\nView all feedback at: /admin/feedback`,
+        });
+        
         return { success: true, status: "submitted" };
       }),
     

@@ -15,7 +15,11 @@ import {
   CreditCard,
   DollarSign,
   Tag,
+  MessageSquarePlus,
 } from "lucide-react";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { FeedbackDialog } from "./FeedbackDialog";
+import { NotificationBell } from "./NotificationBell";
 import { cn } from "@/lib/utils";
 
 interface SidebarProps {
@@ -25,6 +29,7 @@ interface SidebarProps {
 
 export default function Sidebar({ isMobileMenuOpen, setIsMobileMenuOpen }: SidebarProps) {
   const [location] = useLocation();
+  const { user } = useAuth();
 
   const navItems = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -68,27 +73,44 @@ export default function Sidebar({ isMobileMenuOpen, setIsMobileMenuOpen }: Sideb
             <X className="h-5 w-5" />
           </Button>
         </div>
-        <nav className="flex flex-col gap-1 p-4">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = location === item.href;
-            return (
-              <Link key={item.href} href={item.href}>
-                <Button
-                  variant={isActive ? "secondary" : "ghost"}
-                  className={cn(
-                    "w-full justify-start gap-3",
-                    isActive && "bg-secondary"
-                  )}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  <Icon className="h-5 w-5" />
-                  <span>{item.label}</span>
+        <div className="flex flex-col h-full">
+          <nav className="flex flex-col gap-1 p-4 flex-1">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = location === item.href;
+              return (
+                <Link key={item.href} href={item.href}>
+                  <Button
+                    variant={isActive ? "secondary" : "ghost"}
+                    className={cn(
+                      "w-full justify-start gap-3",
+                      isActive && "bg-secondary"
+                    )}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <Icon className="h-5 w-5" />
+                    <span>{item.label}</span>
+                  </Button>
+                </Link>
+              );
+            })}
+          </nav>
+          
+          {/* Footer with Feedback and Notifications */}
+          <div className="p-4 border-t mt-auto space-y-2">
+            <div className="flex items-center gap-2">
+              <FeedbackDialog trigger={
+                <Button variant="outline" size="sm" className="flex-1">
+                  <MessageSquarePlus className="h-4 w-4 mr-2" />
+                  Feedback
                 </Button>
-              </Link>
-            );
-          })}
-        </nav>
+              } />
+              {user?.role === "admin" && (
+                <NotificationBell />
+              )}
+            </div>
+          </div>
+        </div>
       </aside>
     </>
   );

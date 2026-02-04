@@ -30,6 +30,7 @@ import ResetPassword from "./pages/ResetPassword";
 import VerifyEmail from "./pages/VerifyEmail";
 import HowTo from "./pages/HowTo";
 import AdminFeedback from "./pages/AdminFeedback";
+import AccountFeedback from "./pages/AccountFeedback";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -54,8 +55,8 @@ function Router() {
       <Route path={"/email-engagement"} component={EmailEngagement} />
       <Route path={"/reengagement"} component={Reengagement} />
       <Route path={"/admin"} component={AdminDashboard} />
-      <Route path={"/users"} component={UserManagement} />
-      <Route path={"/account"} component={Account} />
+      <Route path={"/users"} component={UserManagement} />      <Route path={"/account"} component={Account} />
+      <Route path={"/account/feedback"} component={AccountFeedback} />
       <Route path={"/billing"} component={Billing} />
       <Route path={"/admin/billing"} component={AdminBilling} />
       <Route path={"/admin/promo-codes"} component={PromoCodeManagement} />
