@@ -397,15 +397,15 @@ export default function Home() {
             <div>
               <h3 className="font-semibold mb-4">Product</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link href="/how-to"><a className="hover:text-foreground transition-colors">How It Works</a></Link></li>
-                <li><Link href="/pricing"><a className="hover:text-foreground transition-colors">Pricing</a></Link></li>
-                <li><Link href="/discover"><a className="hover:text-foreground transition-colors">Discover Leads</a></Link></li>
+                <li><Link href="/how-to" className="hover:text-foreground transition-colors">How It Works</Link></li>
+                <li><Link href="/pricing" className="hover:text-foreground transition-colors">Pricing</Link></li>
+                <li><Link href="/discover" className="hover:text-foreground transition-colors">Discover Leads</Link></li>
               </ul>
             </div>
             <div>
               <h3 className="font-semibold mb-4">Resources</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link href="/how-to"><a className="hover:text-foreground transition-colors">Documentation</a></Link></li>
+                <li><Link href="/how-to" className="hover:text-foreground transition-colors">Documentation</Link></li>
                 <li><a href="https://www.youtube.com/@AllenDavis-AI" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Video Tutorials</a></li>
                 <li><a href="https://www.facebook.com/allen.davis.54" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Community</a></li>
               </ul>
@@ -413,9 +413,9 @@ export default function Home() {
             <div>
               <h3 className="font-semibold mb-4">Company</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link href="/about"><a className="hover:text-foreground transition-colors">About Us</a></Link></li>
-                <li><Link href="/contact"><a className="hover:text-foreground transition-colors">Contact</a></Link></li>
-                <li><Link href="/privacy"><a className="hover:text-foreground transition-colors">Privacy Policy</a></Link></li>
+                <li><Link href="/about" className="hover:text-foreground transition-colors">About Us</Link></li>
+                <li><Link href="/contact" className="hover:text-foreground transition-colors">Contact</Link></li>
+                <li><Link href="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link></li>
               </ul>
             </div>
           </div>

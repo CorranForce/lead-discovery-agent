@@ -961,3 +961,9 @@
 - [x] Verify Real Data Mode toggle only shows for admin account (Account.tsx and Dashboard.tsx)
 - [x] Verify API tier information only shows for admin account (Account.tsx)
 - [x] Fix tier display to show actual subscription level (not hardcoded "Free")
+
+## Bug Fix - Nested Anchor Tags (Comprehensive)
+- [x] Search entire codebase for Link+Button patterns
+- [x] Search for Link wrapping other interactive elements
+- [x] Fix all nested anchor issues systematically (Home.tsx footer links fixed)
+- [x] Verify no nested anchor errors remain
