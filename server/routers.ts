@@ -1497,6 +1497,56 @@ Be professional, empathetic, and focused on building trust.`;
         return await getSequenceEnrollments(input.sequenceId);
       }),
 
+    getById: protectedProcedure
+      .input(z.object({ sequenceId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const { getDb } = await import("./db");
+        const { emailSequences } = await import("../drizzle/schema");
+        const { eq, and } = await import("drizzle-orm");
+        
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+        
+        const [sequence] = await db.select()
+          .from(emailSequences)
+          .where(and(
+            eq(emailSequences.id, input.sequenceId),
+            eq(emailSequences.userId, ctx.user.id)
+          ))
+          .limit(1);
+        
+        return sequence || null;
+      }),
+
+    update: protectedProcedure
+      .input(z.object({
+        sequenceId: z.number(),
+        name: z.string(),
+        description: z.string().optional(),
+        triggerType: z.enum(["manual", "status_change", "time_based"]),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { getDb } = await import("./db");
+        const { emailSequences } = await import("../drizzle/schema");
+        const { eq, and } = await import("drizzle-orm");
+        
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+        
+        await db.update(emailSequences)
+          .set({
+            name: input.name,
+            description: input.description || null,
+            triggerType: input.triggerType,
+          })
+          .where(and(
+            eq(emailSequences.id, input.sequenceId),
+            eq(emailSequences.userId, ctx.user.id)
+          ));
+        
+        return { success: true };
+      }),
+
     toggleActive: protectedProcedure
       .input(z.object({
         sequenceId: z.number(),

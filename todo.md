@@ -967,3 +967,9 @@
 - [x] Search for Link wrapping other interactive elements
 - [x] Fix all nested anchor issues systematically (Home.tsx footer links fixed)
 - [x] Verify no nested anchor errors remain
+
+## Code Quality & Bug Fixes
+- [x] Fix 404 error when clicking Edit button for email sequences
+- [x] Add ESLint rule for nested anchor detection (jsx-a11y/anchor-is-valid)
+- [x] Create reusable NavLink component to prevent nested anchor mistakes
+- [ ] Replace all Link usage with NavLink component where appropriate (optional - can be done incrementally)
