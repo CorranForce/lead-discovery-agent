@@ -251,7 +251,7 @@ export const emailSequences = mysqlTable("emailSequences", {
   name: varchar("name", { length: 255 }).notNull(),
   description: text("description"),
   isActive: int("isActive").default(1), // 1 = active, 0 = paused
-  triggerType: mysqlEnum("triggerType", ["manual", "status_change", "time_based"]).default("manual"),
+  triggerType: mysqlEnum("triggerType", ["manual", "status_change", "time_based", "signup"]).default("manual"),
   triggerCondition: text("triggerCondition"), // JSON: {status: "new"} or {days_after_creation: 1}
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),

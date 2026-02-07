@@ -1400,7 +1400,7 @@ Be professional, empathetic, and focused on building trust.`;
       .input(z.object({
         name: z.string(),
         description: z.string().optional(),
-        triggerType: z.enum(["manual", "status_change", "time_based"]),
+        triggerType: z.enum(["manual", "status_change", "time_based", "signup"]),
         triggerCondition: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
@@ -1523,7 +1523,7 @@ Be professional, empathetic, and focused on building trust.`;
         sequenceId: z.number(),
         name: z.string(),
         description: z.string().optional(),
-        triggerType: z.enum(["manual", "status_change", "time_based"]),
+        triggerType: z.enum(["manual", "status_change", "time_based", "signup"]),
       }))
       .mutation(async ({ ctx, input }) => {
         const { getDb } = await import("./db");

@@ -1,0 +1,1 @@
+ALTER TABLE `emailSequences` MODIFY COLUMN `triggerType` enum('manual','status_change','time_based','signup') DEFAULT 'manual';

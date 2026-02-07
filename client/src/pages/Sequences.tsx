@@ -16,7 +16,7 @@ export default function Sequences() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [triggerType, setTriggerType] = useState<"manual" | "status_change" | "time_based">("manual");
+  const [triggerType, setTriggerType] = useState<"manual" | "status_change" | "time_based" | "signup">("manual");
 
   const { data: sequences, isLoading } = trpc.sequences.list.useQuery();
   const utils = trpc.useUtils();
@@ -131,6 +131,7 @@ export default function Sequences() {
                     <SelectItem value="manual">Manual - Enroll leads manually</SelectItem>
                     <SelectItem value="status_change">Status Change - Trigger on lead status</SelectItem>
                     <SelectItem value="time_based">Time Based - Trigger after specific time</SelectItem>
+                    <SelectItem value="signup">Signup - Trigger on new user registration</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

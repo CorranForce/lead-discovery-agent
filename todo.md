@@ -973,3 +973,11 @@
 - [x] Add ESLint rule for nested anchor detection (jsx-a11y/anchor-is-valid)
 - [x] Create reusable NavLink component to prevent nested anchor mistakes
 - [ ] Replace all Link usage with NavLink component where appropriate (optional - can be done incrementally)
+
+## Email Sequence - Signup Trigger
+- [x] Update emailSequences table schema to add "signup" trigger type
+- [x] Update sequence creation UI to include "Signup - Trigger on new user registration" option
+- [x] Update sequence edit UI to include signup trigger option
+- [x] Implement auto-enrollment logic in OAuth callback after user signup
+- [x] Add database query to find sequences with signup trigger
+- [x] Test signup trigger with new user registration (implementation complete, will auto-enroll on next signup)

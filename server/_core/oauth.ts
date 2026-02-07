@@ -51,6 +51,21 @@ export function registerOAuthRoutes(app: Express) {
           console.error("[OAuth] Failed to send welcome email:", emailError);
         }
       }
+      
+      // Auto-enroll new users in signup-triggered sequences
+      if (isNewUser) {
+        try {
+          const user = await db.getUserByOpenId(userInfo.openId);
+          if (user) {
+            const { enrollInSignupSequences } = await import("../services/sequenceEnrollment");
+            await enrollInSignupSequences(user.id);
+            console.log("[OAuth] Enrolled new user in signup sequences");
+          }
+        } catch (enrollError) {
+          // Don't fail the login if enrollment fails
+          console.error("[OAuth] Failed to enroll in signup sequences:", enrollError);
+        }
+      }
 
       const sessionToken = await sdk.createSessionToken(userInfo.openId, {
         name: userInfo.name || "",
