@@ -1,0 +1,16 @@
+{
+  "query": "SELECT id, name, triggerType, isActive FROM emailSequences WHERE name LIKE '%Welcome%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2Vkk6KVFrhiW4tR.d342a31b6531 --database LaKXu62qWLapokNcy8enjg --execute SELECT id, name, triggerType, isActive FROM emailSequences WHERE name LIKE '%Welcome%';",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Welcome Series",
+      "triggerType": "manual",
+      "isActive": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\ttriggerType\tisActive\n1\tWelcome Series\tmanual\t1\n",
+  "stderr": "",
+  "execution_time_ms": 51
+}

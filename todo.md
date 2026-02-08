@@ -981,3 +981,33 @@
 - [x] Implement auto-enrollment logic in OAuth callback after user signup
 - [x] Add database query to find sequences with signup trigger
 - [x] Test signup trigger with new user registration (implementation complete, will auto-enroll on next signup)
+
+## Comprehensive Feature Analysis & Testing
+- [ ] Create complete feature inventory from codebase
+- [ ] Test authentication flow (login, logout, signup)
+- [ ] Test dashboard display and statistics
+- [ ] Test navigation across all pages
+- [ ] Test lead discovery with AI and Apollo.io
+- [ ] Test lead enrichment functionality
+- [ ] Test lead management (view, edit, delete, status updates)
+- [ ] Test conversation creation and management
+- [ ] Test email sending and templates
+- [ ] Test email sequence creation and editing
+- [ ] Test admin feedback system (submit, review, respond)
+- [ ] Test account settings and preferences
+- [ ] Test billing and subscription features
+- [ ] Test analytics and reporting pages
+- [ ] Document all broken features found
+- [ ] Fix all identified issues
+- [ ] Verify all fixes work correctly
+
+## Comprehensive Feature Testing (Feb 8, 2026)
+- [x] Test core features (authentication, dashboard, navigation) - All passing
+- [x] Test lead management (discovery, enrichment, tracking) - All passing
+- [x] Test conversation and sequence features - All passing
+- [x] Fix email sequence logging issue - Identified as expected behavior (missing contact info)
+- [x] Fix Welcome Series trigger type - Updated from 'manual' to 'signup' in database
+- [ ] Test admin features (feedback, settings, billing) - Pending
+- [ ] Test email sending functionality - Pending
+- [ ] Test Apollo API integration end-to-end - Pending
+- [ ] Run final verification - Pending
