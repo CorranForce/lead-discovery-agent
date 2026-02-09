@@ -1011,3 +1011,16 @@
 - [ ] Test email sending functionality - Pending
 - [ ] Test Apollo API integration end-to-end - Pending
 - [ ] Run final verification - Pending
+
+## Email/Password Authentication (COMPLETE ✅)
+- [x] Verify passwordHash field exists in users schema
+- [x] Install bcrypt for password hashing
+- [x] Create signup page with email/password form (already exists)
+- [x] Create login page with email/password and OAuth options (already exists)
+- [x] Implement signup endpoint with password hashing (already exists)
+- [x] Implement login endpoint with password verification (already exists)
+- [x] Remove forced authentication redirects from public pages (already implemented)
+- [x] Update navigation to show Sign In/Sign Up for unauthenticated users (already implemented)
+- [x] Test complete signup flow with email/password (verified working)
+- [x] Test login flow with email/password (verified working)
+- [x] Verify OAuth login still works alongside email/password (both options available)
