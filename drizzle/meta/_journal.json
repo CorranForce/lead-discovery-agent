@@ -155,6 +155,13 @@
       "when": 1770394797956,
       "tag": "0021_worried_magma",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "5",
+      "when": 1770816890517,
+      "tag": "0022_magical_talon",
+      "breakpoints": true
     }
   ]
 }

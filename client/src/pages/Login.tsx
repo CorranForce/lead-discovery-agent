@@ -13,6 +13,7 @@ export default function Login() {
   const [, setLocation] = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
 
   const loginMutation = trpc.auth.login.useMutation({
@@ -32,6 +33,7 @@ export default function Login() {
     loginMutation.mutate({
       email,
       password,
+      rememberMe,
     });
   };
 
@@ -84,7 +86,19 @@ export default function Login() {
               />
             </div>
 
-            <div className="flex justify-end">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <input
+                  id="remember-me"
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                />
+                <label htmlFor="remember-me" className="text-sm text-muted-foreground cursor-pointer">
+                  Remember me for 30 days
+                </label>
+              </div>
               <button
                 type="button"
                 onClick={() => setLocation("/forgot-password")}

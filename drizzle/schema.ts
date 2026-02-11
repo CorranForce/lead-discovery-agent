@@ -17,6 +17,12 @@ export const users = mysqlTable("users", {
   email: varchar("email", { length: 320 }).unique(),
   loginMethod: varchar("loginMethod", { length: 64 }),
   passwordHash: varchar("passwordHash", { length: 255 }),
+  // Password reset
+  passwordResetToken: varchar("passwordResetToken", { length: 255 }),
+  passwordResetExpires: timestamp("passwordResetExpires"),
+  // Email verification
+  emailVerified: int("emailVerified").default(0).notNull(), // 0 = not verified, 1 = verified
+  emailVerificationToken: varchar("emailVerificationToken", { length: 255 }),
   role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
   // Profile fields
   bio: text("bio"),

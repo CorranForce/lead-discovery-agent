@@ -1024,3 +1024,45 @@
 - [x] Test complete signup flow with email/password (verified working)
 - [x] Test login flow with email/password (verified working)
 - [x] Verify OAuth login still works alongside email/password (both options available)
+
+## Authentication Enhancements
+- [ ] Investigate and fix forced login redirect issue
+- [ ] Implement password reset flow with email verification
+- [ ] Add email verification for new signups
+- [ ] Implement remember me functionality
+- [ ] Add configurable session timeouts
+- [ ] Test all authentication flows end-to-end
+
+## Authentication Enhancements
+
+### Password Reset Flow
+- [x] Add passwordResetToken and passwordResetExpires fields to users table
+- [x] Create forgot password page (/forgot-password)
+- [x] Implement forgot password tRPC endpoint to generate reset token
+- [x] Send password reset email via Resend with reset link
+- [x] Create reset password page (/reset-password/:token)
+- [x] Implement reset password tRPC endpoint with token validation
+- [x] Add password strength validation on reset
+- [x] Expire reset tokens after 1 hour
+- [x] Add "Forgot password?" link to login page
+
+### Email Verification for Signups
+- [x] Add emailVerified and emailVerificationToken fields to users table
+- [x] Modify signup endpoint to generate verification token
+- [x] Send verification email via Resend after signup
+- [x] Create email verification page (/verify-email/:token)
+- [x] Implement email verification tRPC endpoint
+- [x] Require email verification before full account access
+- [x] Add "Resend verification email" functionality
+- [x] Show verification status on account page
+- [x] Add verification reminder banner for unverified users
+
+### Remember Me & Session Management
+- [x] Add rememberMe checkbox to login page
+- [x] Implement configurable session timeouts (24h default, 30 days with remember me)
+- [ ] Add sessionExpiry field to track session duration
+- [x] Update JWT token generation to include expiry based on remember me
+- [x] Update cookie maxAge to match JWT expiry
+- [ ] Show session expiry information in account settings
+- [ ] Add "Log out all devices" functionality
+- [ ] Test session persistence across browser restarts

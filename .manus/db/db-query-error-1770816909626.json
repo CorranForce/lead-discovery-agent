@@ -1,0 +1,8 @@
+{
+  "query": "ALTER TABLE users \nADD COLUMN passwordResetToken VARCHAR(255),\nADD COLUMN passwordResetExpires TIMESTAMP NULL,\nADD COLUMN emailVerified INT NOT NULL DEFAULT 0,\nADD COLUMN emailVerificationToken VARCHAR(255);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2Vkk6KVFrhiW4tR.d342a31b6531 --database LaKXu62qWLapokNcy8enjg --execute ALTER TABLE users \nADD COLUMN passwordResetToken VARCHAR(255),\nADD COLUMN passwordResetExpires TIMESTAMP NULL,\nADD COLUMN emailVerified INT NOT NULL DEFAULT 0,\nADD COLUMN emailVerificationToken VARCHAR(255);",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1060 (42S21) at line 1: Duplicate column name 'emailVerified'"
+  ]
+}

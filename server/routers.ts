@@ -96,6 +96,7 @@ export const appRouter = router({
       .input(z.object({
         email: z.string().email(),
         password: z.string(),
+        rememberMe: z.boolean().optional(),
       }))
       .mutation(async ({ input, ctx }) => {
         const { verifyPassword } = await import("./_core/password");
@@ -115,16 +116,21 @@ export const appRouter = router({
           throw new Error("Invalid email or password");
         }
         
-        // Create session token
+        // Create session token with configurable expiry
+        // Default: 24 hours, Remember me: 30 days
+        const expiresIn = input.rememberMe ? "30d" : "24h";
         const token = jwt.default.sign(
           { userId: user.id, email: user.email },
           ENV.jwtSecret,
-          { expiresIn: "30d" }
+          { expiresIn }
         );
         
-        // Set session cookie
+        // Set session cookie with matching expiry
         const cookieOptions = getSessionCookieOptions(ctx.req);
-        ctx.res.cookie(COOKIE_NAME, token, cookieOptions);
+        const maxAge = input.rememberMe 
+          ? 30 * 24 * 60 * 60 * 1000  // 30 days in milliseconds
+          : 24 * 60 * 60 * 1000;       // 24 hours in milliseconds
+        ctx.res.cookie(COOKIE_NAME, token, { ...cookieOptions, maxAge });
         
         // Update last signed in
         const { getDb } = await import("./db");
