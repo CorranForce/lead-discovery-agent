@@ -1066,3 +1066,10 @@
 - [ ] Show session expiry information in account settings
 - [ ] Add "Log out all devices" functionality
 - [ ] Test session persistence across browser restarts
+
+## CRITICAL BUG - Forced Login Redirect
+- [x] Investigate why site requires Manus OAuth login even in incognito mode
+- [x] Remove any forced authentication redirects from home page
+- [x] Ensure unauthenticated users can access home page without login
+- [ ] Test in incognito mode to verify fix (requires user testing)
+- [x] Verify no OAuth redirects are triggered for public pages
