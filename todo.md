@@ -1073,3 +1073,10 @@
 - [x] Ensure unauthenticated users can access home page without login
 - [ ] Test in incognito mode to verify fix (requires user testing)
 - [x] Verify no OAuth redirects are triggered for public pages
+
+## Debug Authentication Issue
+- [x] Create debug page at /auth-debug to show authentication status
+- [x] Display user object, cookies, and session details
+- [x] Test with curl to verify unauthenticated state
+- [x] Confirmed: Manus gateway authenticates project owner automatically
+- [ ] User to test on custom domain for true unauthenticated access

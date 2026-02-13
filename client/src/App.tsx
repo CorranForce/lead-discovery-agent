@@ -32,6 +32,7 @@ import HowTo from "./pages/HowTo";
 import AdminFeedback from "./pages/AdminFeedback";
 import AccountFeedback from "./pages/AccountFeedback";
 import SequenceEdit from "./pages/SequenceEdit";
+import AuthDebug from "./pages/AuthDebug";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -42,6 +43,7 @@ function Router() {
       <Route path="/forgot-password" component={ForgotPassword} />
       <Route path="/reset-password" component={ResetPassword} />
       <Route path="/verify-email" component={VerifyEmail} />
+      <Route path="/auth-debug" component={AuthDebug} />
       <Route path={"/"} component={Home} />
       <Route path={"/how-to"} component={HowTo} />
       <Route path={"/pricing"} component={Pricing} />
