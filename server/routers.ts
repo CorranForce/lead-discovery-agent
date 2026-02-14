@@ -1984,5 +1984,91 @@ Be professional, empathetic, and focused on building trust.`;
         return { success: true };
       }),
   }),
+  
+  announcements: router({
+    getActive: publicProcedure.query(async () => {
+      const { getActiveAnnouncements } = await import("./announcementDb");
+      return getActiveAnnouncements();
+    }),
+    
+    getAll: protectedProcedure.query(async ({ ctx }) => {
+      if (ctx.user.role !== "admin") {
+        throw new Error("Unauthorized");
+      }
+      const { getAllAnnouncements } = await import("./announcementDb");
+      return getAllAnnouncements();
+    }),
+    
+    create: protectedProcedure
+      .input(z.object({
+        title: z.string(),
+        message: z.string(),
+        type: z.enum(["info", "warning", "success", "promotion"]),
+        startDate: z.string().optional(),
+        endDate: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") {
+          throw new Error("Unauthorized");
+        }
+        const { createAnnouncement } = await import("./announcementDb");
+        await createAnnouncement({
+          ...input,
+          startDate: input.startDate ? new Date(input.startDate) : null,
+          endDate: input.endDate ? new Date(input.endDate) : null,
+          createdBy: ctx.user.id,
+          isActive: 1,
+        });
+        return { success: true };
+      }),
+    
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        title: z.string().optional(),
+        message: z.string().optional(),
+        type: z.enum(["info", "warning", "success", "promotion"]).optional(),
+        startDate: z.string().optional(),
+        endDate: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") {
+          throw new Error("Unauthorized");
+        }
+        const { updateAnnouncement } = await import("./announcementDb");
+        const { id, ...data } = input;
+        await updateAnnouncement(id, {
+          ...data,
+          startDate: data.startDate ? new Date(data.startDate) : undefined,
+          endDate: data.endDate ? new Date(data.endDate) : undefined,
+        });
+        return { success: true };
+      }),
+    
+    toggleStatus: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        isActive: z.number(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") {
+          throw new Error("Unauthorized");
+        }
+        const { toggleAnnouncementStatus } = await import("./announcementDb");
+        await toggleAnnouncementStatus(input.id, input.isActive);
+        return { success: true };
+      }),
+    
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") {
+          throw new Error("Unauthorized");
+        }
+        const { deleteAnnouncement } = await import("./announcementDb");
+        await deleteAnnouncement(input.id);
+        return { success: true };
+      }),
+  }),
 });
 export type AppRouter = typeof appRouter;

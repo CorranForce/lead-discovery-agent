@@ -162,6 +162,13 @@
       "when": 1770816890517,
       "tag": "0022_magical_talon",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "5",
+      "when": 1770993143546,
+      "tag": "0023_late_smiling_tiger",
+      "breakpoints": true
     }
   ]
 }

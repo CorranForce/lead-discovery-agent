@@ -5,10 +5,14 @@ import { Search, Database, Zap, TrendingUp, ArrowRight, Sparkles, Target, Mail, 
 import { APP_TITLE, getLoginUrl } from "@/const";
 import { Link, useLocation } from "wouter";
 import { useEffect } from "react";
+import { trpc } from "@/lib/trpc";
+import AnnouncementBanner from "@/components/AnnouncementBanner";
+import { trackButtonClick } from "@/lib/analytics";
 
 export default function Home() {
   const { user, isAuthenticated, loading } = useAuth();
   const [, setLocation] = useLocation();
+  const { data: activeAnnouncements } = trpc.announcements.getActive.useQuery();
 
   // Redirect authenticated users to dashboard
   useEffect(() => {
@@ -121,6 +125,11 @@ export default function Home() {
           </nav>
         </div>
       </header>
+
+      {/* Announcement Banner */}
+      {activeAnnouncements && activeAnnouncements.length > 0 && (
+        <AnnouncementBanner announcement={activeAnnouncements[0]} />
+      )}
 
       {/* Hero Section */}
       <section className="py-20 md:py-32 bg-gradient-to-b from-background to-muted/20">

@@ -33,6 +33,7 @@ import AdminFeedback from "./pages/AdminFeedback";
 import AccountFeedback from "./pages/AccountFeedback";
 import SequenceEdit from "./pages/SequenceEdit";
 import AuthDebug from "./pages/AuthDebug";
+import Announcements from "./pages/admin/Announcements";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -62,10 +63,9 @@ function Router() {
       <Route path={"/users"} component={UserManagement} />      <Route path={"/account"} component={Account} />
       <Route path={"/account/feedback"} component={AccountFeedback} />
       <Route path={"/billing"} component={Billing} />
-      <Route path={"/admin/billing"} component={AdminBilling} />
-      <Route path={"/admin/promo-codes"} component={PromoCodeManagement} />
+      <Route path={"/admin/billing"} component={AdminBilling} />      <Route path={"/admin/promo-codes"} component={PromoCodeManagement} />
       <Route path={"/admin/feedback"} component={AdminFeedback} />
-      <Route path={"/404"} component={NotFound} />
+      <Route path={"/admin/announcements"} component={Announcements} />      <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
     </Switch>

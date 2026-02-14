@@ -442,3 +442,22 @@ export const feedback = mysqlTable("feedback", {
 
 export type Feedback = typeof feedback.$inferSelect;
 export type InsertFeedback = typeof feedback.$inferInsert;
+
+/**
+ * Announcements table - stores homepage announcements and feature updates
+ */
+export const announcements = mysqlTable("announcements", {
+  id: int("id").autoincrement().primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  message: text("message").notNull(),
+  type: mysqlEnum("type", ["info", "warning", "success", "promotion"]).default("info").notNull(),
+  isActive: int("isActive").default(1).notNull(), // 1 = active, 0 = inactive
+  startDate: timestamp("startDate"),
+  endDate: timestamp("endDate"),
+  createdBy: int("createdBy").notNull(), // User ID of admin who created it
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Announcement = typeof announcements.$inferSelect;
+export type InsertAnnouncement = typeof announcements.$inferInsert;

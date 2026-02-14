@@ -1080,3 +1080,34 @@
 - [x] Test with curl to verify unauthenticated state
 - [x] Confirmed: Manus gateway authenticates project owner automatically
 - [ ] User to test on custom domain for true unauthenticated access
+
+## Google Analytics Integration
+- [x] Add Google Analytics tracking script to all pages
+- [x] Request GA4 measurement ID from user
+- [x] Track page views on all routes
+- [x] Track conversion events (signup, login, get started clicks)
+- [ ] Test analytics tracking in browser console
+
+## Announcement Banner System
+- [x] Create announcements table in database
+- [x] Add announcement banner component to homepage
+- [x] Make banner dismissible with localStorage persistence
+- [x] Style banner to be prominent but not intrusive
+- [x] Add animation/transition effects
+
+## Admin Announcement Management
+- [x] Create announcement management page in admin dashboard
+- [x] Add CRUD operations for announcements (create, edit, delete, toggle active)
+- [ ] Add announcement preview functionality
+- [x] Add scheduling (start date, end date) for announcements
+- [x] Add announcement types (info, warning, success, promotion)
+- [x] Show active/inactive status in admin list
+
+## CRITICAL - Domain References Update
+- [x] Search for all manus.space references in codebase
+- [x] Replace all manus.space URLs with leadagent.sbs
+- [x] Update canonical URLs in index.html
+- [x] Update Open Graph URLs
+- [x] Update any hardcoded domain references
+- [ ] Fix auth-debug redirect issue (investigate why it redirects)
+- [ ] Verify no Manus branding remains in code
