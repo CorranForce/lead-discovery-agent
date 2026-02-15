@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { trpc } from "@/lib/trpc";
 import { Loader2, AlertCircle } from "lucide-react";
 import { APP_LOGO, APP_TITLE, getLoginUrl } from "@/const";
+import PublicNavigation from "@/components/PublicNavigation";
 
 export default function Login() {
   const [, setLocation] = useLocation();
@@ -38,7 +39,9 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
+    <div className="min-h-screen flex flex-col">
+      <PublicNavigation />
+      <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1 text-center">
           {APP_LOGO && (
@@ -156,6 +159,7 @@ export default function Login() {
           </CardFooter>
         </form>
       </Card>
+      </div>
     </div>
   );
 }

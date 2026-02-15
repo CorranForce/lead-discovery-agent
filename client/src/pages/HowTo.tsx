@@ -3,6 +3,7 @@ import { Separator } from "@/components/ui/separator";
 import { Search, Filter, Target, Mail, TrendingUp, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
+import PublicNavigation from "@/components/PublicNavigation";
 
 export default function HowTo() {
   const [, setLocation] = useLocation();
@@ -106,6 +107,7 @@ export default function HowTo() {
 
   return (
     <div className="min-h-screen bg-background">
+      <PublicNavigation />
       {/* Header */}
       <div className="border-b bg-card">
         <div className="container py-8">

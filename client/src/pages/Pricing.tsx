@@ -7,6 +7,7 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
+import PublicNavigation from "@/components/PublicNavigation";
 
 interface PricingPlan {
   id: string;
@@ -129,6 +130,8 @@ export default function Pricing() {
 
   return (
     <div className="min-h-screen bg-background">
+      <PublicNavigation />
+
       {/* Header */}
       <div className="container mx-auto px-4 py-16 text-center">
         <h1 className="text-4xl font-bold mb-4">Simple, Transparent Pricing</h1>
