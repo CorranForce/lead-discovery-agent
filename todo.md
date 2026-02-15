@@ -1111,3 +1111,29 @@
 - [x] Update any hardcoded domain references
 - [ ] Fix auth-debug redirect issue (investigate why it redirects)
 - [ ] Verify no Manus branding remains in code
+
+
+## 🚨 CRITICAL BUG - Forced Manus OAuth Redirect (BLOCKING LAUNCH)
+- [ ] Test accessing leadagent.sbs on fresh device - CONFIRMED redirecting to Manus login
+- [ ] Check if OAuth callback is forcing authentication on all requests
+- [ ] Check if there's a server-side redirect in Express middleware
+- [ ] Check if DashboardLayout or AppLayout is forcing authentication
+- [ ] Check if useAuth hook is triggering redirects
+- [ ] Check if there's a route guard or protected route logic
+- [ ] Verify Home component is truly public and doesn't require auth
+- [ ] Remove ALL authentication requirements from home page
+- [ ] Test fix on leadagent.sbs with fresh device before checkpoint
+
+
+## Security Features - Injection Prevention
+- [x] Install security packages (helmet, express-rate-limit, validator, dompurify)
+- [x] Create input validation utility with zod schemas
+- [x] Create input sanitization utility to strip malicious code
+- [x] Add SQL injection prevention (verify Drizzle ORM parameterized queries)
+- [x] Add XSS protection headers (Content-Security-Policy, X-XSS-Protection)
+- [x] Implement rate limiting on API endpoints
+- [ ] Add CSRF token validation for state-changing operations (tRPC handles this)
+- [x] Sanitize user-generated content before rendering
+- [x] Add security middleware to Express server
+- [x] Test injection attacks (SQL, XSS, code injection)
+- [x] Document security best practices for future development

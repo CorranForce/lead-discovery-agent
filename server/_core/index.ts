@@ -31,6 +31,17 @@ async function startServer() {
   const app = express();
   const server = createServer(app);
   
+  // Trust proxy - required for rate limiting behind reverse proxy/CDN
+  app.set('trust proxy', 1);
+  
+  // Security middleware - MUST be first
+  const { setupSecurityMiddleware } = await import("../security/securityMiddleware");
+  setupSecurityMiddleware(app);
+  
+  // Rate limiting middleware
+  const { setupRateLimiting } = await import("../security/rateLimiting");
+  setupRateLimiting(app);
+  
   // Start the scheduler for automated workflow execution
   const { startScheduler } = await import("../scheduler");
   startScheduler();
